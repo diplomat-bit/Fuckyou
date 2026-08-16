@@ -1,18 +1,1 @@
-[
-  {
-    "deal_id": "deal_101",
-    "title": "Quantum Grid Infrastructure Accord",
-    "counterparty": "Apex Sovereign Holdings",
-    "valuation_usd": 45000000000,
-    "status": "EXECUTED",
-    "executed_at": "2026-01-15T00:00:00Z"
-  },
-  {
-    "deal_id": "deal_102",
-    "title": "Autonomous Maritime Logistics Corridor",
-    "counterparty": "Helios Meridian Syndicate",
-    "valuation_usd": 18500000000,
-    "status": "PENDING_RATIFICATION",
-    "executed_at": "2026-02-01T00:00:00Z"
-  }
-]
+[]

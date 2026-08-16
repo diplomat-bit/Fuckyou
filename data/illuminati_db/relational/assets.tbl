@@ -1,18 +1,1 @@
-[
-  {
-    "asset_id": "ast_901",
-    "name": "Sub-Orbital Relay Station Alpha",
-    "category": "SPACE_INFRASTRUCTURE",
-    "valuation_usd": 120000000000,
-    "jurisdiction": "INTERNATIONAL_WATERS_ORBITAL",
-    "status": "OPERATIONAL"
-  },
-  {
-    "asset_id": "ast_902",
-    "name": "Deep Vault Obsidian Reserve",
-    "category": "SECURE_STORAGE",
-    "valuation_usd": 35000000000,
-    "jurisdiction": "SWISS_ALPS_SUBTERRANEAN",
-    "status": "SECURED"
-  }
-]
+[]
