@@ -1,0 +1,29 @@
+[
+  {
+    "id": "usr_001",
+    "username": "grand_architect_alpha",
+    "role": "Grand Architect",
+    "clearance": "OMEGA",
+    "entity": "Global Sovereign Council",
+    "status": "ACTIVE",
+    "created_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "usr_002",
+    "username": "nexus_director_beta",
+    "role": "Director of Logistics",
+    "clearance": "ALPHA",
+    "entity": "Vanguard Syndicate",
+    "status": "ACTIVE",
+    "created_at": "2024-02-15T12:30:00Z"
+  },
+  {
+    "id": "usr_003",
+    "username": "cryptarch_gamma",
+    "role": "Chief Cryptographer",
+    "clearance": "OMEGA",
+    "entity": "Autonomous Sovereign Node",
+    "status": "ACTIVE",
+    "created_at": "2024-03-10T08:15:00Z"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "node_id": "sch_001",
+    "facility_name": "Node Alpha Silicon Foundry",
+    "location": "Sector 7 Subterranean Complex",
+    "capacity_utilization_pct": 98.4,
+    "security_level": "MAXIMUM",
+    "active_shipments": 14
+  },
+  {
+    "node_id": "sch_002",
+    "facility_name": "Node Beta Logistics Hub",
+    "location": "Pacific Autonomous Terminal",
+    "capacity_utilization_pct": 82.1,
+    "security_level": "HIGH",
+    "active_shipments": 28
+  }
+]

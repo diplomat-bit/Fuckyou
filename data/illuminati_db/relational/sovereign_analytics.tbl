@@ -1,0 +1,16 @@
+[
+  {
+    "metric_id": "anl_881",
+    "indicator_name": "Global Sovereign Liquidity Index",
+    "value": 94.7,
+    "trend": "STABLE_HIGH",
+    "evaluated_at": "2026-08-16T00:00:00Z"
+  },
+  {
+    "metric_id": "anl_882",
+    "indicator_name": "Autonomous Network Resilience Quotient",
+    "value": 99.998,
+    "trend": "OPTIMIZING",
+    "evaluated_at": "2026-08-16T00:00:00Z"
+  }
+]

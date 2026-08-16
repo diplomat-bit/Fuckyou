@@ -1,0 +1,1070 @@
+openapi: 3.0.0
+info:
+  title: Remote Authentication & Portal Diagnostics API
+  description: >
+    This API documents the comprehensive REST endpoints for remote authentication diagnostics,
+    system health checks, dependency graph analysis, security scanning, performance monitoring,
+    and telemetry collection within the Portal Diagnostics framework.
+    It provides capabilities for token verification (JWT/JWS/JWE), permission evaluation, Identity Provider (IdP) probing,
+    and full diagnostic suite execution to ensure secure, compliant, and highly available identity federation across
+    multi-cloud and sovereign environments.
+  version: 1.0.0
+servers:
+  - url: /api/diagnostics
+    description: Base path for Portal Diagnostics endpoints
+paths:
+  /auth/verify-token:
+    post:
+      tags:
+        - Authentication Diagnostics
+      summary: Verify Authentication Token
+      description: Validates a given JWT, JWE, or JWS token against configured cryptographic keys, trust stores, and compliance rules.
+      operationId: verifyToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerificationRequest'
+      responses:
+        '200':
+          description: Token verification completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerificationResponse'
+        '400':
+          description: Invalid request payload or malformed token structure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error during cryptographic verification.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/evaluate-permissions:
+    post:
+      tags:
+        - Authentication Diagnostics
+      summary: Evaluate Permissions
+      description: Evaluates whether a specific principal has authorization to perform actions on a resource based on IAM policies and Entra ID configurations.
+      operationId: evaluatePermissions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermissionEvaluationRequest'
+      responses:
+        '200':
+          description: Permission evaluation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionEvaluationResponse'
+        '400':
+          description: Invalid evaluation parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal policy engine failure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/probe-idp:
+    post:
+      tags:
+        - Authentication Diagnostics
+      summary: Probe Identity Provider (IdP)
+      description: Probes external Identity Providers (OIDC/SAML) to verify metadata availability, latency, and certificate validity.
+      operationId: probeIdp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdpProbeRequest'
+      responses:
+        '200':
+          description: IdP probe completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdpProbeResponse'
+        '400':
+          description: Invalid IdP configuration or unreachable endpoint.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal error during network probing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/run-suite:
+    post:
+      tags:
+        - Authentication Diagnostics
+      summary: Execute Full Diagnostic Suite
+      description: Triggers an asynchronous or synchronous execution of the entire authentication diagnostic suite.
+      operationId: runDiagnosticSuite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuiteExecutionRequest'
+      responses:
+        '200':
+          description: Diagnostic suite executed successfully (Synchronous mode).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuiteExecutionResponse'
+        '202':
+          description: Diagnostic suite execution accepted and running asynchronously.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuiteAsyncAcceptedResponse'
+        '400':
+          description: Invalid suite configuration parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Critical failure during suite execution.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/status/{suiteRunId}:
+    get:
+      tags:
+        - Authentication Diagnostics
+      summary: Get Diagnostic Suite Status
+      description: Retrieves the current status, progress, and results of an asynchronous diagnostic suite execution.
+      operationId: getSuiteStatus
+      parameters:
+        - name: suiteRunId
+          in: path
+          required: true
+          description: Unique identifier of the diagnostic suite run.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Status retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuiteExecutionResponse'
+        '404':
+          description: Diagnostic suite run ID not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      tags:
+        - System Diagnostics
+      summary: System Health Check
+      description: Runs real-time health checks across all system components, databases, and external integrations.
+      operationId: getHealthStatus
+      responses:
+        '200':
+          description: System is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+        '503':
+          description: One or more critical services are unhealthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /dependencies:
+    get:
+      tags:
+        - System Diagnostics
+      summary: Dependency Graph Analysis
+      description: Analyzes and returns the dependency graph of all microservices, databases, and external APIs.
+      operationId: getDependencyGraph
+      responses:
+        '200':
+          description: Dependency graph retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DependencyGraphResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /logs/analyze:
+    post:
+      tags:
+        - System Diagnostics
+      summary: Analyze System Logs
+      description: Scans and analyzes system logs for anomalies, errors, and security threats using advanced pattern matching.
+      operationId: analyzeLogs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogAnalysisRequest'
+      responses:
+        '200':
+          description: Log analysis completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogAnalysisResponse'
+        '400':
+          description: Invalid request parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /performance:
+    get:
+      tags:
+        - System Diagnostics
+      summary: Performance Monitoring Metrics
+      description: Retrieves real-time performance metrics including CPU, memory, network latency, and database query times.
+      operationId: getPerformanceMetrics
+      responses:
+        '200':
+          description: Performance metrics retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceMetricsResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /security/scan:
+    post:
+      tags:
+        - System Diagnostics
+      summary: Execute Security Scan
+      description: Triggers an on-demand security scan of configurations, open ports, SSL certificates, and IAM policies.
+      operationId: runSecurityScan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityScanRequest'
+      responses:
+        '200':
+          description: Security scan completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityScanResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /telemetry:
+    post:
+      tags:
+        - System Diagnostics
+      summary: Collect Telemetry Data
+      description: Ingests and processes telemetry data from distributed agents and client applications.
+      operationId: collectTelemetry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelemetryRequest'
+      responses:
+        '200':
+          description: Telemetry data ingested successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryResponse'
+        '400':
+          description: Invalid telemetry payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /database:
+    get:
+      tags:
+        - Infrastructure Diagnostics
+      summary: Database Diagnostics
+      description: Performs deep diagnostics on database connections, replication lag, index health, and transaction pools.
+      operationId: runDatabaseDiagnostics
+      responses:
+        '200':
+          description: Database diagnostics completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatabaseDiagnosticsResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /network:
+    get:
+      tags:
+        - Infrastructure Diagnostics
+      summary: Network Diagnostics
+      description: Probes internal and external network endpoints, DNS resolution, and firewall rules.
+      operationId: runNetworkDiagnostics
+      responses:
+        '200':
+          description: Network diagnostics completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkDiagnosticsResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /integrations:
+    get:
+      tags:
+        - Infrastructure Diagnostics
+      summary: Integration Diagnostics
+      description: Verifies connectivity and API health of third-party integrations (e.g., Citibank, Alpaca, Modern Treasury, Stripe).
+      operationId: runIntegrationDiagnostics
+      responses:
+        '200':
+          description: Integration diagnostics completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationDiagnosticsResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reports:
+    get:
+      tags:
+        - System Diagnostics
+      summary: List Diagnostic Reports
+      description: Retrieves a history of generated diagnostic reports and system status logs.
+      operationId: listDiagnosticReports
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Diagnostic reports retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiagnosticReportListResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  schemas:
+    TokenVerificationRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: The raw token string (JWT, JWE, or JWS) to be verified.
+        tokenType:
+          type: string
+          enum: [JWT, JWE, JWS, SAML2]
+          default: JWT
+          description: The expected format of the token.
+        expectedIssuer:
+          type: string
+          description: Optional issuer validation string.
+        expectedAudience:
+          type: string
+          description: Optional audience validation string.
+        clockSkewSeconds:
+          type: integer
+          default: 0
+          description: Allowed clock skew in seconds for expiration checks.
+
+    TokenVerificationResponse:
+      type: object
+      required:
+        - isValid
+        - checks
+      properties:
+        isValid:
+          type: boolean
+          description: Indicates if the token passed all cryptographic and structural checks.
+        claims:
+          type: object
+          description: Decoded claims extracted from the token if valid.
+          additionalProperties: true
+        signatureValid:
+          type: boolean
+          description: Indicates if the cryptographic signature is valid.
+        expired:
+          type: boolean
+          description: Indicates if the token has expired.
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiagnosticCheckResult'
+        errors:
+          type: array
+          items:
+            type: string
+          description: List of error messages encountered during verification.
+
+    PermissionEvaluationRequest:
+      type: object
+      required:
+        - principalId
+        - resource
+        - action
+      properties:
+        principalId:
+          type: string
+          description: Unique identifier of the user, service principal, or system.
+        roles:
+          type: array
+          items:
+            type: string
+          description: List of roles assigned to the principal.
+        resource:
+          type: string
+          description: The target resource identifier (e.g., urn:azure:gov:storage:vault-01).
+        action:
+          type: string
+          description: The action being attempted (e.g., read, write, delete, decrypt).
+        context:
+          type: object
+          description: Additional environmental context (IP address, multi-factor status, etc.).
+          additionalProperties: true
+
+    PermissionEvaluationResponse:
+      type: object
+      required:
+        - allowed
+        - evaluationSteps
+      properties:
+        allowed:
+          type: boolean
+          description: True if the action is permitted on the resource.
+        matchedPolicies:
+          type: array
+          items:
+            type: string
+          description: List of policy IDs that matched the evaluation criteria.
+        evaluationSteps:
+          type: array
+          items:
+            type: object
+            properties:
+              policyId:
+                type: string
+              ruleName:
+                type: string
+              decision:
+                type: string
+                enum: [Allow, Deny, NotApplicable]
+              reason:
+                type: string
+
+    IdpProbeRequest:
+      type: object
+      required:
+        - idpIdentifier
+        - protocol
+        - metadataUrl
+      properties:
+        idpIdentifier:
+          type: string
+          description: Unique identifier or name of the Identity Provider.
+        protocol:
+          type: string
+          enum: [OIDC, SAML2, OAuth2]
+          description: Protocol used by the Identity Provider.
+        metadataUrl:
+          type: string
+          format: uri
+          description: Well-known configuration or metadata endpoint URL.
+        timeoutMs:
+          type: integer
+          default: 5000
+          description: Network timeout in milliseconds.
+
+    IdpProbeResponse:
+      type: object
+      required:
+        - reachable
+        - latencyMs
+        - metadataValid
+      properties:
+        reachable:
+          type: boolean
+          description: True if the metadata endpoint responded with a 200 OK.
+        latencyMs:
+          type: integer
+          description: Round-trip time in milliseconds.
+        metadataValid:
+          type: boolean
+          description: True if the metadata payload is structurally valid and parsed correctly.
+        certificateExpiry:
+          type: string
+          format: date-time
+          description: Expiration date of the signing certificate found in the metadata.
+        endpointsDiscovered:
+          type: object
+          additionalProperties:
+            type: string
+          description: Key-value pairs of discovered endpoints (e.g., authorization_endpoint, token_endpoint).
+        errors:
+          type: array
+          items:
+            type: string
+
+    SuiteExecutionRequest:
+      type: object
+      properties:
+        runAsynchronously:
+          type: boolean
+          default: false
+          description: If true, the suite runs in the background and returns a run ID immediately.
+        targetEnvironment:
+          type: string
+          enum: [Development, Staging, Production, SovereignGov]
+          default: Production
+        categories:
+          type: array
+          items:
+            type: string
+            enum: [TokenValidation, IdpConnectivity, PolicyEvaluation, CryptographicIntegrity, NetworkLatency]
+          description: Specific categories to run. If empty, all categories are executed.
+
+    SuiteExecutionResponse:
+      type: object
+      required:
+        - suiteRunId
+        - status
+        - overallResult
+        - completedAt
+        - results
+      properties:
+        suiteRunId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [COMPLETED, FAILED]
+        overallResult:
+          type: string
+          enum: [PASS, WARN, FAIL]
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiagnosticCheckResult'
+
+    SuiteAsyncAcceptedResponse:
+      type: object
+      required:
+        - suiteRunId
+        - status
+        - checkStatusUrl
+      properties:
+        suiteRunId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [PENDING, RUNNING]
+        checkStatusUrl:
+          type: string
+          format: uri
+          description: URL to poll for execution status.
+
+    DiagnosticCheckResult:
+      type: object
+      required:
+        - checkName
+        - category
+        - status
+        - durationMs
+      properties:
+        checkName:
+          type: string
+          description: Name of the specific diagnostic check.
+        category:
+          type: string
+          description: Category of the check.
+        status:
+          type: string
+          enum: [PASS, WARN, FAIL, SKIPPED]
+        durationMs:
+          type: integer
+          description: Execution duration in milliseconds.
+        message:
+          type: string
+          description: Detailed message or error description.
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Arbitrary key-value pairs containing diagnostic telemetry.
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code.
+        message:
+          type: string
+          description: Human-readable error message.
+        details:
+          type: array
+          items:
+            type: string
+          description: Additional error details or stack trace snippets if in debug mode.
+
+    HealthCheckResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - services
+      properties:
+        status:
+          type: string
+          enum: [HEALTHY, DEGRADED, UNHEALTHY]
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [UP, DOWN, DEGRADED]
+              latencyMs:
+                type: integer
+              message:
+                type: string
+
+    DependencyGraphResponse:
+      type: object
+      required:
+        - nodes
+        - edges
+      properties:
+        nodes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              label:
+                type: string
+              type:
+                type: string
+                enum: [Service, Database, ExternalApi, Cache]
+              status:
+                type: string
+                enum: [HEALTHY, UNHEALTHY, UNKNOWN]
+        edges:
+          type: array
+          items:
+            type: object
+            properties:
+              from:
+                type: string
+              to:
+                type: string
+              relation:
+                type: string
+              latencyMs:
+                type: integer
+
+    LogAnalysisRequest:
+      type: object
+      required:
+        - startTime
+        - endTime
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        severity:
+          type: string
+          enum: [DEBUG, INFO, WARN, ERROR, CRITICAL]
+        filterPattern:
+          type: string
+        limit:
+          type: integer
+          default: 100
+
+    LogAnalysisResponse:
+      type: object
+      required:
+        - analyzedLogsCount
+        - anomaliesFound
+        - results
+      properties:
+        analyzedLogsCount:
+          type: integer
+        anomaliesFound:
+          type: integer
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              severity:
+                type: string
+              message:
+                type: string
+              anomalyScore:
+                type: number
+              category:
+                type: string
+
+    PerformanceMetricsResponse:
+      type: object
+      required:
+        - timestamp
+        - system
+        - process
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        system:
+          type: object
+          properties:
+            cpuUsagePercent:
+              type: number
+            memoryTotalBytes:
+              type: integer
+            memoryUsedBytes:
+              type: integer
+            networkRxBytes:
+              type: integer
+            networkTxBytes:
+              type: integer
+        process:
+          type: object
+          properties:
+            cpuUsagePercent:
+              type: number
+            memoryRssBytes:
+              type: integer
+            memoryHeapTotalBytes:
+              type: integer
+            memoryHeapUsedBytes:
+              type: integer
+            activeHandles:
+              type: integer
+            activeRequests:
+              type: integer
+
+    SecurityScanRequest:
+      type: object
+      properties:
+        scanType:
+          type: string
+          enum: [QUICK, FULL, COMPLIANCE]
+          default: QUICK
+        targetScope:
+          type: array
+          items:
+            type: string
+          description: Specific modules or resources to scan.
+
+    SecurityScanResponse:
+      type: object
+      required:
+        - scanId
+        - status
+        - vulnerabilitiesFound
+        - completedAt
+      properties:
+        scanId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [COMPLETED, FAILED]
+        vulnerabilitiesFound:
+          type: integer
+        completedAt:
+          type: string
+          format: date-time
+        findings:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              severity:
+                type: string
+                enum: [LOW, MEDIUM, HIGH, CRITICAL]
+              title:
+                type: string
+              description:
+                type: string
+              remediation:
+                type: string
+
+    TelemetryRequest:
+      type: object
+      required:
+        - events
+      properties:
+        events:
+          type: array
+          items:
+            type: object
+            properties:
+              eventId:
+                type: string
+                format: uuid
+              timestamp:
+                type: string
+                format: date-time
+              name:
+                type: string
+              properties:
+                type: object
+                additionalProperties: true
+
+    TelemetryResponse:
+      type: object
+      required:
+        - status
+        - processedCount
+      properties:
+        status:
+          type: string
+        processedCount:
+          type: integer
+
+    DatabaseDiagnosticsResponse:
+      type: object
+      required:
+        - status
+        - connectionPool
+        - replication
+      properties:
+        status:
+          type: string
+          enum: [HEALTHY, DEGRADED, UNHEALTHY]
+        connectionPool:
+          type: object
+          properties:
+            totalConnections:
+              type: integer
+            activeConnections:
+              type: integer
+            idleConnections:
+              type: integer
+            waitingRequests:
+              type: integer
+        replication:
+          type: object
+          properties:
+            lagSeconds:
+              type: integer
+            status:
+              type: string
+        slowQueries:
+          type: array
+          items:
+            type: object
+            properties:
+              query:
+                type: string
+              durationMs:
+                type: integer
+
+    NetworkDiagnosticsResponse:
+      type: object
+      required:
+        - status
+        - endpoints
+      properties:
+        status:
+          type: string
+          enum: [HEALTHY, DEGRADED, UNHEALTHY]
+        endpoints:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+              reachable:
+                type: boolean
+              latencyMs:
+                type: integer
+              dnsResolutionMs:
+                type: integer
+
+    IntegrationDiagnosticsResponse:
+      type: object
+      required:
+        - status
+        - integrations
+      properties:
+        status:
+          type: string
+          enum: [HEALTHY, DEGRADED, UNHEALTHY]
+        integrations:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              status:
+                type: string
+                enum: [UP, DOWN, DEGRADED]
+              latencyMs:
+                type: integer
+              lastChecked:
+                type: string
+                format: date-time
+
+    DiagnosticReportListResponse:
+      type: object
+      required:
+        - reports
+        - totalCount
+      properties:
+        reports:
+          type: array
+          items:
+            type: object
+            properties:
+              reportId:
+                type: string
+                format: uuid
+              timestamp:
+                type: string
+                format: date-time
+              overallResult:
+                type: string
+              summary:
+                type: string
+        totalCount:
+          type: integer
