@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { StrictMode, useState, useEffect, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
@@ -56,16 +56,16 @@ try {
   });
 
   if ((Sentry as any).metrics) {
-    Sentry.metrics.count('app_initialization', 1);
+    (Sentry as any).metrics.count('app_initialization', 1);
   }
 } catch (e) {
   console.warn("[Sovereign OS] Observability layer bypass triggered:", e);
 }
 
-const ConfigLoader = ({ children }: { children: React.ReactNode }) => {
-  const [pca, setPca] = React.useState<PublicClientApplication | null>(null);
+const ConfigLoader = ({ children }: { children: ReactNode }) => {
+  const [pca, setPca] = useState<PublicClientApplication | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       const currentOrigin = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
         ? window.location.origin
@@ -136,7 +136,7 @@ const render = () => {
     
     const root = ReactDOM.createRoot(container);
     root.render(
-      <React.StrictMode>
+      <StrictMode>
         <ErrorBoundary>
           <ConfigLoader>
             <FirebaseProvider>
@@ -148,7 +148,7 @@ const render = () => {
             </FirebaseProvider>
           </ConfigLoader>
         </ErrorBoundary>
-      </React.StrictMode>
+      </StrictMode>
     );
     console.log("[Sovereign OS] Synthesis Active.");
   } catch (err) {
