@@ -96,6 +96,12 @@ export interface ReportSummaryMetrics {
   transactionCount: number;
   anomalyCount: number;
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  burnRate?: number;
+  runwayDays?: number;
+  averageTransactionSize: number;
+  topCounterparty?: { name: string; amount: number; count: number };
+  topCategory?: { name: string; amount: number; count: number };
+  anomalyRatio: number;
 }
 
 export interface GeneratedReport {
@@ -121,6 +127,23 @@ export interface GeneratedReport {
  * from AI-processed CAMT financial statement data.
  */
 export class CamtReportGenerator {
+  /**
+   * Validates the processed CAMT data structure.
+   */
+  public static validateData(data: any): string[] {
+    const errors: string[] = [];
+    if (!data) {
+      errors.push('Data is null or undefined');
+      return errors;
+    }
+    if (!data.statementId) errors.push('Missing statementId');
+    if (!data.accountIban) errors.push('Missing accountIban');
+    if (!data.accountCurrency) errors.push('Missing accountCurrency');
+    if (!Array.isArray(data.balances)) errors.push('balances must be an array');
+    if (!Array.isArray(data.transactions)) errors.push('transactions must be an array');
+    return errors;
+  }
+
   /**
    * Primary entry point to generate a comprehensive report from processed CAMT data.
    */
@@ -232,6 +255,9 @@ export class CamtReportGenerator {
     let totalOutflow = 0;
     let anomalyCount = 0;
 
+    const counterpartyMap = new Map<string, { amount: number; count: number }>();
+    const categoryMap = new Map<string, { amount: number; count: number }>();
+
     for (const tx of data.transactions) {
       if (tx.creditDebitIndicator === 'CRDT') {
         totalInflow += tx.amount;
@@ -241,6 +267,20 @@ export class CamtReportGenerator {
       if (tx.isAnomaly) {
         anomalyCount++;
       }
+
+      // Track counterparties
+      const cp = tx.counterpartyName || 'Unknown';
+      const cpData = counterpartyMap.get(cp) || { amount: 0, count: 0 };
+      cpData.amount += tx.amount;
+      cpData.count += 1;
+      counterpartyMap.set(cp, cpData);
+
+      // Track categories
+      const cat = tx.category || 'Uncategorized';
+      const catData = categoryMap.get(cat) || { amount: 0, count: 0 };
+      catData.amount += tx.amount;
+      catData.count += 1;
+      categoryMap.set(cat, catData);
     }
 
     const openingBalObj = data.balances.find((b) => b.type === 'OPBD' || b.type === 'PRCD') || data.balances[0];
@@ -249,15 +289,55 @@ export class CamtReportGenerator {
     const openingBalance = openingBalObj ? (openingBalObj.creditDebitIndicator === 'DBIT' ? -openingBalObj.amount : openingBalObj.amount) : 0;
     const closingBalance = closingBalObj ? (closingBalObj.creditDebitIndicator === 'DBIT' ? -closingBalObj.amount : closingBalObj.amount) : 0;
 
+    const transactionCount = data.transactions.length;
+    const averageTransactionSize = transactionCount > 0 ? (totalInflow + totalOutflow) / (2 * transactionCount) : 0;
+    const anomalyRatio = transactionCount > 0 ? (anomalyCount / transactionCount) * 100 : 0;
+
+    // Find top counterparty
+    let topCounterparty: { name: string; amount: number; count: number } | undefined;
+    for (const [name, stats] of counterpartyMap.entries()) {
+      if (name !== 'Unknown' && (!topCounterparty || stats.amount > topCounterparty.amount)) {
+        topCounterparty = { name, ...stats };
+      }
+    }
+
+    // Find top category
+    let topCategory: { name: string; amount: number; count: number } | undefined;
+    for (const [name, stats] of categoryMap.entries()) {
+      if (name !== 'Uncategorized' && (!topCategory || stats.amount > topCategory.amount)) {
+        topCategory = { name, ...stats };
+      }
+    }
+
+    // Calculate Burn Rate and Runway
+    const netCashFlow = totalInflow - totalOutflow;
+    let burnRate: number | undefined;
+    let runwayDays: number | undefined;
+
+    if (netCashFlow < 0) {
+      const uniqueDates = new Set(data.transactions.map((t) => t.bookingDate?.split('T')[0]).filter(Boolean));
+      const daysCount = uniqueDates.size || 30;
+      burnRate = Math.abs(netCashFlow) / daysCount;
+      if (closingBalance > 0 && burnRate > 0) {
+        runwayDays = closingBalance / burnRate;
+      }
+    }
+
     return {
       totalInflow,
       totalOutflow,
-      netCashFlow: totalInflow - totalOutflow,
+      netCashFlow,
       openingBalance,
       closingBalance,
-      transactionCount: data.transactions.length,
+      transactionCount,
       anomalyCount,
       riskLevel: data.aiAnalysis?.riskAssessment?.level || 'low',
+      burnRate: burnRate ? Math.round(burnRate * 100) / 100 : undefined,
+      runwayDays: runwayDays ? Math.round(runwayDays) : undefined,
+      averageTransactionSize: Math.round(averageTransactionSize * 100) / 100,
+      topCounterparty,
+      topCategory,
+      anomalyRatio: Math.round(anomalyRatio * 100) / 100,
     };
   }
 
@@ -352,9 +432,27 @@ export class CamtReportGenerator {
     lines.push(`| **Total Inflow** | 🟢 ${this.formatCurrency(metrics.totalInflow, currency)} |`);
     lines.push(`| **Total Outflow** | 🔴 ${this.formatCurrency(metrics.totalOutflow, currency)} |`);
     lines.push(`| **Net Cash Flow** | ${metrics.netCashFlow >= 0 ? '🟢' : '🔴'} ${this.formatCurrency(metrics.netCashFlow, currency)} |`);
-    lines.push(`| **Anomalies Detected** | ${metrics.anomalyCount > 0 ? '⚠️ ' + metrics.anomalyCount : '✅ 0'} |`);
+    lines.push(`| **Average Transaction Size** | ${this.formatCurrency(metrics.averageTransactionSize, currency)} |`);
+    if (metrics.burnRate !== undefined) {
+      lines.push(`| **Daily Burn Rate** | ⚠️ ${this.formatCurrency(metrics.burnRate, currency)} / day |`);
+    }
+    if (metrics.runwayDays !== undefined) {
+      lines.push(`| **Estimated Runway** | ⏳ ${metrics.runwayDays} days |`);
+    }
+    lines.push(`| **Anomalies Detected** | ${metrics.anomalyCount > 0 ? '⚠️ ' + metrics.anomalyCount + ` (${metrics.anomalyRatio}%)` : '✅ 0'} |`);
     lines.push(`| **Risk Assessment** | \`${metrics.riskLevel.toUpperCase()}\` |`);
     lines.push('');
+
+    if (metrics.topCounterparty || metrics.topCategory) {
+      lines.push('### 🔍 Activity Highlights');
+      if (metrics.topCounterparty) {
+        lines.push(`- **Top Counterparty:** \`${metrics.topCounterparty.name}\` (${this.formatCurrency(metrics.topCounterparty.amount, currency)} across ${metrics.topCounterparty.count} transactions)`);
+      }
+      if (metrics.topCategory) {
+        lines.push(`- **Top Category:** \`${metrics.topCategory.name}\` (${this.formatCurrency(metrics.topCategory.amount, currency)} across ${metrics.topCategory.count} transactions)`);
+      }
+      lines.push('');
+    }
 
     // Actionable Insights
     if (data.aiAnalysis?.insights && data.aiAnalysis.insights.length > 0) {
@@ -485,6 +583,29 @@ export class CamtReportGenerator {
           <div class="metric-value" style="color: #e53e3e;">-${this.formatCurrency(metrics.totalOutflow, currency)}</div>
         </div>
       </div>
+      
+      <div class="grid" style="margin-top: 1rem;">
+        <div class="metric">
+          <div class="metric-label">Avg Transaction Size</div>
+          <div class="metric-value">${this.formatCurrency(metrics.averageTransactionSize, currency)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Anomaly Ratio</div>
+          <div class="metric-value" style="color: ${metrics.anomalyCount > 0 ? '#dd6b20' : 'inherit'};">${metrics.anomalyRatio}%</div>
+        </div>
+        ${metrics.burnRate !== undefined ? `
+        <div class="metric">
+          <div class="metric-label">Daily Burn Rate</div>
+          <div class="metric-value" style="color: #e53e3e;">${this.formatCurrency(metrics.burnRate, currency)}</div>
+        </div>
+        ` : ''}
+        ${metrics.runwayDays !== undefined ? `
+        <div class="metric">
+          <div class="metric-label">Estimated Runway</div>
+          <div class="metric-value" style="color: #dd6b20;">${metrics.runwayDays} Days</div>
+        </div>
+        ` : ''}
+      </div>
     </div>
 
     ${
@@ -575,7 +696,14 @@ export class CamtReportGenerator {
     lines.push(`  Total Inflow    : ${this.formatCurrency(metrics.totalInflow, currency)}`);
     lines.push(`  Total Outflow   : ${this.formatCurrency(metrics.totalOutflow, currency)}`);
     lines.push(`  Net Cash Flow   : ${this.formatCurrency(metrics.netCashFlow, currency)}`);
-    lines.push(`  Anomalies Found : ${metrics.anomalyCount}`);
+    lines.push(`  Avg Tx Size     : ${this.formatCurrency(metrics.averageTransactionSize, currency)}`);
+    if (metrics.burnRate !== undefined) {
+      lines.push(`  Daily Burn Rate : ${this.formatCurrency(metrics.burnRate, currency)}`);
+    }
+    if (metrics.runwayDays !== undefined) {
+      lines.push(`  Est. Runway     : ${metrics.runwayDays} days`);
+    }
+    lines.push(`  Anomalies Found : ${metrics.anomalyCount} (${metrics.anomalyRatio}%)`);
     lines.push(`  Risk Level      : ${metrics.riskLevel.toUpperCase()}`);
     lines.push(subDivider);
     lines.push('');
@@ -616,3 +744,5 @@ export class CamtReportGenerator {
     }
   }
 }
+
+export default CamtReportGenerator;
