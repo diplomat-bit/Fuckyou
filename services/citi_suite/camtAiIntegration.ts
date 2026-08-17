@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type, Schema } from '@google/genai';
+import { loadSecrets } from '../serverHelpers';
 
 // ============================================================================
 // Types & Interfaces
@@ -159,6 +160,11 @@ export class CamtAiBridge {
   private defaultModel: string;
 
   constructor(options: CamtAiBridgeOptions = {}) {
+    try {
+      loadSecrets();
+    } catch (e) {
+      console.warn('Failed to load secrets via loadSecrets helper:', e);
+    }
     const apiKey = options.apiKey || process.env.GEMINI_API_KEY || '';
     if (!apiKey) {
       console.warn('CamtAiBridge initialized without an explicit API key. System will rely on default client environment configuration.');
@@ -517,4 +523,14 @@ ${JSON.stringify(this.sanitizeCamtForPrompt(camtData), null, 2)}
 
 export function createCamtAiBridge(options?: CamtAiBridgeOptions): CamtAiBridge {
   return new CamtAiBridge(options);
+}
+
+export function isFullyReconciled(report: ReconciliationReport): boolean {
+  return report.summary.unmatchedCount === 0 && report.summary.discrepancyCount === 0;
+}
+
+export function getHighRiskAnomalies(report: AnomalyDetectionReport): AnomalyItem[] {
+  return report.anomalies.filter(
+    (anomaly) => anomaly.riskLevel === 'HIGH' || anomaly.riskLevel === 'CRITICAL'
+  );
 }
