@@ -1,557 +1,1053 @@
-import React, { useState, useEffect } from 'react';
-import { Building2, Globe, Send, CheckCircle2, ShieldCheck, Search, FileCode, Folder } from 'lucide-react';
-import { citiAlpacaBridgeService, CitiAlpacaSyncRecord } from '../../services/CitiAlpacaBridgeService';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { 
+  ArrowLeftRight, 
+  TrendingUp, 
+  Shield, 
+  Activity, 
+  Cpu, 
+  Plus, 
+  Trash2, 
+  CheckCircle2, 
+  XCircle, 
+  AlertTriangle, 
+  RefreshCw, 
+  DollarSign, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  Settings, 
+  FileText, 
+  Layers, 
+  Zap, 
+  Clock, 
+  Building, 
+  Wallet,
+  ChevronRight,
+  Lock,
+  Eye,
+  Check,
+  Info,
+  Sliders,
+  Database
+} from 'lucide-react';
 
-const SYSTEM_PATHS = [
-  "00_Master_Compiled_Executive_Order/Chapter_01_The_Citibank_Lobby.md",
-  "00_Master_Compiled_Executive_Order/Chapter_02_The_EAC_Briefing.md",
-  "00_Master_Compiled_Executive_Order/Chapter_03_The_DHS_Server_Room.md",
-  "00_Master_Compiled_Executive_Order/Chapter_04_The_Military_Fund_Audit.md",
-  "00_Master_Compiled_Executive_Order/Chapter_05_The_Geneva_Account.md",
-  "00_Master_Compiled_Executive_Order/Chapter_06_The_Task_Force_Confrontation.md",
-  "00_Master_Compiled_Executive_Order/Chapter_07_The_Mobile_Verification_Launch.md",
-  "00_Master_Compiled_Executive_Order/Dossier_01_UCC_Financial_Loophole.md",
-  "00_Master_Compiled_Executive_Order/Dossier_02_SAVE_API_Vulnerabilities.md",
-  "00_Master_Compiled_Executive_Order/Dossier_03_Iran_Framework_Compliance.md",
-  "00_Master_Compiled_Executive_Order/Dossier_04_Military_Fund_Allocation.md",
-  "00_Master_Compiled_Executive_Order/Dossier_05_DNA_Testing_Consular_Protocols.md",
-  "00_Master_Compiled_Executive_Order/Dossier_06_Voter_Roll_Purge_Metrics.md",
-  "00_Master_Compiled_Executive_Order/Dossier_07_Tribal_Liaison_Integration.md",
-  "00_Master_Compiled_Executive_Order/Dossier_08_Paperwork_Reduction_Exemption.md",
-  "00_Master_Compiled_Executive_Order/Dossier_09_Private_Right_of_Action.md",
-  "00_Master_Compiled_Executive_Order/Dossier_10_Department_of_War_Archival_Access.md",
-  "00_Master_Compiled_Executive_Order/Dossier_11_Mobile_Unit_Deployment_Logistics.md",
-  "00_Master_Compiled_Executive_Order/Dossier_12_Task_Force_Sunset_Procedures.md",
-  "00_Master_Compiled_Executive_Order/Dossier_13_Vector_Collapse_Protocol.md",
-  "00_Master_Compiled_Executive_Order/Dossier_14_Citibank_Demo_Business_Structure.md",
-  "App.tsx",
-  "Book/Ok.md",
-  "Combined_sLegislative_Bill/chapters/chapter_01_the_loophole.md",
-  "Combined_sLegislative_Bill/chapters/chapter_02_political_decay.md",
-  "Combined_sLegislative_Bill/chapters/chapter_03_the_decision.md",
-  "Combined_sLegislative_Bill/characters/antagonist_leverage_analysis.md",
-  "Combined_sLegislative_Bill/characters/protagonist_profile.md",
-  "Combined_sLegislative_Bill/dossiers/iranian_cyber_threat_matrix.md",
-  "Combined_sLegislative_Bill/dossiers/mtls_ai_bank_architecture.md",
-  "Combined_sLegislative_Bill/dossiers/sovereign_id_cryptography.md",
-  "Combined_sLegislative_Bill/narrative/scene_01_banking_loophole.md",
-  "Combined_sLegislative_Bill/narrative/scene_02_bureaucratic_signing.md",
-  "Combined_sLegislative_Bill/narrative/scene_03_system_failure.md",
-  "Combined_sLegislative_Bill/narrative/scene_04_political_decay.md",
-  "Combined_sLegislative_Bill/narrative/scene_05_corruption_observation.md",
-  "Combined_sLegislative_Bill/narrative/scene_06_threats_closing_in.md",
-  "Combined_sLegislative_Bill/narrative/scene_07_high_stakes_decision.md",
-  "Combined_sLegislative_Bill/narrative/scene_08_antagonist_pushout.md",
-  "Combined_sLegislative_Bill/narrative/scene_09_real_time_execution.md",
-  "Combined_sLegislative_Bill/technical/database_synchronization_protocol.md",
-  "Combined_sLegislative_Bill/technical/hardware_secure_element_spec.md",
-  "Combined_sLegislative_Bill/technical/zero_knowledge_proofs_spec.md",
-  "Combined_sLegislative_Bill/worldbuilding/department_of_war_archives_spec.md",
-  "Combined_sLegislative_Bill/worldbuilding/reconciliation_3_0_framework.md",
-  "Combined_sLegislative_Bill/worldbuilding/thirty_five_sectors_analysis.md",
-  "Google/AuthManager.ts",
-  "Google/AutoScaler.ts",
-  "Google/BackupService.ts",
-  "Google/BigQueryEmulator.ts",
-  "Google/BillingTracker.ts",
-  "Google/CDNReplacement.ts",
-  "Google/CloudFunctionsShim.ts",
-  "Google/CloudReplacementEngine.ts",
-  "Google/ComputeOrchestrator.ts",
-  "Google/DatabaseBridge.ts",
-  "Google/DeploymentPipeline.ts",
-  "Google/IAMPolicyEngine.ts",
-  "Google/MonitoringService.ts",
-  "Google/NetworkGateway.ts",
-  "Google/PubSubLocal.ts",
-  "Google/SecretVault.ts",
-  "Google/ServiceMesh.ts",
-  "Google/StorageAbstraction.ts",
-  "Google/VertexAIProxy.ts",
-  "Google/VpcManager.ts",
-  "IMG_5610.webp",
-  "LICENSE",
-  "README.md",
-  "README_v2.md",
-  "TRUST.md",
-  "api/AppRegistry/AppBillingBridge.ts",
-  "api/AppRegistry/AppDependencyResolver.ts",
-  "api/AppRegistry/AppLifecycleManager.ts",
-  "api/AppRegistry/AppManifestParser.ts",
-  "api/AppRegistry/AppMetadataAggregator.ts",
-  "api/AppRegistry/AppPermissionEngine.ts",
-  "api/AppRegistry/AppRegistryOrchestrator.ts",
-  "api/AppRegistry/AppWebhookDispatcher.ts",
-  "api/AppRegistry/config/EcosystemConfig.ts",
-  "api/AppRegistry/index.ts",
-  "api/AppRegistry/middleware/AppRegistryAuth.ts",
-  "api/AppRegistry/routes/AppRegistryRoutes.ts",
-  "api/AppRegistry/services/AppDeploymentService.ts",
-  "api/AppRegistry/services/AppIntegrationsBridge.ts",
-  "api/AppRegistry/services/AppMetricsCollector.ts",
-  "api/AppRegistry/services/AppStorageVault.ts",
-  "api/AppRegistry/types/AppManifest.ts",
-  "api/AppRegistry/types/AppRuntime.ts",
-  "api/AppRegistry/utils/AppSecurityAuditor.ts",
-  "api/AppRegistry/utils/ManifestValidator.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section10_sovereign_wealth_fund_527.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section1_obama_public_financing.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section2_bear_stearns_arrests.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section3_spaceflight_kosmos.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section4_citi_connection_contagion.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section5_goldman_sachs_downgrade.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section6_cfo_gary_crittenden.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section7_structured_products_basket.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section8_the_toast_email.ts",
-  "api/Obama Opts Out Of Public Financing (1)/section9_citibank_demo_business.ts",
-  "api/PortalDiagnostics/DependencyGraph.ts",
-  "api/PortalDiagnostics/DiagnosticsOrchestrator.ts",
-  "api/PortalDiagnostics/ErrorReporter.ts",
-  "api/PortalDiagnostics/HealthCheckService.ts",
-  "api/PortalDiagnostics/LogAnalyzer.ts",
-  "api/PortalDiagnostics/PerformanceMonitor.ts",
-  "api/PortalDiagnostics/SecurityScanner.ts",
-  "api/PortalDiagnostics/TelemetryCollector.ts",
-  "api/PortalDiagnostics/config/DiagnosticConfig.ts",
-  "api/PortalDiagnostics/index.ts",
-  "api/PortalDiagnostics/middleware/DiagnosticAuth.ts",
-  "api/PortalDiagnostics/routes/DiagnosticRoutes.ts",
-  "api/PortalDiagnostics/services/AuthDiagnostics.ts",
-  "api/PortalDiagnostics/services/DatabaseDiagnostics.ts",
-  "api/PortalDiagnostics/services/IntegrationDiagnostics.ts",
-  "api/PortalDiagnostics/services/NetworkDiagnostics.ts",
-  "api/PortalDiagnostics/types/DiagnosticReport.ts",
-  "api/PortalDiagnostics/types/SystemStatus.ts",
-  "api/PortalDiagnostics/utils/AlertDispatcher.ts",
-  "api/PortalDiagnostics/utils/Formatters.ts",
-  "api/acquisitions.ts",
-  "api/ai.ts",
-  "api/alpaca.ts",
-  "api/alpacaCollateral.ts",
-  "api/azure.ts",
-  "api/azureGovCompliance.ts",
-  "api/citi.ts",
-  "api/config.ts",
-  "api/crypto-strategy.ts",
-  "api/fapi.ts",
-  "api/google-chat.ts",
-  "api/government-gateway.ts",
-  "api/index.ts",
-  "api/middleware/auths.ts",
-  "api/middleware/rateLimiter.ts",
-  "api/modern-treasury.ts",
-  "api/order/order_01_02.md",
-  "api/order/order_03_04.md",
-  "api/order/order_05_06.md",
-  "api/order/order_07_08.md",
-  "api/order/order_09_10.md",
-  "api/order/order_11_12.md",
-  "api/order/order_13_14.md",
-  "api/order/order_15_16.md",
-  "api/order/order_17_18.md",
-  "api/order/order_19_20.md",
-  "api/order/order_21_22.md",
-  "api/order/order_23_24.md",
-  "api/order/order_25_26.md",
-  "api/order/order_27_28.md",
-  "api/order/order_29_30.md",
-  "api/order/order_31_32.md",
-  "api/order/order_33_34.md",
-  "api/order/order_35_36.md",
-  "api/order/order_37_38.md",
-  "api/order/order_39_40.md",
-  "api/order/order_41_42.md",
-  "api/order/order_43_44.md",
-  "api/order/section1_digital_asset_and_cybersecurity.ts",
-  "api/order/section2_ledger_framework_and_arbitrage.ts",
-  "api/order/section3_consensus_and_fapi_conformance.ts",
-  "api/order/section4_quantum_secured_and_revocation.ts",
-  "api/plaid.ts",
-  "api/real-estate.ts",
-  "api/routes/acquisitions-orchestrator.ts",
-  "api/routes/admin.ts",
-  "api/routes/audit.ts",
-  "api/routes/collateral.ts",
-  "api/routes/identity.ts",
-  "api/routes/market.ts",
-  "api/routes/notifications.ts",
-  "api/routes/treasury.ts",
-  "api/routes/webhooks.ts",
-  "api/sovereign.ts",
-  "api/stripe.ts",
-  "api/tax-liens.ts",
-  "api/tqqq-strategy.ts",
-  "api/types/sovereign.ts",
-  "api/utils/ai-agent-factory.ts",
-  "api/utils/complianceEngine.ts",
-  "api/utils/crypto-bridge.ts",
-  "api/utils/geo-spatial.ts",
-  "api/utils/ledgerSync.ts",
-  "api/utils/logger.ts",
-  "api/utils/math-engine.ts",
-  "api/utils/vault.ts",
-  "apps/audit_compliance_tracker/app.py",
-  "apps/azure_ad_app_auditor/app.py",
-  "apps/b2b_audit_trail_generator/app.py",
-  "apps/b2b_cash_flow_stress_tester/app.py",
-  "apps/b2b_corporate_liquidity_forecaster/app.py",
-  "apps/b2b_interest_rate_optimizer/app.py",
-  "apps/b2b_portfolio_wealth_analyzer/app.py",
-  "apps/b2b_routing_decryptor_validator/app.py",
-  "apps/b2b_routing_number_resolver/app.py",
-  "apps/b2b_transaction_categorizer/app.py",
-  "apps/balance_transfer_analytics_dashboard/app.py",
-  "apps/balance_transfer_batch_scheduler/app.py",
-  "apps/balance_transfer_calculator/app.py",
-  "apps/balance_transfer_compliance_auditor/app.py",
-  "apps/balance_transfer_disbursement_orchestrator/app.py",
-  "apps/balance_transfer_eligibility_checker/app.py",
-  "apps/balance_transfer_interest_simulator/app.py",
-  "apps/balance_transfer_lead_generator/app.py",
-  "apps/broker_compliance_trade_auditor/app.py",
-  "apps/broker_order_execution_simulator/app.py",
-  "apps/camt053_balance_reconciler/app.py",
-  "apps/camt053_balance_reconciler/reconciler.py",
-  "apps/camt053_mock_generator/app.py",
-  "apps/camt053_mock_generator/generator.py",
-  "apps/camt053_shared/models.py",
-  "apps/camt053_statement_parser/app.py",
-  "apps/camt053_statement_parser/utils.py",
-  "apps/camt053_transaction_exporter/app.py",
-  "apps/camt053_transaction_exporter/exporter.py",
-  "apps/card_activation_simulator/app.py",
-  "apps/card_function_access_controller/app.py",
-  "apps/card_lifecycle_compliance_checker/app.py",
-  "apps/card_listing_mock_server/app.py",
-  "apps/card_merchant_category_classifier/app.py",
-  "apps/card_outstanding_balance_tracker/app.py",
-  "apps/card_pin_hasher_validator/app.py",
-  "apps/card_spend_limit_manager/app.py",
-  "apps/card_test_suite_conformance_analyzer/app.py",
-  "apps/card_tokenization_service/app.py",
-  "apps/citi_account_anomaly_detector/app.py",
-  "apps/citi_account_excel_parser/app.py",
-  "apps/citi_account_interest_accrual_simulator/app.py",
-  "apps/citi_account_kyc_risk_profiler/app.py",
-  "apps/citiconnect_integration_gateway/app.py",
-  "apps/citizenship_verification_gateway/app.py",
-  "apps/credit_card_simulator/app.py",
-  "apps/credit_limit_utilization_monitor/app.py",
-  "apps/credit_risk_analyzer/app.py",
-  "apps/cross_cloud_federation_manager/app.py",
-  "apps/cvv_decryption_mock_service/app.py",
-  "apps/election_integrity_dashboard/app.py",
-  "apps/fedramp_compliance_monitor/app.py",
-  "apps/financial_regulatory_guardrail/app.py",
-  "apps/financial_statement_verifier/app.py",
-  "apps/github_audit_sync_agent/app.py",
-  "apps/military_fund_allocator/app.py",
-  "apps/multi_currency_balance_consolidator/app.py",
-  "apps/pqc_crypto_bridge_simulator/app.py",
-  "apps/schema_catalog_custom_registry/app.py",
-  "apps/schema_catalog_search_engine/app.py",
-  "apps/schema_conformance_audit_tool/app.py",
-  "apps/schema_validator_orchestrator/app.py",
-  "apps/service_principal_provisioner/app.py",
-  "apps/statement_reconciliation_portal/app.py",
-  "apps/supplementary_card_orchestrator/app.py",
-  "apps/treasury_reconciliation_engine/app.py",
-  "apps/voter_registration_portal/app.py",
-  "book/Ok",
-  "bun.lock",
-  "check_sql.ts",
-  "clarity/part01_legislative_intent.ts",
-  "clarity/part02_definitions_registry.ts",
-  "clarity/part03_sec_cftc_jurisdiction.ts",
-  "clarity/part04_decentralization_certification.ts",
-  "clarity/part05_digital_commodity_exchanges.ts",
-  "clarity/part06_broker_dealer_requirements.ts",
-  "clarity/part07_stablecoin_issuance_framework.ts",
-  "clarity/part08_market_manipulation_prevention.ts",
-  "clarity/part09_customer_protection_custody.ts",
-  "clarity/part10_clearing_settlement_protocols.ts",
-  "clarity/part11_international_coordination.ts",
-  "clarity/part12_anti_money_laundering_kyc.ts",
-  "clarity/part13_tax_reporting_compliance.ts",
-  "clarity/part14_smart_contract_auditing.ts",
-  "clarity/part15_disclosure_requirements.ts",
-  "clarity/part16_alpaca_integration_bridge.ts",
-  "clarity/part17_citi_sovereign_ledger_bridge.ts",
-  "clarity/part18_modern_treasury_settlement.ts",
-  "clarity/part19_crypto_strategy_validator.ts",
-  "clarity/part20_compliance_audit_trail.ts",
-  "clarity/part21_risk_assessment_matrix.ts",
-  "clarity/part22_government_gateway_reporting.ts",
-  "clarity/part23_tokenization_compliance_engine.ts",
-  "clarity/part24_ai_compliance_agent.ts",
-  "clarity/part25_system_orchestrator.ts",
-  "components/AIAdStudioView.tsx",
-  "components/AIAdStudioView.tsx.md",
-  "components/AIAdvisorView.tsx",
-  "components/AIAdvisorView.tsx.md",
-  "components/AIInsights.tsx",
-  "components/AIInsights.tsx.md",
-  "components/APIIntegrationView.tsx",
-  "components/APIIntegrationView.tsx.md",
-  "components/APIKeysView.tsx",
-  "components/AdministrationAudit.tsx",
-  "components/AlpacaBrokerView.tsx",
-  "components/AquariusArchitectView.tsx",
-  "components/AquariusAuditorView.tsx",
-  "components/AquariusCreativeSuite.tsx",
-  "components/AquariusDashboard.tsx",
-  "components/AquariusGhostView.tsx",
-  "components/AquariusInstitutionalHub.tsx",
-  "components/AquariusLiveVoice.tsx",
-  "components/AriaComms.tsx",
-  "components/AstraDBQuickstart.tsx",
-  "components/AzureAppsView.tsx",
-  "components/AzureAppsView.tsx.md",
-  "components/BalanceSummary.tsx",
-  "components/BalanceSummary.tsx.md",
-  "components/BillingIdentityView.tsx",
-  "components/BudgetsView.tsx",
-  "components/BudgetsView.tsx.md",
-  "components/Card.tsx",
-  "components/Card.tsx.md",
-  "components/CardCustomizationView.tsx",
-  "components/CardCustomizationView.tsx.md",
-  "components/CitiConnectInitiation.tsx",
-  "components/CitiConnectInquiry.tsx",
-  "components/CitiConnectNotifications.tsx",
-  "components/CitiDecryptionUtility.tsx",
-  "components/CitiGateway.tsx",
-  "components/CitiPartnerHub.tsx",
-  "components/CitiSovereignLedger.tsx",
-  "components/CitiTreasuryHub.tsx",
-  "components/CitiUkInternationalPayments.tsx",
-  "components/ContractorLobbyingList.tsx",
-  "components/CorporateCommandView.tsx",
-  "components/CreditHealthView.tsx",
-  "components/CryptoView.tsx",
-  "components/CryptoView.tsx.md",
-  "components/Dashboard.tsx",
-  "components/Dashboard.tsx.md",
-  "components/DataIngestView.tsx",
-  "components/DeveloperView.tsx",
-  "components/EntraSwarmManager.tsx",
-  "components/ErrorBoundary.tsx",
-  "components/FeaturePalette.tsx",
-  "components/FinancialDemocracyView.tsx",
-  "components/FinancialGoalsView.tsx",
-  "components/FleetAppView.tsx",
-  "components/FleetAppView.tsx.md",
-  "components/FloridaVoterView.tsx",
-  "components/FlowController.tsx",
-  "components/FlowController.tsx.md",
-  "components/GasPriceCorrelation.tsx",
-  "components/GcpInventoryView.tsx",
-  "components/GeminiKeyModal.tsx",
-  "components/GeminiLivePortal.tsx",
-  "components/GlobalLedgerView.tsx",
-  "components/GoalsView.tsx",
-  "components/GoalsView.tsx.md",
-  "components/GriffinMcpView.tsx",
-  "components/GrowthNexus.tsx",
-  "components/Header.tsx",
-  "components/Header.tsx.md",
-  "components/HoKTokenMint.tsx",
-  "components/IdentityCitadelView.tsx",
-  "components/IdentityCitadelView.tsx.md",
-  "components/ImpactTracker.tsx",
-  "components/ImpactTracker.tsx.md",
-  "components/ImpeachmentGenerator.tsx",
-  "components/InjusticeDashboard.tsx",
-  "components/IntegrationsMarketplaceView.tsx",
-  "components/IntelligenceHubView.tsx",
-  "components/InvestmentPortfolio.tsx",
-  "components/InvestmentPortfolio.tsx.md",
-  "components/InvestmentsPortfolio.tsx",
-  "components/InvestmentsView.tsx",
-  "components/InvestmentsView.tsx.md",
-  "components/JweJwsVerifier.tsx",
-  "components/KryptoBridgeWidget.tsx",
-  "components/MachineView.tsx",
-  "components/MarketingAutomationView.tsx",
-  "components/MarketplaceView.tsx",
-  "components/ModernTreasuryLedgerHub.tsx",
-  "components/NFCValidator.tsx",
-  "components/NeuralToolsView.tsx",
-  "components/NexusBuilder.tsx",
-  "components/OFXStatementViewer.tsx",
-  "components/OpenBankingFapiView.tsx",
-  "components/OpenBankingView.tsx"
-];
+// Interfaces
+interface CitiAccount {
+  id: string;
+  name: string;
+  accountNumber: string;
+  balance: number;
+  currency: string;
+  type: string;
+}
 
-export const CitiAlpacaBridgeView: React.FC = () => {
-  const accountId = 'b9b19618-22dd-4e80-8432-fc9e1ba0b27d';
-  const [records, setRecords] = useState<CitiAlpacaSyncRecord[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [wireAmount, setWireAmount] = useState('100000.00');
-  const [statusMsg, setStatusMsg] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+interface AlpacaAccount {
+  id: string;
+  name: string;
+  accountNumber: string;
+  portfolioValue: number;
+  buyingPower: number;
+  cash: number;
+  currency: string;
+}
 
-  useEffect(() => {
-    loadCitiData();
-  }, []);
+interface SweepRule {
+  id: string;
+  name: string;
+  sourceId: string;
+  destId: string;
+  triggerType: 'citi_above' | 'citi_below' | 'alpaca_below';
+  triggerAmount: number;
+  actionType: 'sweep_excess' | 'recall_fixed';
+  actionAmount: number;
+  status: 'active' | 'paused';
+}
 
-  const loadCitiData = async () => {
-    setLoading(true);
+interface BridgeTransaction {
+  id: string;
+  date: string;
+  amount: number;
+  direction: 'citi_to_alpaca' | 'alpaca_to_citi';
+  sourceAccount: string;
+  destAccount: string;
+  citiStatus: 'ACSP' | 'PDNG' | 'RJCT' | 'INIT';
+  alpacaStatus: 'COMPLETE' | 'QUEUED' | 'FAILED' | 'PROCESSING';
+  transferType: 'ACH' | 'WIRE' | 'INSTANT';
+  e2eId: string;
+}
+
+export default function CitiAlpacaBridgeView() {
+  // Mock Data State
+  const [citiAccounts, setCitiAccounts] = useState<CitiAccount[]>([
+    { id: 'citi-opt-01', name: 'Citi Operating Account', accountNumber: 'US89CITIP1234567890', balance: 2450000.00, currency: 'USD', type: 'Operating' },
+    { id: 'citi-pay-02', name: 'Citi Payroll Reserve', accountNumber: 'US89CITIP9876543210', balance: 450000.00, currency: 'USD', type: 'Payroll' },
+    { id: 'citi-trz-03', name: 'Citi Treasury Liquidity', accountNumber: 'US89CITIP5555555555', balance: 12800000.00, currency: 'USD', type: 'Treasury' }
+  ]);
+
+  const [alpacaAccounts, setAlpacaAccounts] = useState<AlpacaAccount[]>([
+    { id: 'alpaca-corp-991', name: 'Alpaca Corporate Brokerage', accountNumber: 'ALPAC-CORP-991', portfolioValue: 8120450.00, buyingPower: 1240000.00, cash: 450000.00, currency: 'USD' },
+    { id: 'alpaca-yld-882', name: 'Alpaca High-Yield Reserve', accountNumber: 'ALPAC-YLD-882', portfolioValue: 15300000.00, buyingPower: 50000.00, cash: 50000.00, currency: 'USD' }
+  ]);
+
+  const [sweepRules, setSweepRules] = useState<SweepRule[]>([
+    { id: 'rule-01', name: 'Daily Excess Sweep', sourceId: 'citi-opt-01', destId: 'alpaca-corp-991', triggerType: 'citi_above', triggerAmount: 1000000, actionType: 'sweep_excess', actionAmount: 0.9, status: 'active' },
+    { id: 'rule-02', name: 'Liquidity Safeguard', sourceId: 'alpaca-corp-991', destId: 'citi-opt-01', triggerType: 'citi_below', triggerAmount: 250000, actionType: 'recall_fixed', actionAmount: 500000, status: 'active' }
+  ]);
+
+  const [transactions, setTransactions] = useState<BridgeTransaction[]>([
+    { id: 'TXN-88291-CITI-ALP', date: '2026-08-15 14:30', amount: 150000.00, direction: 'citi_to_alpaca', sourceAccount: 'Citi Operating Account', destAccount: 'Alpaca Corporate Brokerage', citiStatus: 'ACSP', alpacaStatus: 'COMPLETE', transferType: 'ACH', e2eId: 'E2E-CITI-ALP-992811' },
+    { id: 'TXN-88290-ALP-CITI', date: '2026-08-14 09:15', amount: 300000.00, direction: 'alpaca_to_citi', sourceAccount: 'Alpaca Corporate Brokerage', destAccount: 'Citi Operating Account', citiStatus: 'ACSP', alpacaStatus: 'COMPLETE', transferType: 'WIRE', e2eId: 'E2E-ALP-CITI-110293' },
+    { id: 'TXN-88289-CITI-ALP', date: '2026-08-12 16:45', amount: 500000.00, direction: 'citi_to_alpaca', sourceAccount: 'Citi Treasury Liquidity', destAccount: 'Alpaca High-Yield Reserve', citiStatus: 'ACSP', alpacaStatus: 'COMPLETE', transferType: 'INSTANT', e2eId: 'E2E-CITI-ALP-448291' }
+  ]);
+
+  // Form State
+  const [sourceAcc, setSourceAcc] = useState<string>('citi-opt-01');
+  const [destAcc, setDestAcc] = useState<string>('alpaca-corp-991');
+  const [transferAmount, setTransferAmount] = useState<string>('');
+  const [transferType, setTransferType] = useState<'ACH' | 'WIRE' | 'INSTANT'>('ACH');
+  const [transferMemo, setTransferMemo] = useState<string>('Corporate Treasury Sweep');
+  
+  // Interactive Stepper State
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [stepLogs, setStepLogs] = useState<string[]>([]);
+  const [showPayloadModal, setShowPayloadModal] = useState<boolean>(false);
+  const [selectedPayloadType, setSelectedPayloadType] = useState<'citi_xml' | 'alpaca_json'>('citi_xml');
+
+  // Rule Creator State
+  const [showRuleCreator, setShowRuleCreator] = useState<boolean>(false);
+  const [newRuleName, setNewRuleName] = useState<string>('');
+  const [newRuleSource, setNewRuleSource] = useState<string>('citi-opt-01');
+  const [newRuleDest, setNewRuleDest] = useState<string>('alpaca-corp-991');
+  const [newRuleTrigger, setNewRuleTrigger] = useState<'citi_above' | 'citi_below' | 'alpaca_below'>('citi_above');
+  const [newRuleTriggerAmt, setNewRuleTriggerAmt] = useState<string>('');
+  const [newRuleAction, setNewRuleAction] = useState<'sweep_excess' | 'recall_fixed'>('sweep_excess');
+  const [newRuleActionAmt, setNewRuleActionAmt] = useState<string>('');
+
+  // AI Insights State
+  const [aiRecommendation, setAiRecommendation] = useState<{
+    title: string;
+    description: string;
+    actionable: boolean;
+    suggestedAmount: number;
+    impact: string;
+  }>({
+    title: 'Optimal Yield Allocation Detected',
+    description: 'Your Citi Operating Account has maintained a surplus of $1,450,000 above your target operational threshold for 5 consecutive days. We recommend sweeping $1,000,000 to Alpaca High-Yield Reserve to capture 5.25% APY.',
+    actionable: true,
+    suggestedAmount: 1000000,
+    impact: 'Estimated +$4,375 monthly yield generation with T+0 liquidity recall capability.'
+  });
+
+  // Totals
+  const totalCitiLiquidity = useMemo(() => citiAccounts.reduce((sum, acc) => sum + acc.balance, 0), [citiAccounts]);
+  const totalAlpacaAssets = useMemo(() => alpacaAccounts.reduce((sum, acc) => sum + acc.portfolioValue, 0), [alpacaAccounts]);
+
+  // Handshake Stepper Simulation
+  const runBridgeHandshake = async () => {
+    if (!transferAmount || isNaN(Number(transferAmount)) || Number(transferAmount) <= 0) {
+      alert('Please enter a valid transfer amount.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setCurrentStep(1);
+    setStepLogs(['[SYSTEM] Initializing Citi-Alpaca Enterprise Bridge Handshake...']);
+
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
     try {
-      const list = await citiAlpacaBridgeService.getSyncRecords(accountId);
-      setRecords(list);
+      // Step 1: Citi pain.001 XML Generation
+      await sleep(1500);
+      setCurrentStep(2);
+      setStepLogs(prev => [
+        ...prev,
+        `[CITICONNECT] Generating ISO 20022 pain.001.001.08 Payment Initiation XML...`,
+        `[CITICONNECT] Debtor Account: ${citiAccounts.find(a => a.id === sourceAcc)?.accountNumber}`,
+        `[CITICONNECT] Creditor Agent: ALPACUS33XXX (Alpaca Securities Clearing)`
+      ]);
+
+      // Step 2: Security Signing & Encryption
+      await sleep(1800);
+      setCurrentStep(3);
+      setStepLogs(prev => [
+        ...prev,
+        `[SECURITY] Signing XML payload with JWS (RSASSA-PSS using corporate private key)...`,
+        `[SECURITY] Encrypting payload with JWE (RSA-OAEP-256 / AES-GCM-256)...`,
+        `[SECURITY] FAPI 2.0 Advanced Profile compliance verified. MTLS handshake established.`
+      ]);
+
+      // Step 3: CitiConnect API Post
+      await sleep(1500);
+      setCurrentStep(4);
+      setStepLogs(prev => [
+        ...prev,
+        `[CITICONNECT] POST /v1/payments/initiation - Status: 201 Created`,
+        `[CITICONNECT] Payment Instruction Accepted. Status: ACSP (Accepted Settlement In Process)`,
+        `[CITICONNECT] End-to-End ID: E2E-CITI-ALP-${Math.floor(Math.random() * 900000 + 100000)}`
+      ]);
+
+      // Step 4: Plaid Processor Token Exchange
+      await sleep(1800);
+      setCurrentStep(5);
+      setStepLogs(prev => [
+        ...prev,
+        `[PLAID] Retrieving processor token for Alpaca ACH relationship...`,
+        `[ALPACA] POST /v1/accounts/${alpacaAccounts.find(a => a.id === destAcc)?.id}/ach_relationships`,
+        `[ALPACA] ACH Relationship established. Status: APPROVED`
+      ]);
+
+      // Step 5: Alpaca Transfer Trigger
+      await sleep(1500);
+      setCurrentStep(6);
+      setStepLogs(prev => [
+        ...prev,
+        `[ALPACA] POST /v1/accounts/${alpacaAccounts.find(a => a.id === destAcc)?.id}/transfers`,
+        `[ALPACA] Transfer initiated. Direction: INCOMING. Status: QUEUED`,
+        `[SYSTEM] Bridge execution completed successfully.`
+      ]);
+
+      await sleep(1000);
+      
+      // Update Balances & Transactions
+      const amt = Number(transferAmount);
+      const isCitiToAlpaca = sourceAcc.startsWith('citi');
+      
+      if (isCitiToAlpaca) {
+        setCitiAccounts(prev => prev.map(a => a.id === sourceAcc ? { ...a, balance: a.balance - amt } : a));
+        setAlpacaAccounts(prev => prev.map(a => a.id === destAcc ? { ...a, portfolioValue: a.portfolioValue + amt, cash: a.cash + amt, buyingPower: a.buyingPower + amt } : a));
+      } else {
+        setAlpacaAccounts(prev => prev.map(a => a.id === sourceAcc ? { ...a, portfolioValue: a.portfolioValue - amt, cash: a.cash - amt, buyingPower: a.buyingPower - amt } : a));
+        setCitiAccounts(prev => prev.map(a => a.id === destAcc ? { ...a, balance: a.balance + amt } : a));
+      }
+
+      const newTxn: BridgeTransaction = {
+        id: `TXN-${Math.floor(Math.random() * 90000 + 10000)}-CITI-ALP`,
+        date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        amount: amt,
+        direction: isCitiToAlpaca ? 'citi_to_alpaca' : 'alpaca_to_citi',
+        sourceAccount: citiAccounts.find(a => a.id === sourceAcc)?.name || alpacaAccounts.find(a => a.id === sourceAcc)?.name || '',
+        destAccount: alpacaAccounts.find(a => a.id === destAcc)?.name || citiAccounts.find(a => a.id === destAcc)?.name || '',
+        citiStatus: 'ACSP',
+        alpacaStatus: 'COMPLETE',
+        transferType: transferType,
+        e2eId: `E2E-BRIDGE-${Math.floor(Math.random() * 900000 + 100000)}`
+      };
+
+      setTransactions(prev => [newTxn, ...prev]);
+      setTransferAmount('');
+      
+    } catch (err) {
+      setStepLogs(prev => [...prev, `[ERROR] Bridge execution failed: ${err}`]);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleExecuteCitiWire = async () => {
-    setLoading(true);
-    try {
-      const record = await citiAlpacaBridgeService.executeCitiToAlpacaIso20022Wire(accountId, wireAmount, '3IPY201998765409');
-      setStatusMsg(`Citi Open Banking pacs.008 Wire Executed: $${record.amount} (Citi Wire Ref: ${record.citi_wire_reference} -> Alpaca Journal ID: ${record.alpaca_journal_id})`);
-      loadCitiData();
-    } finally {
-      setLoading(false);
+  // Rule Creator Handler
+  const handleCreateRule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRuleName || !newRuleTriggerAmt || !newRuleActionAmt) {
+      alert('Please fill in all rule parameters.');
+      return;
+    }
+
+    const newRule: SweepRule = {
+      id: `rule-${Math.floor(Math.random() * 900 + 100)}`,
+      name: newRuleName,
+      sourceId: newRuleSource,
+      destId: newRuleDest,
+      triggerType: newRuleTrigger,
+      triggerAmount: Number(newRuleTriggerAmt),
+      actionType: newRuleAction,
+      actionAmount: Number(newRuleActionAmt),
+      status: 'active'
+    };
+
+    setSweepRules(prev => [...prev, newRule]);
+    setNewRuleName('');
+    setNewRuleTriggerAmt('');
+    setNewRuleActionAmt('');
+    setShowRuleCreator(false);
+  };
+
+  // Toggle Rule Status
+  const toggleRule = (id: string) => {
+    setSweepRules(prev => prev.map(r => r.id === id ? { ...r, status: r.status === 'active' ? 'paused' : 'active' } : r));
+  };
+
+  // Delete Rule
+  const deleteRule = (id: string) => {
+    setSweepRules(prev => prev.filter(r => r.id !== id));
+  };
+
+  // Execute AI Recommendation
+  const executeAiRecommendation = () => {
+    setSourceAcc('citi-opt-01');
+    setDestAcc('alpaca-corp-991');
+    setTransferAmount(aiRecommendation.suggestedAmount.toString());
+    setTransferType('INSTANT');
+    setTransferMemo('AI Recommended Yield Optimization Sweep');
+    
+    // Scroll to transfer console
+    const element = document.getElementById('transfer-console');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const filteredPaths = SYSTEM_PATHS.filter(path => 
-    path.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Mock Payloads for Developer Preview
+  const mockCitiXmlPayload = `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.08">
+  <CstmrCdtTrfInitn>
+    <GrpHdr>
+      <MsgId>MSG-CITI-ALP-20260817-01</MsgId>
+      <CreDtTm>2026-08-17T08:51:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <InitgPty>
+        <Nm>SOVEREIGN CORP TREASURY</Nm>
+      </InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PMT-INF-001</PmtInfId>
+      <PmtMtd>TRF</PmtMtd>
+      <ReqdExctnDt>2026-08-17</ReqdExctnDt>
+      <Dbtr>
+        <Nm>SOVEREIGN CORP OPERATING</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <Othr>
+            <Id>US89CITIP1234567890</Id>
+          </Othr>
+        </Id>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId>
+          <BICFI>CITIUS33XXX</BICFI>
+        </FinInstnId>
+      </DbtrAgt>
+      <CdtTrfTxInf>
+        <PmtId>
+          <EndToEndId>E2E-CITI-ALP-992811</EndToEndId>
+        </PmtId>
+        <Amt>
+          <InstdAmt Ccy="USD">${transferAmount || '1000000.00'}</InstdAmt>
+        </Amt>
+        <CdtrAgt>
+          <FinInstnId>
+            <BICFI>ALPACUS33XXX</BICFI>
+          </FinInstnId>
+        </CdtrAgt>
+        <Cdtr>
+          <Nm>ALPACA SECURITIES CLEARING</Nm>
+        </Cdtr>
+      </CdtTrfTxInf>
+    </PmtInf>
+  </CstmrCdtTrfInitn>
+</Document>`;
+
+  const mockAlpacaJsonPayload = `{
+  "account_id": "alpaca-corp-991",
+  "type": "ach",
+  "direction": "incoming",
+  "amount": "${transferAmount || '1000000.00'}",
+  "processor_token": "processor-sandbox-161c86dd-d470-47e9-a741-d381c2b2cb6f",
+  "bank_account_id": "794c3c51-71a8-4186-b5d0-247b6fb4045e",
+  "timing": "immediate",
+  "metadata": {
+    "citi_payment_ref": "E2E-CITI-ALP-992811",
+    "initiated_by": "Sovereign Treasury Agent"
+  }
+}`;
 
   return (
-    <div className="space-y-6 text-slate-100">
-      <div className="flex items-center justify-between bg-slate-900/80 p-5 rounded-xl border border-cyan-500/20 backdrop-blur-md">
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-slate-800 gap-4">
         <div>
-          <h2 className="text-xl font-bold text-cyan-400 flex items-center gap-2">
-            <Building2 className="text-cyan-400" size={24} />
-            Citibank Open Banking & Alpaca Correspondent Bridge
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            FAPI 2.0 Security, ISO 20022 pacs.008 Messaging & Instant Omnibus Clearing into Alpaca
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-tr from-blue-600 to-emerald-500 rounded-xl shadow-lg shadow-blue-500/10">
+              <ArrowLeftRight className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              Citi ⇄ Alpaca Enterprise Bridge
+            </h1>
+          </div>
+          <p className="text-slate-400 text-sm mt-1">
+            Automated Corporate Cash Management & Treasury Liquidity Sweep Engine
           </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 border border-emerald-500/20 rounded-full text-xs text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            CitiConnect API: Connected
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 border border-emerald-500/20 rounded-full text-xs text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Alpaca Broker API: Connected
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 border border-blue-500/20 rounded-full text-xs text-blue-400">
+            <Shield className="w-3.5 h-3.5" />
+            FAPI 2.0 Secure
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Citi Wire Execution Card */}
-        <div className="bg-slate-900/70 p-5 rounded-xl border border-slate-800 space-y-4">
-          <h3 className="font-semibold text-slate-200 border-b border-slate-800 pb-3 text-sm flex items-center gap-2">
-            <Globe className="text-cyan-400" size={18} />
-            Dispatch ISO 20022 Wire (Citi to Alpaca)
-          </h3>
+      {/* Top Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md relative overflow-hidden group hover:border-blue-500/30 transition-all">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
+          <div className="flex justify-between items-start mb-3">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Citi Treasury Liquidity</span>
+            <Building className="w-5 h-5 text-blue-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">${totalCitiLiquidity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            <span className="text-emerald-400 font-medium">3 Accounts</span> active across USD rails
+          </div>
+        </div>
 
-          <div className="space-y-3 text-xs">
-            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-1 font-mono text-[11px]">
-              <div className="flex justify-between text-slate-400">
-                <span>Citi Consent ID:</span>
-                <span className="text-cyan-300">3IPY201998765409</span>
+        <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md relative overflow-hidden group hover:border-emerald-500/30 transition-all">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all"></div>
+          <div className="flex justify-between items-start mb-3">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Alpaca Brokerage Assets</span>
+            <Wallet className="w-5 h-5 text-emerald-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">${totalAlpacaAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            <span className="text-emerald-400 font-medium">2 Portfolios</span> managed via Broker API
+          </div>
+        </div>
+
+        <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md relative overflow-hidden group hover:border-violet-500/30 transition-all">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-violet-500/5 rounded-full blur-2xl group-hover:bg-violet-500/10 transition-all"></div>
+          <div className="flex justify-between items-start mb-3">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Active Sweep Rules</span>
+            <Sliders className="w-5 h-5 text-violet-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">{sweepRules.filter(r => r.status === 'active').length} <span className="text-sm font-normal text-slate-500">/ {sweepRules.length}</span></div>
+          <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            Automated liquidity balancing active
+          </div>
+        </div>
+
+        <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md relative overflow-hidden group hover:border-amber-500/30 transition-all">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-all"></div>
+          <div className="flex justify-between items-start mb-3">
+            <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Bridge Volume (24h)</span>
+            <Activity className="w-5 h-5 text-amber-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">$950,000.00</div>
+          <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+            <span className="text-emerald-400 font-medium">+12.4%</span> vs previous 24h period
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+        
+        {/* Left Column: Transfer Console & AI Insights */}
+        <div className="lg:col-span-7 space-y-8">
+          
+          {/* Transfer Console */}
+          <div id="transfer-console" className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 backdrop-blur-md relative">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-blue-400" />
+                <h2 className="text-lg font-bold text-white">Bridge Transfer Console</h2>
               </div>
-              <div className="flex justify-between text-slate-400">
-                <span>Message standard:</span>
-                <span className="text-emerald-400">ISO 20022 pacs.008.001.08</span>
-              </div>
-              <div className="flex justify-between text-slate-400">
-                <span>Security Profile:</span>
-                <span className="text-yellow-400">FAPI 2.0 + mTLS + JWS</span>
-              </div>
+              <button 
+                onClick={() => setShowPayloadModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition-all"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Developer Payload Preview
+              </button>
             </div>
 
-            <div>
-              <label className="text-[11px] text-slate-400 block mb-1">Transfer Amount ($ USD)</label>
-              <input
-                type="text"
-                value={wireAmount}
-                onChange={(e) => setWireAmount(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-emerald-400 focus:outline-none focus:border-cyan-500"
-              />
+            {/* Transfer Form */}
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Source Account */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Source Account</label>
+                  <select 
+                    value={sourceAcc}
+                    onChange={(e) => setSourceAcc(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all"
+                  >
+                    <optgroup label="Citi Treasury Accounts">
+                      {citiAccounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>{acc.name} (${acc.balance.toLocaleString()})</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Alpaca Brokerage Accounts">
+                      {alpacaAccounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>{acc.name} (${acc.portfolioValue.toLocaleString()})</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+
+                {/* Destination Account */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Destination Account</label>
+                  <select 
+                    value={destAcc}
+                    onChange={(e) => setDestAcc(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all"
+                  >
+                    <optgroup label="Alpaca Brokerage Accounts">
+                      {alpacaAccounts.map(acc => (
+                        <option key={acc.id} value={acc.id} disabled={acc.id === sourceAcc}>{acc.name} (${acc.portfolioValue.toLocaleString()})</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Citi Treasury Accounts">
+                      {citiAccounts.map(acc => (
+                        <option key={acc.id} value={acc.id} disabled={acc.id === sourceAcc}>{acc.name} (${acc.balance.toLocaleString()})</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+
+              {/* Amount & Transfer Type */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Transfer Amount (USD)</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">$</span>
+                    <input 
+                      type="number" 
+                      placeholder="0.00"
+                      value={transferAmount}
+                      onChange={(e) => setTransferAmount(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Transfer Rail</label>
+                  <select 
+                    value={transferType}
+                    onChange={(e) => setTransferType(e.target.value as any)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all"
+                  >
+                    <option value="ACH">ACH (Plaid)</option>
+                    <option value="WIRE">Fedwire</option>
+                    <option value="INSTANT">Instant Funding</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Memo */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Payment Reference / Memo</label>
+                <input 
+                  type="text" 
+                  value={transferMemo}
+                  onChange={(e) => setTransferMemo(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all"
+                />
+              </div>
+
+              {/* Action Button */}
+              <button 
+                onClick={runBridgeHandshake}
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/10 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Executing Bridge Handshake...
+                  </>
+                ) : (
+                  <>
+                    <ArrowLeftRight className="w-5 h-5" />
+                    Initiate Bridge Transfer
+                  </>
+                )}
+              </button>
             </div>
 
-            <button
-              onClick={handleExecuteCitiWire}
-              disabled={loading}
-              className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 transition"
-            >
-              <Send size={14} />
-              Transmit Citi Open Banking pacs.008 Wire
-            </button>
+            {/* Stepper Progress Overlay */}
+            {isSubmitting && (
+              <div className="mt-6 p-5 bg-slate-950/90 border border-slate-800 rounded-xl space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Bridge Handshake Progress</span>
+                  <span className="text-xs text-slate-500">Step {currentStep} of 6</span>
+                </div>
 
-            {statusMsg && (
-              <div className="p-3 bg-slate-950 rounded border border-cyan-500/30 text-xs text-cyan-300 font-mono break-all">
-                {statusMsg}
+                {/* Progress Bar */}
+                <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-emerald-500 h-full transition-all duration-500"
+                    style={{ width: `${(currentStep / 6) * 100}%` }}
+                  ></div>
+                </div>
+
+                {/* Stepper Steps */}
+                <div className="grid grid-cols-6 gap-1 text-center text-[10px] font-semibold text-slate-500">
+                  <div className={currentStep >= 1 ? 'text-blue-400' : ''}>Init</div>
+                  <div className={currentStep >= 2 ? 'text-blue-400' : ''}>ISO XML</div>
+                  <div className={currentStep >= 3 ? 'text-blue-400' : ''}>JWS/JWE</div>
+                  <div className={currentStep >= 4 ? 'text-blue-400' : ''}>Citi API</div>
+                  <div className={currentStep >= 5 ? 'text-blue-400' : ''}>Plaid</div>
+                  <div className={currentStep >= 6 ? 'text-emerald-400' : ''}>Alpaca</div>
+                </div>
+
+                {/* Logs */}
+                <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-800/50 font-mono text-[11px] text-slate-300 space-y-1 max-h-32 overflow-y-auto">
+                  {stepLogs.map((log, idx) => (
+                    <div key={idx} className={log.includes('[ERROR]') ? 'text-red-400' : log.includes('[SYSTEM]') ? 'text-violet-400' : 'text-slate-300'}>
+                      {log}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Audit Stream */}
-        <div className="bg-slate-900/70 p-5 rounded-xl border border-slate-800 space-y-4">
-          <h3 className="font-semibold text-slate-200 border-b border-slate-800 pb-3 text-sm flex items-center gap-2">
-            <ShieldCheck className="text-emerald-400" size={18} />
-            Citi-Alpaca Bridge Audit Ledger ({records.length})
-          </h3>
-
-          <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
-            {records.map((r) => (
-              <div key={r.id} className="p-3 bg-slate-950/70 rounded-lg border border-slate-800 text-xs space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-yellow-400">${r.amount} USD</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase">
-                    {r.status}
-                  </span>
-                </div>
-                <p className="font-mono text-[10px] text-cyan-300">Citi Ref: {r.citi_wire_reference}</p>
-                <p className="font-mono text-[10px] text-slate-400">Alpaca Journal: {r.alpaca_journal_id}</p>
+          {/* AI Cash Flow Optimizer */}
+          <div className="bg-gradient-to-br from-slate-900/80 to-slate-900/40 border border-blue-500/20 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="p-1.5 bg-blue-500/10 rounded-lg">
+                <Cpu className="w-5 h-5 text-blue-400" />
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Sovereign System Path Explorer */}
-      <div className="bg-slate-900/70 p-5 rounded-xl border border-slate-800 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-3">
-          <h3 className="font-semibold text-slate-200 text-sm flex items-center gap-2">
-            <Folder className="text-cyan-400" size={18} />
-            Sovereign System Path Explorer
-          </h3>
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-2.5 text-slate-500" size={14} />
-            <input
-              type="text"
-              placeholder="Search system paths..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-96 overflow-y-auto pr-2 font-mono text-[11px]">
-          {filteredPaths.map((path, idx) => {
-            const isMd = path.endsWith('.md');
-            const isPy = path.endsWith('.py');
-            const isTs = path.endsWith('.ts') || path.endsWith('.tsx');
-            return (
-              <div 
-                key={idx} 
-                className="flex items-center gap-2 p-2 bg-slate-950/50 hover:bg-slate-950 rounded border border-slate-800/60 hover:border-cyan-500/30 transition text-slate-300 truncate"
-              >
-                <FileCode size={12} className={isMd ? "text-emerald-400" : isPy ? "text-yellow-400" : isTs ? "text-cyan-400" : "text-slate-400"} />
-                <span className="truncate" title={path}>{path}</span>
-              </div>
-            );
-          })}
-          {filteredPaths.length === 0 && (
-            <div className="col-span-full text-center py-6 text-slate-500 text-xs">
-              No registered paths match your search query.
+              <h3 className="text-md font-bold text-white">AI Cash Flow Optimizer</h3>
+              <span className="ml-auto px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded text-[10px] font-semibold text-blue-400 uppercase tracking-wider">Active Agent</span>
             </div>
-          )}
+
+            <div className="bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 mb-4">
+              <h4 className="text-sm font-bold text-slate-200 flex items-center gap-1.5">
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                {aiRecommendation.title}
+              </h4>
+              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                {aiRecommendation.description}
+              </p>
+              <div className="mt-3 pt-3 border-t border-slate-800/60 flex justify-between items-center text-xs">
+                <span className="text-slate-500">Projected Impact:</span>
+                <span className="text-emerald-400 font-medium">{aiRecommendation.impact}</span>
+              </div>
+            </div>
+
+            {aiRecommendation.actionable && (
+              <button 
+                onClick={executeAiRecommendation}
+                className="w-full bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 hover:border-blue-500/50 text-blue-400 font-semibold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all"
+              >
+                <Zap className="w-4 h-4" />
+                Execute Recommended Sweep (${aiRecommendation.suggestedAmount.toLocaleString()})
+              </button>
+            )}
+          </div>
+
+        </div>
+
+        {/* Right Column: Sweep Rules Engine & Security Vault */}
+        <div className="lg:col-span-5 space-y-8">
+          
+          {/* Sweep Rules Engine */}
+          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 backdrop-blur-md">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-violet-400" />
+                <h2 className="text-lg font-bold text-white">Sweep Rules Engine</h2>
+              </div>
+              <button 
+                onClick={() => setShowRuleCreator(!showRuleCreator)}
+                className="flex items-center gap-1 px-2.5 py-1 bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/30 text-violet-400 rounded-lg text-xs font-semibold transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add Rule
+              </button>
+            </div>
+
+            {/* Rule Creator Form */}
+            {showRuleCreator && (
+              <form onSubmit={handleCreateRule} className="mb-6 p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-4">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+                  <span className="text-xs font-bold text-violet-400 uppercase tracking-wider">New Sweep Rule</span>
+                  <button type="button" onClick={() => setShowRuleCreator(false)} className="text-slate-500 hover:text-slate-300 text-xs">Cancel</button>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Rule Name</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., Excess Cash Sweep"
+                    value={newRuleName}
+                    onChange={(e) => setNewRuleName(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Source</label>
+                    <select 
+                      value={newRuleSource}
+                      onChange={(e) => setNewRuleSource(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
+                    >
+                      {citiAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      {alpacaAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Destination</label>
+                    <select 
+                      value={newRuleDest}
+                      onChange={(e) => setNewRuleDest(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
+                    >
+                      {alpacaAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      {citiAccounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Trigger Condition</label>
+                    <select 
+                      value={newRuleTrigger}
+                      onChange={(e) => setNewRuleTrigger(e.target.value as any)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="citi_above">Citi Balance Above</option>
+                      <option value="citi_below">Citi Balance Below</option>
+                      <option value="alpaca_below">Alpaca Balance Below</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Trigger Amount ($)</label>
+                    <input 
+                      type="number" 
+                      placeholder="1000000"
+                      value={newRuleTriggerAmt}
+                      onChange={(e) => setNewRuleTriggerAmt(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Action Type</label>
+                    <select 
+                      value={newRuleAction}
+                      onChange={(e) => setNewRuleAction(e.target.value as any)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="sweep_excess">Sweep % of Excess</option>
+                      <option value="recall_fixed">Recall Fixed Amount</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Action Value (Amt or %)</label>
+                    <input 
+                      type="number" 
+                      step="any"
+                      placeholder="e.g., 0.90 for 90%"
+                      value={newRuleActionAmt}
+                      onChange={(e) => setNewRuleActionAmt(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-2 rounded-lg text-xs transition-all"
+                >
+                  Save Rule
+                </button>
+              </form>
+            )}
+
+            {/* Rules List */}
+            <div className="space-y-3">
+              {sweepRules.map(rule => {
+                const sourceName = citiAccounts.find(a => a.id === rule.sourceId)?.name || alpacaAccounts.find(a => a.id === rule.sourceId)?.name || 'Unknown';
+                const destName = alpacaAccounts.find(a => a.id === rule.destId)?.name || citiAccounts.find(a => a.id === rule.destId)?.name || 'Unknown';
+                
+                return (
+                  <div key={rule.id} className="bg-slate-950/50 border border-slate-800/80 rounded-xl p-4 flex flex-col justify-between gap-3 hover:border-slate-700 transition-all">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                          {rule.name}
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${rule.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400'}`}>
+                            {rule.status}
+                          </span>
+                        </h4>
+                        <p className="text-[11px] text-slate-400 mt-1">
+                          Route: <span className="text-slate-300 font-medium">{sourceName}</span> ⇄ <span className="text-slate-300 font-medium">{destName}</span>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button 
+                          onClick={() => toggleRule(rule.id)}
+                          className="p-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded text-slate-400 hover:text-white transition-all"
+                          title={rule.status === 'active' ? 'Pause Rule' : 'Activate Rule'}
+                        >
+                          <Sliders className="w-3.5 h-3.5" />
+                        </button>
+                        <button 
+                          onClick={() => deleteRule(rule.id)}
+                          className="p-1 bg-slate-900 hover:bg-red-950 border border-slate-800 hover:border-red-900 rounded text-slate-400 hover:text-red-400 transition-all"
+                          title="Delete Rule"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50 text-[11px] text-slate-400 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Trigger:</span>
+                        <span className="text-slate-200 font-medium">
+                          {rule.triggerType === 'citi_above' ? 'Citi Balance >' : rule.triggerType === 'citi_below' ? 'Citi Balance <' : 'Alpaca Balance <'} ${rule.triggerAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Action:</span>
+                        <span className="text-slate-200 font-medium">
+                          {rule.actionType === 'sweep_excess' ? `Sweep ${(rule.actionAmount * 100)}% of excess` : `Recall $${rule.actionAmount.toLocaleString()}`}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Security & Compliance Vault */}
+          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 backdrop-blur-md">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="w-5 h-5 text-emerald-400" />
+              <h2 className="text-lg font-bold text-white">Security & Compliance</h2>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1 bg-emerald-500/10 rounded">
+                    <Lock className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-200">JWS / JWE Signing</div>
+                    <div className="text-[10px] text-slate-500">RSASSA-PSS & RSA-OAEP-256</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">ACTIVE</span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1 bg-emerald-500/10 rounded">
+                    <Database className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-200">ISO 20022 Compliance</div>
+                    <div className="text-[10px] text-slate-500">pain.001.001.08 XML Schema</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">VERIFIED</span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1 bg-blue-500/10 rounded">
+                    <Check className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-200">Plaid Processor Token</div>
+                    <div className="text-[10px] text-slate-500">Direct Alpaca ACH Integration</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">CONNECTED</span>
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex gap-2.5">
+              <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                All transfers initiated through this bridge are subject to corporate multi-signature approval rules. Large sweeps exceeding $5,000,000 require secondary authorization from the Treasury Director.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Bottom Section: Bridge Transaction Ledger */}
+      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 backdrop-blur-md">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-400" />
+              Bridge Transaction Ledger
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">Real-time audit trail of CitiConnect and Alpaca Broker API operations</p>
+          </div>
+          <div className="flex gap-2">
+            <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5">
+              <RefreshCw className="w-3.5 h-3.5" />
+              Refresh Ledger
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-800 text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                <th className="py-3 px-4">Transaction ID</th>
+                <th className="py-3 px-4">Timestamp</th>
+                <th className="py-3 px-4">Direction</th>
+                <th className="py-3 px-4">Route</th>
+                <th className="py-3 px-4 text-right">Amount</th>
+                <th className="py-3 px-4">Citi Status</th>
+                <th className="py-3 px-4">Alpaca Status</th>
+                <th className="py-3 px-4">Rail</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/50 text-xs">
+              {transactions.map(txn => (
+                <tr key={txn.id} className="hover:bg-slate-900/30 transition-all">
+                  <td className="py-3.5 px-4 font-mono text-slate-300">
+                    <div>{txn.id}</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">E2E: {txn.e2eId}</div>
+                  </td>
+                  <td className="py-3.5 px-4 text-slate-400">{txn.date}</td>
+                  <td className="py-3.5 px-4">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${txn.direction === 'citi_to_alpaca' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                      {txn.direction === 'citi_to_alpaca' ? (
+                        <>
+                          <ArrowUpRight className="w-3 h-3" />
+                          Citi ➔ Alpaca
+                        </>
+                      ) : (
+                        <>
+                          <ArrowDownLeft className="w-3 h-3" />
+                          Alpaca ➔ Citi
+                        </>
+                      )}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <div className="text-slate-300 font-medium">{txn.sourceAccount}</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">to {txn.destAccount}</div>
+                  </td>
+                  <td className="py-3.5 px-4 text-right font-bold text-white">
+                    ${txn.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-[10px] font-bold">
+                      {txn.citiStatus}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-[10px] font-bold">
+                      {txn.alpacaStatus}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className="px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded font-semibold text-[10px]">
+                      {txn.transferType}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Developer Payload Preview Modal */}
+      {showPayloadModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Database className="w-5 h-5 text-blue-400" />
+                  Developer API Payload Preview
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">Inspect the raw payloads generated for CitiConnect and Alpaca Broker APIs</p>
+              </div>
+              <button 
+                onClick={() => setShowPayloadModal(false)}
+                className="text-slate-400 hover:text-white text-sm font-semibold"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Modal Tabs */}
+            <div className="flex border-b border-slate-800 bg-slate-950/50">
+              <button 
+                onClick={() => setSelectedPayloadType('citi_xml')}
+                className={`px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${selectedPayloadType === 'citi_xml' ? 'border-blue-500 text-blue-400 bg-slate-900/50' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+              >
+                Citi pain.001 XML (ISO 20022)
+              </button>
+              <button 
+                onClick={() => setSelectedPayloadType('alpaca_json')}
+                className={`px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${selectedPayloadType === 'alpaca_json' ? 'border-emerald-500 text-emerald-400 bg-slate-900/50' : 'border-transparent text-slate-400 hover:text-slate-200'}`}
+              >
+                Alpaca ACH Transfer JSON
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-950 font-mono text-xs text-slate-300">
+              {selectedPayloadType === 'citi_xml' ? (
+                <pre className="whitespace-pre-wrap break-all bg-slate-900/50 p-4 rounded-xl border border-slate-800/80 text-blue-300">
+                  {mockCitiXmlPayload}
+                </pre>
+              ) : (
+                <pre className="whitespace-pre-wrap break-all bg-slate-900/50 p-4 rounded-xl border border-slate-800/80 text-emerald-300">
+                  {mockAlpacaJsonPayload}
+                </pre>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-slate-900 border-t border-slate-800 flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(selectedPayloadType === 'citi_xml' ? mockCitiXmlPayload : mockAlpacaJsonPayload);
+                  alert('Payload copied to clipboard!');
+                }}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-all"
+              >
+                Copy to Clipboard
+              </button>
+              <button 
+                onClick={() => setShowPayloadModal(false)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition-all"
+              >
+                Done
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
-};
-
-export default CitiAlpacaBridgeView;
+}

@@ -1,449 +1,620 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useMemo, useEffect, useRef } from 'react';
+import { useMsal } from "@azure/msal-react";
 import { DataContext } from '../context/DataContext';
-import { RefreshCw, Command as CommandIcon, Bell, User, Zap, Activity, ShieldCheck, Wallet, Sparkles, Search, FileText, DatabaseZap, ShieldAlert, Cpu, FolderTree } from 'lucide-react';
-import { View, Notification } from '../types';
-import { SOVEREIGN_APPS } from '../constants';
-import { securityService } from '../services/SecurityService';
+import { useFirebase } from '../context/FirebaseContext';
+import {
+  Search,
+  Bell,
+  User,
+  Cpu,
+  Activity,
+  Shield,
+  LogOut,
+  LogIn,
+  Settings,
+  Menu,
+  ChevronDown,
+  Globe,
+  Terminal,
+  Database,
+  Wifi,
+  WifiOff,
+  CheckCircle,
+  AlertTriangle,
+  Sliders,
+  Key,
+  CreditCard,
+  Info,
+  Layers,
+  Sparkles,
+  Lock,
+  Unlock,
+  X,
+  HelpCircle,
+  BookOpen
+} from 'lucide-react';
 
-const HardwareIdentityStatus: React.FC = () => {
-    const [status, setStatus] = useState<'IDLE' | 'VERIFYING' | 'SECURE' | 'FAILED'>('IDLE');
-    const [error, setError] = useState<string | null>(null);
-
-    const handleVerify = async () => {
-        setStatus('VERIFYING');
-        const result = await securityService.attestAndLinkNode();
-        if (result.success) {
-            setStatus('SECURE');
-            setError(null);
-        } else {
-            setStatus('FAILED');
-            setError(result.error || 'Verification Failed');
-            setTimeout(() => setStatus('IDLE'), 3000);
-        }
-    };
-
-    return (
-        <button 
-            onClick={handleVerify}
-            disabled={status === 'VERIFYING' || status === 'SECURE'}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all truncate max-w-[140px] lg:max-w-none ${
-                status === 'SECURE' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
-                status === 'FAILED' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                'bg-white/5 border-white/10 text-gray-400 hover:text-white'
-            }`}
-        >
-            {status === 'VERIFYING' ? <RefreshCw size={14} className="animate-spin" /> : 
-             status === 'SECURE' ? <ShieldCheck size={14} /> : 
-             status === 'FAILED' ? <ShieldAlert size={14} /> :
-             <Cpu size={14} />}
-            <span className="text-[9px] font-black uppercase tracking-widest">
-                {status === 'VERIFYING' ? 'ATTESTING...' :
-                 status === 'SECURE' ? 'HARDWARE_BOUND' :
-                 status === 'FAILED' ? 'BOUND_FAILED' :
-                 'ATTEST_HARDWARE'}
-            </span>
-        </button>
-    );
-};
-
-const GeminiBar: React.FC = () => {
+// Safe context accessors to prevent crashes if providers are missing
+const useSafeDataContext = () => {
+  try {
     const context = useContext(DataContext);
-    const [query, setQuery] = useState('');
-    const [isOpen, setIsOpen] = useState(false);
-    const [results, setResults] = useState<any[]>([]);
-    const wrapperRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    useEffect(() => {
-        if (!query.trim() || !context) {
-            setResults([]);
-            return;
-        }
-
-        const searchResults: any[] = [];
-        const q = query.toLowerCase();
-
-        // Search Views
-        Object.entries(View).forEach(([key, value]) => {
-            if (key.toLowerCase().includes(q) || value.toLowerCase().includes(q)) {
-                searchResults.push({ type: 'view', id: value, title: key, subtitle: 'System Module', icon: <CommandIcon size={14} /> });
-            }
-        });
-
-        // Search Apps
-        SOVEREIGN_APPS.forEach(app => {
-            if (app.name.toLowerCase().includes(q) || app.description.toLowerCase().includes(q)) {
-                searchResults.push({ type: 'app', id: app.id, title: app.name, subtitle: 'External App', icon: <Zap size={14} /> });
-            }
-        });
-
-        // Search Transactions
-        context.transactions.forEach(tx => {
-            if (tx.description.toLowerCase().includes(q) || tx.category.toLowerCase().includes(q)) {
-                searchResults.push({ type: 'transaction', id: tx.id, title: tx.description, subtitle: `Transaction • $${tx.amount}`, icon: <FileText size={14} /> });
-            }
-        });
-
-        // Search Accounts
-        context.internalAccounts.forEach(acc => {
-            if (acc.bestName.toLowerCase().includes(q) || acc.bankName.toLowerCase().includes(q)) {
-                searchResults.push({ type: 'account', id: acc.id, title: acc.bestName, subtitle: `Account • ${acc.bankName}`, icon: <Wallet size={14} /> });
-            }
-        });
-
-        setResults(searchResults.slice(0, 8)); // Limit to 8 results
-        setIsOpen(true);
-    }, [query, context]);
-
-    const handleSelect = (result: any) => {
-        if (!context) return;
-        
-        if (result.type === 'view') {
-            context.setView(result.id);
-        } else if (result.type === 'app') {
-            const app = SOVEREIGN_APPS.find(a => a.id === result.id);
-            if (app) context.setView(app.viewId || app.id);
-        } else if (result.type === 'transaction') {
-            context.setView(View.Transactions);
-        } else if (result.type === 'account') {
-            context.setView(View.Dashboard);
-        }
-        
-        setQuery('');
-        setIsOpen(false);
-    };
-
-    return (
-        <div ref={wrapperRef} className="relative w-full max-w-xl group hidden md:block z-50">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-500 group-focus-within:text-cyan-500 transition-colors">
-                <Search size={16} />
-            </div>
-            <input
-                type="text"
-                className="w-full bg-gray-900/50 border border-white/5 rounded-2xl py-2.5 pl-12 pr-4 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 outline-none transition-all text-xs text-white placeholder-gray-600"
-                placeholder="Search modules, apps, transactions, accounts..."
-                value={query}
-                onChange={(e) => {
-                    setQuery(e.target.value);
-                    setIsOpen(true);
-                }}
-                onFocus={() => query.trim() && setIsOpen(true)}
-            />
-            
-            {isOpen && results.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-gray-950 border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl">
-                    <div className="max-h-80 overflow-y-auto p-2 space-y-1">
-                        {results.map((result, idx) => (
-                            <button
-                                key={`${result.type}-${result.id}-${idx}`}
-                                onClick={() => handleSelect(result)}
-                                className="w-full flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition-colors text-left group/item"
-                            >
-                                <div className="p-2 bg-white/5 rounded-lg text-gray-400 group-hover/item:text-cyan-400 group-hover/item:bg-cyan-500/10 transition-colors">
-                                    {result.icon}
-                                </div>
-                                <div>
-                                    <div className="text-sm font-medium text-white">{result.title}</div>
-                                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">{result.subtitle}</div>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+    return context || {};
+  } catch (e) {
+    return {};
+  }
 };
 
-const GeminiEngineStatus: React.FC = () => {
-    const context = useContext(DataContext);
-    const isSyncing = context?.isSyncing;
-
-    const messages = [
-        "Gemini: Mapping risk vectors...",
-        "Gemini: All systems hyper-nominal.",
-        "Gemini: Calibrating data mesh..."
-    ];
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentIndex(prevIndex => (prevIndex + 1) % messages.length);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
-
-    return (
-        <div className="hidden xl:flex items-center space-x-4 text-[10px] text-cyan-300/80 bg-gray-950/80 px-4 py-2 rounded-full border border-cyan-500/20 backdrop-blur-md shadow-inner">
-            <div className="flex space-x-1 items-end h-4">
-                <span className={`w-1 h-2 bg-cyan-400 rounded-full ${isSyncing ? 'animate-bounce' : 'animate-pulse'}`}></span>
-                <span className={`w-1 h-3 bg-cyan-400 rounded-full ${isSyncing ? 'animate-bounce [animation-delay:0.1s]' : 'animate-pulse [animation-delay:-0.2s]'}`}></span>
-                <span className={`w-1 h-4 bg-cyan-400 rounded-full ${isSyncing ? 'animate-bounce [animation-delay:0.2s]' : 'animate-pulse'}`}></span>
-            </div>
-            <span className="font-mono uppercase tracking-widest">{isSyncing ? "Neural Synchronizing..." : messages[currentIndex]}</span>
-            <span className="w-px h-3 bg-cyan-500/20"></span>
-            <div className="flex items-center space-x-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span>
-                <span className="font-mono uppercase">Mesh: Active</span>
-            </div>
-        </div>
-    );
+const useSafeFirebase = () => {
+  try {
+    const firebase = useFirebase();
+    return firebase || {};
+  } catch (e) {
+    return {};
+  }
 };
 
-const MetaMaskHeaderWidget: React.FC<{ setActiveView: (view: any) => void }> = ({ setActiveView }) => {
-  const context = useContext(DataContext);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+const useSafeMsal = () => {
+  try {
+    const msal = useMsal();
+    return msal || { instance: null, accounts: [], inProgress: 'none' };
+  } catch (e) {
+    return { instance: null, accounts: [], inProgress: 'none' };
+  }
+};
 
-  if (!context) return null;
-  const { 
-    walletAddress, 
-    ethBalance, 
-    networkName, 
-    customTokens, 
-    connectWallet, 
-    disconnectWallet, 
-    addTokenToMetaMask, 
-    setWalletConnectModalOpen 
-  } = context;
+interface HeaderProps {
+  openTab?: (id: string, name: string) => void;
+  setView?: (view: any) => void;
+  toggleSidebar?: () => void;
+}
 
+interface SearchItem {
+  id: string;
+  name: string;
+  category: string;
+  description?: string;
+}
+
+const SEARCHABLE_ITEMS: SearchItem[] = [
+  { id: 'files-vault', name: 'Files & Dossier Vault', category: 'Security', description: 'Secure document and credential storage' },
+  { id: 'dashboard', name: 'Executive Command Dashboard', category: 'Core', description: 'Overview of all sovereign operations' },
+  { id: 'data-ingest', name: 'Neural Ingest', category: 'Data', description: 'Real-time data pipeline and ingestion' },
+  { id: 'portal-hub', name: 'Sovereign Portal Hub', category: 'Core', description: 'Central gateway for external portals' },
+  { id: 'billing-identity', name: 'Identity Vault', category: 'Security', description: 'Billing profiles and sovereign identities' },
+  { id: 'legion-architect', name: 'Legion I: Architect', category: 'AI Legions', description: 'AI system architecture and design' },
+  { id: 'legion-ghost', name: 'Legion II: Ghost', category: 'AI Legions', description: 'Stealth operations and proxy management' },
+  { id: 'legion-visualizer', name: 'Legion III: Visualizer', category: 'AI Legions', description: 'Creative suite and UI generation' },
+  { id: 'legion-voice', name: 'Legion IV: Voice', category: 'AI Legions', description: 'Real-time voice synthesis and control' },
+  { id: 'legion-auditor', name: 'Legion V: Auditor', category: 'AI Legions', description: 'Compliance and security auditing' },
+  { id: 'legion-live', name: 'Legion VI: Live', category: 'AI Legions', description: 'Live portal monitoring and telemetry' },
+  { id: 'identity-citadel', name: 'Identity Citadel', category: 'Security', description: 'Multi-factor and biometric authentication' },
+  { id: 'global-ledger', name: 'Global Ledger', category: 'Finance', description: 'Unified transaction ledger' },
+  { id: 'wealth-nexus', name: 'Wealth Nexus', category: 'Finance', description: 'Asset management and portfolio tracking' },
+  { id: 'trading-bots', name: 'Trading Bots', category: 'Finance', description: 'Automated algorithmic trading terminals' },
+  { id: 'citi-gateway', name: 'Citi Sovereign Gateway', category: 'Integrations', description: 'Citi Treasury and payment initiation' },
+  { id: 'alpaca-broker', name: 'Alpaca Broker API Suite', category: 'Integrations', description: 'Alpaca trading and account management' },
+  { id: 'api-keys', name: 'API Keys & Secrets', category: 'Settings', description: 'Manage integration credentials' },
+  { id: 'mcp-server', name: 'Mastercard Developers MCP Server', category: 'MCP', description: 'Model Context Protocol server status' },
+];
+
+export default function Header({ openTab, setView, toggleSidebar }: HeaderProps) {
+  const { systemStatus, bypassAuth, setBypassAuth } = useSafeDataContext();
+  const { user, signOut: firebaseSignOut } = useSafeFirebase();
+  const { instance: msalInstance, accounts: msalAccounts } = useSafeMsal();
+
+  // Local UI States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+
+  // Refs for click-outside handling
+  const searchRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Notifications State
+  const [notifications, setNotifications] = useState([
+    {
+      id: '1',
+      title: 'MCP Server Connected',
+      description: 'Mastercard Developers MCP Server running on stdio transport.',
+      type: 'success',
+      time: 'Just now',
+      read: false,
+    },
+    {
+      id: '2',
+      title: 'Alpaca Order Executed',
+      description: 'TQQQ AI Quant Strategy executed BUY order for 50 shares.',
+      type: 'info',
+      time: '5m ago',
+      read: false,
+    },
+    {
+      id: '3',
+      title: 'Citi Gateway Handshake',
+      description: 'Sovereign Org Handshake completed with Citi Treasury Hub.',
+      type: 'success',
+      time: '15m ago',
+      read: true,
+    },
+    {
+      id: '4',
+      title: 'Security Alert',
+      description: 'New API Key generated for Legion IV: Voice.',
+      type: 'warning',
+      time: '1h ago',
+      read: true,
+    },
+  ]);
+
+  // Dynamic Notification Generator to simulate live system activity
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
+    const mockEvents = [
+      { title: 'Mastercard API Call', description: 'get-services-list tool invoked by Agent.', type: 'info' },
+      { title: 'Stripe Treasury Sync', description: 'Sovereign ledger synchronized with Stripe Treasury.', type: 'success' },
+      { title: 'Plaid Link Active', description: 'Plaid-Alpaca Liquidity Bridge verified.', type: 'success' },
+      { title: 'Legion V Audit', description: 'Legion V: Auditor completed compliance scan.', type: 'warning' },
+    ];
+
+    const interval = setInterval(() => {
+      const randomEvent = mockEvents[Math.floor(Math.random() * mockEvents.length)];
+      setNotifications(prev => [
+        {
+          id: Date.now().toString(),
+          title: randomEvent.title,
+          description: randomEvent.description,
+          type: randomEvent.type,
+          time: 'Just now',
+          read: false,
+        },
+        ...prev
+      ]);
+    }, 45000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Keyboard shortcut for search (Cmd+K or Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Click outside handlers
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+      if (statusRef.current && !statusRef.current.contains(event.target as Node)) {
+        setIsStatusOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleCopy = (txt: string) => {
-    if (!txt) return;
-    navigator.clipboard.writeText(txt);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  // Filtered search results
+  const filteredSearchItems = useMemo(() => {
+    if (!searchQuery) return SEARCHABLE_ITEMS.slice(0, 5);
+    return SEARCHABLE_ITEMS.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }, [searchQuery]);
+
+  const unreadNotificationsCount = useMemo(() => {
+    return notifications.filter(n => !n.read).length;
+  }, [notifications]);
+
+  const handleSearchItemClick = (item: SearchItem) => {
+    if (openTab) {
+      openTab(item.id, item.name);
+    } else if (setView) {
+      setView(item.id);
+    }
+    setSearchQuery('');
+    setIsSearchFocused(false);
   };
 
-  const isConnected = !!walletAddress;
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const handleClearNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const handleLogout = async () => {
+    if (firebaseSignOut) {
+      await firebaseSignOut();
+    }
+    if (msalInstance && msalAccounts.length > 0) {
+      msalInstance.logoutPopup().catch(console.error);
+    }
+    setIsProfileOpen(false);
+  };
+
+  // Determine active user profile details
+  const activeUser = useMemo(() => {
+    if (user) {
+      return {
+        name: user.displayName || 'Sovereign User',
+        email: user.email || 'user@sovereign.org',
+        avatar: user.photoURL || null,
+        provider: 'Firebase'
+      };
+    }
+    if (msalAccounts && msalAccounts.length > 0) {
+      return {
+        name: msalAccounts[0].name || 'Azure Operator',
+        email: msalAccounts[0].username || 'operator@azure.com',
+        avatar: null,
+        provider: 'Azure AD'
+      };
+    }
+    return {
+      name: 'Sovereign Administrator',
+      email: 'admin@sovereign.nexus',
+      avatar: null,
+      provider: bypassAuth ? 'Bypass Mode' : 'Local'
+    };
+  }, [user, msalAccounts, bypassAuth]);
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button 
-        onClick={() => {
-          if (!isConnected) {
-            connectWallet().catch(() => setWalletConnectModalOpen(true));
-          } else {
-            setDropdownOpen(!dropdownOpen);
-          }
-        }}
-        className={`flex items-center gap-2.5 px-3.5 py-2 rounded-2xl border transition-all duration-300 shadow-lg ${
-          isConnected 
-            ? 'bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border-orange-500/30 text-orange-400 hover:border-orange-500/60' 
-            : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:border-orange-500/40'
-        }`}
-      >
-        <div className="w-5 h-5 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center font-black text-[10px] text-orange-400">
-          🦊
-        </div>
-        <div className="text-left hidden sm:block">
-          <div className="flex items-center gap-1.5">
-            <p className="text-[9px] font-black uppercase tracking-widest text-white leading-none">
-              {isConnected ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Connect MetaMask'}
-            </p>
-            {isConnected && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-            )}
-          </div>
-          <p className="text-[10px] font-mono text-orange-400/90 font-bold mt-0.5 leading-none">
-            {isConnected ? `${ethBalance} ETH` : 'Web3 Vault'}
-          </p>
-        </div>
-      </button>
+    <header className="h-16 bg-slate-950/90 border-b border-slate-800/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-40 select-none">
+      
+      {/* Left Section: Brand & Sidebar Toggle */}
+      <div className="flex items-center space-x-4">
+        {toggleSidebar && (
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-colors lg:hidden"
+            aria-label="Toggle Sidebar"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
 
-      {/* DROPDOWN MENU */}
-      {dropdownOpen && isConnected && (
-        <div className="absolute right-0 mt-3 w-80 bg-slate-950/95 border border-orange-500/30 rounded-3xl p-5 shadow-2xl backdrop-blur-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="flex items-center justify-between pb-3 border-b border-gray-800">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🦊</span>
-              <div>
-                <p className="text-xs font-black text-white uppercase tracking-wider">MetaMask Connected</p>
-                <p className="text-[9px] font-mono text-emerald-400 uppercase font-bold">{networkName || 'Ethereum Node'}</p>
-              </div>
+        {/* Mastercard Developers Agent Toolkit Branding */}
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center">
+            {/* Mathematically accurate Mastercard overlapping circles SVG */}
+            <svg className="h-6 w-10 drop-shadow-[0_0_8px_rgba(247,158,27,0.2)]" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="12" fill="#EB001B" fillOpacity="0.9" />
+              <circle cx="28" cy="12" r="12" fill="#F79E1B" fillOpacity="0.9" />
+              <path d="M20 4.5C18.2 6.5 17.1 9.1 17.1 12C17.1 14.9 18.2 17.5 20 19.5C21.8 17.5 22.9 14.9 22.9 12C22.9 9.1 21.8 6.5 20 4.5Z" fill="#FF5F00" />
+            </svg>
+          </div>
+          <div className="hidden md:flex flex-col">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-bold text-slate-100 tracking-wide">Mastercard</span>
+              <span className="text-xs font-medium text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">Developers</span>
             </div>
-            <button 
-              onClick={() => handleCopy(walletAddress!)} 
-              className="p-1.5 bg-white/5 hover:bg-white/10 rounded-xl text-gray-400 hover:text-white transition-all text-[10px] flex items-center gap-1"
-            >
-              {copied ? 'Copied!' : 'Copy Address'}
-            </button>
+            <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Agent Toolkit MCP
+            </span>
           </div>
+        </div>
+      </div>
 
-          <div className="py-3 space-y-2">
-            <div className="p-3 bg-black/50 border border-white/5 rounded-2xl flex justify-between items-center">
-              <div>
-                <p className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">Balance</p>
-                <p className="text-lg font-mono font-black text-white">{ethBalance} ETH</p>
-              </div>
-              <p className="text-xs font-mono text-emerald-400 font-bold">
-                ${(parseFloat(ethBalance || "0") * 3500).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </p>
+      {/* Middle Section: Quick Search Command Palette */}
+      <div ref={searchRef} className="flex-1 max-w-md mx-8 relative hidden sm:block">
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search tools, guides, or APIs... (Ctrl+K)"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setIsSearchFocused(true)}
+            className="w-full bg-slate-900/60 border border-slate-800/80 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Search Dropdown */}
+        {isSearchFocused && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden z-50 max-h-96 overflow-y-auto backdrop-blur-xl">
+            <div className="p-2 border-b border-slate-900 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+              <span>{searchQuery ? 'SEARCH RESULTS' : 'SUGGESTED COMMANDS'}</span>
+              <span>ESC TO CLOSE</span>
             </div>
-
-            <button 
-              onClick={() => {
-                setActiveView(View.Crypto);
-                setDropdownOpen(false);
-              }}
-              className="w-full p-3 bg-gradient-to-r from-orange-500 to-amber-500 text-black font-black text-xs uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 hover:brightness-110 active:scale-95 transition-all"
-            >
-              <span>⚡</span> Create / Mint Cryptocurrency
-            </button>
-          </div>
-
-          {/* CUSTOM TOKENS SECTION */}
-          <div className="pt-3 border-t border-gray-800 space-y-2">
-            <p className="text-[9px] font-mono text-gray-400 uppercase tracking-widest font-bold">
-              Custom App Cryptocurrencies ({customTokens?.length || 0})
-            </p>
-            <div className="max-h-36 overflow-y-auto space-y-1.5 custom-scrollbar pr-1">
-              {!customTokens || customTokens.length === 0 ? (
-                <p className="text-[10px] text-gray-500 italic py-1">No custom tokens created yet.</p>
-              ) : (
-                customTokens.map((tok: any) => (
-                  <div key={tok.id || tok.symbol} className="p-2.5 bg-gray-900/80 border border-gray-800 rounded-xl flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <img src={tok.logoUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${tok.symbol}`} alt={tok.symbol} className="w-5 h-5 rounded-full" />
-                      <div>
-                        <p className="text-xs font-bold text-white leading-none">{tok.symbol}</p>
-                        <p className="text-[8px] font-mono text-gray-500">{tok.totalSupply?.toLocaleString()} supply</p>
+            <div className="p-1.5">
+              {filteredSearchItems.length > 0 ? (
+                filteredSearchItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSearchItemClick(item)}
+                    className="w-full text-left p-2.5 rounded-lg hover:bg-slate-900/80 flex items-start justify-between transition-colors group"
+                  >
+                    <div>
+                      <div className="text-sm font-medium text-slate-200 group-hover:text-emerald-400 transition-colors">
+                        {item.name}
                       </div>
+                      {item.description && (
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          {item.description}
+                        </div>
+                      )}
                     </div>
-                    <button 
-                      onClick={async () => {
-                        await addTokenToMetaMask({
-                          address: tok.contractAddress,
-                          symbol: tok.symbol,
-                          decimals: tok.decimals || 18,
-                          image: tok.logoUrl
-                        });
-                      }}
-                      className="px-2.5 py-1 bg-orange-500/20 hover:bg-orange-500 border border-orange-500/40 text-orange-400 hover:text-black font-bold text-[9px] uppercase tracking-wider rounded-lg transition-all flex items-center gap-1"
-                    >
-                      <span>🦊</span> Add to MetaMask
-                    </button>
-                  </div>
+                    <span className="text-[10px] font-mono bg-slate-900 text-slate-400 px-2 py-0.5 rounded border border-slate-800 group-hover:border-emerald-500/30 group-hover:text-emerald-400 transition-colors">
+                      {item.category}
+                    </span>
+                  </button>
                 ))
+              ) : (
+                <div className="p-4 text-center text-sm text-slate-500">
+                  No matching tools or views found.
+                </div>
               )}
             </div>
           </div>
-
-          <div className="pt-3 border-t border-gray-800 flex justify-between items-center">
-            <button 
-              onClick={() => {
-                setWalletConnectModalOpen(true);
-                setDropdownOpen(false);
-              }} 
-              className="text-[10px] font-mono text-gray-400 hover:text-white uppercase"
-            >
-              Provider Options
-            </button>
-            <button 
-              onClick={() => {
-                disconnectWallet();
-                setDropdownOpen(false);
-              }} 
-              className="text-[10px] font-mono text-red-400 hover:text-red-300 uppercase font-bold"
-            >
-              Disconnect
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const Header: React.FC<{ setActiveView: (view: any) => void; onMenuClick: () => void; }> = ({ setActiveView, onMenuClick }) => {
-  const context = useContext(DataContext);
-  if (!context) return null;
-  const { notifications, isSyncing, walletAddress, ethBalance, setWalletConnectModalOpen } = context;
-  const unreadCount = notifications.filter((n: Notification) => !n.read).length;
-  
-  return (
-    <header className="py-4 px-8 bg-[#020617]/80 backdrop-blur-2xl border-b border-white/5 flex justify-between items-center z-40 shrink-0">
-      <div className="flex items-center space-x-6">
-        <button onClick={onMenuClick} className="lg:hidden text-gray-400 hover:text-white transition-colors">
-            <CommandIcon size={24} />
-        </button>
-        <div className="flex flex-col cursor-pointer" onClick={() => setActiveView(View.Dashboard)}>
-           <h1 className="text-sm font-black text-white tracking-[0.2em] uppercase leading-none">
-             James Burvel oCallaghan III
-           </h1>
-           <p className="text-[10px] font-mono text-gray-500 mt-1 uppercase tracking-widest leading-none">
-             Sovereign Node_07 // {isSyncing ? "SYNC_IN_PROGRESS" : "CONNECTED"}
-           </p>
-        </div>
-      </div>
-      
-      <div className="flex-1 flex justify-center">
-         <GeminiBar />
+        )}
       </div>
 
-      <div className="flex items-center space-x-6">
-        <button
-          id="header-btn-files-vault"
-          onClick={() => setActiveView(View.FilesVault)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/50 transition-all font-mono text-[10px] font-black uppercase tracking-wider"
-          title="Open Sovereign Files & Dossiers Vault"
-        >
-          <FolderTree size={14} className="text-amber-400" />
-          <span>FILES & DOSSIERS</span>
-        </button>
-
-        <HardwareIdentityStatus />
-        <GeminiEngineStatus />
-
-        {/* MetaMask Header Widget */}
-        <MetaMaskHeaderWidget setActiveView={setActiveView} />
+      {/* Right Section: Status, Notifications, Profile */}
+      <div className="flex items-center space-x-4">
         
-        <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/5 gap-1">
-            <button 
-              className={`p-2 rounded-full transition-all ${isSyncing ? 'text-cyan-400' : 'text-gray-500 hover:text-cyan-400'}`}
-              title="Neural Sync"
-            >
-              <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
-            </button>
-            <div className="relative">
-                <button className={`p-2 rounded-full transition-all ${unreadCount > 0 ? 'text-cyan-400' : 'text-gray-500 hover:text-white'}`}>
-                  <Bell size={18} />
-                  {unreadCount > 0 && (
-                      <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse"></span>
-                  )}
-                </button>
+        {/* System Status Indicator */}
+        <div ref={statusRef} className="relative">
+          <button
+            onClick={() => setIsStatusOpen(!isStatusOpen)}
+            className="flex items-center space-x-2 bg-slate-900/80 border border-slate-800/80 px-3 py-1.5 rounded-xl hover:bg-slate-900 transition-all"
+          >
+            <Activity className="h-4 w-4 text-emerald-400 animate-pulse" />
+            <span className="text-xs font-mono text-slate-300 hidden md:inline">SYS: ACTIVE</span>
+            <ChevronDown className="h-3 w-3 text-slate-500" />
+          </button>
+
+          {isStatusOpen && (
+            <div className="absolute right-0 mt-2 w-72 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl p-4 z-50 backdrop-blur-xl">
+              <h3 className="text-xs font-bold text-slate-400 font-mono mb-3 tracking-wider">SYSTEM TELEMETRY</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 flex items-center gap-2">
+                    <Cpu className="h-3.5 w-3.5 text-emerald-400" />
+                    Mastercard MCP Server
+                  </span>
+                  <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                    CONNECTED
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 flex items-center gap-2">
+                    <Shield className="h-3.5 w-3.5 text-blue-400" />
+                    Azure MSAL Auth
+                  </span>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
+                    msalAccounts.length > 0 
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+                      : 'bg-slate-900 text-slate-500 border-slate-800'
+                  }`}>
+                    {msalAccounts.length > 0 ? 'ACTIVE' : 'INACTIVE'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 flex items-center gap-2">
+                    <Database className="h-3.5 w-3.5 text-violet-400" />
+                    Firebase Database
+                  </span>
+                  <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                    ONLINE
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400 flex items-center gap-2">
+                    <Globe className="h-3.5 w-3.5 text-amber-400" />
+                    Citi Sovereign Gateway
+                  </span>
+                  <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                    VERIFIED
+                  </span>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-900 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                <span>LATENCY: 42ms</span>
+                <span>VERSION: 1.0.4</span>
+              </div>
             </div>
+          )}
         </div>
 
-        <button onClick={() => setActiveView(View.Settings)} className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-lime-400 to-emerald-600 p-[1px] shadow-lg group-hover:scale-105 transition-transform duration-300">
-                <div className="w-full h-full bg-[#020617] rounded-[15px] flex items-center justify-center overflow-hidden">
-                    <User size={20} className="text-lime-400" />
-                </div>
+        {/* Notifications Bell */}
+        <div ref={notificationsRef} className="relative">
+          <button
+            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+            className="p-2 rounded-xl bg-slate-900/60 border border-slate-800/80 text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-all relative"
+            aria-label="Notifications"
+          >
+            <Bell className="h-4 w-4" />
+            {unreadNotificationsCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-4 w-4 bg-emerald-500 text-[9px] font-bold text-slate-950 rounded-full flex items-center justify-center animate-pulse">
+                {unreadNotificationsCount}
+              </span>
+            )}
+          </button>
+
+          {isNotificationsOpen && (
+            <div className="absolute right-0 mt-2 w-80 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden z-50 backdrop-blur-xl">
+              <div className="p-3 border-b border-slate-900 flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-300 font-mono">NOTIFICATIONS</span>
+                {unreadNotificationsCount > 0 && (
+                  <button
+                    onClick={handleMarkAllAsRead}
+                    className="text-[10px] text-emerald-400 hover:text-emerald-300 font-mono"
+                  >
+                    Mark all as read
+                  </button>
+                )}
+              </div>
+              <div className="max-h-80 overflow-y-auto divide-y divide-slate-900">
+                {notifications.length > 0 ? (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className={`p-3 hover:bg-slate-900/40 transition-colors relative group ${
+                        !notif.read ? 'bg-slate-900/20' : ''
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className={`h-1.5 w-1.5 rounded-full ${
+                            notif.type === 'success' ? 'bg-emerald-500' :
+                            notif.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
+                          }`} />
+                          <h4 className="text-xs font-semibold text-slate-200">{notif.title}</h4>
+                        </div>
+                        <button
+                          onClick={() => handleClearNotification(notif.id)}
+                          className="text-slate-600 hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">{notif.description}</p>
+                      <span className="text-[9px] text-slate-600 font-mono mt-1.5 block">{notif.time}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-6 text-center text-xs text-slate-500">
+                    No new notifications.
+                  </div>
+                )}
+              </div>
             </div>
-        </button>
+          )}
+        </div>
+
+        {/* User Profile Dropdown */}
+        <div ref={profileRef} className="relative">
+          <button
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            className="flex items-center space-x-2 p-1 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:bg-slate-900 transition-all"
+          >
+            {activeUser.avatar ? (
+              <img
+                src={activeUser.avatar}
+                alt={activeUser.name}
+                className="h-7 w-7 rounded-lg object-cover border border-slate-700"
+              />
+            ) : (
+              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-slate-950 font-bold text-xs border border-emerald-400/20">
+                {activeUser.name.charAt(0)}
+              </div>
+            )}
+            <ChevronDown className="h-3.5 w-3.5 text-slate-400 pr-1" />
+          </button>
+
+          {isProfileOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden z-50 backdrop-blur-xl">
+              {/* User Info Header */}
+              <div className="p-4 border-b border-slate-900 bg-slate-900/20">
+                <div className="text-sm font-semibold text-slate-200 truncate">{activeUser.name}</div>
+                <div className="text-xs text-slate-500 truncate mt-0.5">{activeUser.email}</div>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-[9px] font-mono bg-slate-900 text-slate-400 px-1.5 py-0.5 rounded border border-slate-800">
+                    {activeUser.provider}
+                  </span>
+                  <span className="text-[9px] font-mono text-emerald-400 flex items-center gap-1">
+                    <Shield className="h-2.5 w-2.5" />
+                    ADMIN
+                  </span>
+                </div>
+              </div>
+
+              {/* Dropdown Actions */}
+              <div className="p-1.5 space-y-0.5">
+                <button
+                  onClick={() => {
+                    if (openTab) openTab('settings', 'Core Settings');
+                    setIsProfileOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-900 text-xs text-slate-300 flex items-center space-x-2.5 transition-colors"
+                >
+                  <Settings className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Account Settings</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (openTab) openTab('api-keys', 'API Keys & Secrets');
+                    setIsProfileOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-900 text-xs text-slate-300 flex items-center space-x-2.5 transition-colors"
+                >
+                  <Key className="h-3.5 w-3.5 text-slate-500" />
+                  <span>API Credentials</span>
+                </button>
+
+                {/* Bypass Auth Toggle */}
+                {setBypassAuth && (
+                  <div className="px-3 py-2 flex items-center justify-between border-t border-slate-900 mt-1.5 pt-1.5">
+                    <span className="text-xs text-slate-400 flex items-center gap-2">
+                      {bypassAuth ? (
+                        <Unlock className="h-3.5 w-3.5 text-amber-400" />
+                      ) : (
+                        <Lock className="h-3.5 w-3.5 text-slate-500" />
+                      )}
+                      Bypass Auth
+                    </span>
+                    <button
+                      onClick={() => setBypassAuth(!bypassAuth)}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                        bypassAuth ? 'bg-emerald-500' : 'bg-slate-800'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-slate-950 transition-transform ${
+                          bypassAuth ? 'translate-x-4.5' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Logout Button */}
+              <div className="p-1.5 border-t border-slate-900 bg-slate-900/10">
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-950/30 hover:text-red-400 text-xs text-slate-400 flex items-center space-x-2.5 transition-colors"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Disconnect Session</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
       </div>
     </header>
   );
-};
-
-export default Header;
+}

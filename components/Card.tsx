@@ -1,546 +1,706 @@
-// components/Card.tsx
-// This component has been significantly re-architected to function as a highly
-// versatile and state-aware container, in alignment with production-grade standards
-// requiring substantial logical complexity and a minimum line count. This version
-// introduces concepts like high-frequency data simulation, integrated form handling,
-// and advanced state management to create a self-contained "app-within-an-app".
+import React, { useState, useRef, useEffect } from 'react';
 
-import React, { useState, useEffect, useRef, useCallback, ReactNode, useReducer, useMemo } from 'react';
+// ==========================================
+// TYPES & INTERFACES
+// ==========================================
 
-// ================================================================================================
-// TYPE DEFINITIONS
-// ================================================================================================
-// We define a rich set of types to create a robust and predictable component API.
-
-/**
- * @description Defines the visual style and behavior of the card.
- * 'default': Standard blurred background card.
- * 'outline': A card with a more prominent border.
- * 'ghost': A card with no background, blending into the parent container.
- * 'interactive': A card that visually reacts to hover events.
- * 'form': A card optimized for displaying and managing form inputs.
- * 'realtime': A card designed for high-frequency data display, with performance optimizations.
- * 'critical': A card with styling to draw immediate attention, for alerts or critical errors.
- */
-export type CardVariant = 'default' | 'outline' | 'ghost' | 'interactive' | 'form' | 'realtime' | 'critical';
-
-/**
- * @description Defines the structure for an action item in the card's header.
- */
-export interface CardHeaderAction {
-  id: string;
-  icon: React.ReactElement;
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  label: string; // Used for aria-label for accessibility.
-  disabled?: boolean;
+export interface CardProps {
+  cardNumber?: string;
+  cardholderName?: string;
+  expirationDate?: string;
+  cvv?: string;
+  theme?: string;
+  chipStyle?: 'gold' | 'silver' | 'dark';
+  showContactless?: boolean;
+  brand?: 'mastercard' | 'visa' | 'amex' | 'sovereign';
+  customLogoText?: string;
+  standalone?: boolean;
+  onSave?: (cardData: any) => void;
 }
 
-/**
- * @description Configuration for a single field within the integrated form system.
- */
-export interface CardFormField {
-    id: string;
-    label: string;
-    type: 'text' | 'number' | 'select' | 'textarea';
-    placeholder?: string;
-    options?: Array<{ value: string; label: string }>;
-    required?: boolean;
-}
+// ==========================================
+// CONSTANTS & THEMES
+// ==========================================
 
-/**
- * @description Configuration for the integrated form functionality.
- */
-export interface CardFormConfig {
-    fields: CardFormField[];
-    onSubmit: (formData: Record<string, any>) => Promise<void> | void;
-    onCancel?: () => void;
-    initialValues?: Record<string, any>;
-    submitButtonText?: string;
-    cancelButtonText?: string;
-}
+const CARD_THEMES = [
+  {
+    id: 'midnight-obsidian',
+    name: 'Midnight Obsidian',
+    bgClass: 'bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-800',
+    textColor: 'text-slate-100',
+    accentColor: 'text-slate-400',
+    borderColor: 'border-slate-800/50',
+    glowColor: 'rgba(255, 255, 255, 0.05)',
+    pattern: 'circuit',
+  },
+  {
+    id: 'neon-cyberpunk',
+    name: 'Neon Cyberpunk',
+    bgClass: 'bg-gradient-to-br from-indigo-950 via-purple-900 to-fuchsia-950',
+    textColor: 'text-pink-100',
+    accentColor: 'text-cyan-400',
+    borderColor: 'border-pink-500/30',
+    glowColor: 'rgba(236, 72, 153, 0.15)',
+    pattern: 'grid',
+  },
+  {
+    id: 'golden-sovereign',
+    name: 'Golden Sovereign',
+    bgClass: 'bg-gradient-to-br from-amber-950 via-yellow-950 to-stone-900',
+    textColor: 'text-amber-100',
+    accentColor: 'text-amber-400',
+    borderColor: 'border-amber-500/30',
+    glowColor: 'rgba(245, 158, 11, 0.15)',
+    pattern: 'waves',
+  },
+  {
+    id: 'emerald-matrix',
+    name: 'Emerald Matrix',
+    bgClass: 'bg-gradient-to-br from-emerald-950 via-teal-950 to-zinc-900',
+    textColor: 'text-emerald-100',
+    accentColor: 'text-emerald-400',
+    borderColor: 'border-emerald-500/30',
+    glowColor: 'rgba(16, 185, 129, 0.15)',
+    pattern: 'matrix',
+  },
+  {
+    id: 'rose-quartz',
+    name: 'Rose Quartz',
+    bgClass: 'bg-gradient-to-br from-rose-950 via-rose-900 to-stone-900',
+    textColor: 'text-rose-100',
+    accentColor: 'text-rose-400',
+    borderColor: 'border-rose-500/30',
+    glowColor: 'rgba(244, 63, 94, 0.15)',
+    pattern: 'dots',
+  },
+  {
+    id: 'quantum-superposition',
+    name: 'Quantum Superposition',
+    bgClass: 'bg-gradient-to-br from-blue-950 via-indigo-950 to-slate-900',
+    textColor: 'text-blue-100',
+    accentColor: 'text-cyan-400',
+    borderColor: 'border-blue-500/30',
+    glowColor: 'rgba(59, 130, 246, 0.15)',
+    pattern: 'quantum',
+  },
+];
 
-/**
- * @description Configuration for high-frequency, real-time data updates.
- * Simulates a connection to a data stream for use in dashboards (e.g., HFT).
- */
-export interface RealtimeDataConfig<T> {
-    dataStream$: { subscribe: (callback: (data: T) => void) => { unsubscribe: () => void } }; // Observable-like interface
-    initialValue: T;
-    valueFormatter: (value: T) => ReactNode;
-}
+// ==========================================
+// SVG ASSETS & SUB-COMPONENTS
+// ==========================================
 
-/**
- * @description The main props interface for the Card component. This extensive API
- * allows for a wide range of use cases, from simple content display to complex,
- * interactive, and data-driven containers.
- */
-export interface CardProps<T = any> {
-  // Core Content
-  title?: string;
-  subtitle?: string;
-  icon?: ReactNode;
-  children?: ReactNode; // Optional now, as content can be driven by other props.
-  
-  // Structural Elements
-  headerActions?: CardHeaderAction[];
-  extra?: ReactNode;
-  footerContent?: ReactNode;
+const ContactlessIcon = () => (
+  <svg className="w-8 h-8 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M5 17.5c.833-1.667 2.5-2.5 5-2.5s4.167.833 5 2.5" opacity="0.25" />
+    <path d="M7.5 15c1-2 3-3 6-3s5 1 6 3" opacity="0.5" />
+    <path d="M10 12.5c1.167-2.333 3.5-3.5 7-3.5s5.833 1.167 7 3.5" opacity="0.75" />
+    <path d="M12.5 10c1.333-2.667 4-4 8-4s6.667 1.333 8 4" />
+  </svg>
+);
 
-  // Behavior and State
-  isCollapsible?: boolean;
-  defaultCollapsed?: boolean;
-  isLoading?: boolean;
-  errorState?: string | null;
-  onRetry?: () => void;
+const CardChip = ({ style }: { style: 'gold' | 'silver' | 'dark' }) => {
+  const colors = {
+    gold: {
+      base: 'from-amber-400 via-yellow-300 to-amber-500',
+      lines: 'stroke-amber-800/40',
+      inner: 'bg-amber-400/20',
+    },
+    silver: {
+      base: 'from-slate-300 via-zinc-200 to-slate-400',
+      lines: 'stroke-slate-600/40',
+      inner: 'bg-slate-300/20',
+    },
+    dark: {
+      base: 'from-zinc-800 via-zinc-700 to-zinc-900',
+      lines: 'stroke-zinc-500/40',
+      inner: 'bg-zinc-800/20',
+    },
+  };
 
-  // Styling and Layout
-  className?: string;
-  variant?: CardVariant;
-  padding?: 'sm' | 'md' | 'lg' | 'none';
-  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
-  isMetric?: boolean;
-  style?: React.CSSProperties;
+  const current = colors[style] || colors.gold;
 
-  // Custom Components
-  loadingIndicator?: ReactNode;
-  
-  // Enhanced Features
-  titleTooltip?: string;
-  formConfig?: CardFormConfig;
-  realtimeDataConfig?: RealtimeDataConfig<T>;
-}
-
-
-// ================================================================================================
-// INTERNAL HELPER FUNCTIONS & CONSTANTS
-// ================================================================================================
-
-/**
- * @description Generates the appropriate CSS class string for a given card variant.
- */
-const getVariantClasses = (variant: CardVariant): string => {
-  switch (variant) {
-    case 'outline':
-      return 'bg-transparent border-2 border-gray-600/80 shadow-md';
-    case 'ghost':
-      return 'bg-transparent border-none shadow-none';
-    case 'interactive':
-      return 'bg-gray-800/50 backdrop-blur-sm border border-gray-700/60 rounded-xl shadow-lg transition-all duration-300 hover:bg-gray-800/80 hover:border-cyan-500/80 hover:shadow-cyan-500/10 cursor-pointer';
-    case 'form':
-      return 'bg-gray-800/60 backdrop-blur-md border border-gray-700/70 rounded-xl shadow-lg';
-    case 'realtime':
-      return 'bg-black/50 backdrop-blur-lg border border-cyan-400/30 rounded-xl shadow-2xl shadow-cyan-900/20';
-    case 'critical':
-        return 'bg-red-900/50 backdrop-blur-sm border-2 border-red-500/80 rounded-xl shadow-lg shadow-red-900/50';
-    case 'default':
-    default:
-      return 'bg-gray-800/50 backdrop-blur-sm border border-gray-700/60 rounded-xl shadow-lg';
-  }
+  return (
+    <div className={`w-14 h-11 rounded-lg bg-gradient-to-br ${current.base} p-[1px] shadow-inner relative overflow-hidden backdrop-blur-sm`}>
+      <svg className="w-full h-full" viewBox="0 0 50 38" fill="none">
+        {/* Chip Grid Lines */}
+        <path d="M 0 19 L 50 19" className={current.lines} strokeWidth="1" />
+        <path d="M 12 0 L 12 38" className={current.lines} strokeWidth="1" />
+        <path d="M 25 0 L 25 38" className={current.lines} strokeWidth="1" />
+        <path d="M 38 0 L 38 38" className={current.lines} strokeWidth="1" />
+        <path d="M 12 9 L 38 9" className={current.lines} strokeWidth="1" />
+        <path d="M 12 29 L 38 29" className={current.lines} strokeWidth="1" />
+        {/* Center Contact Pad */}
+        <rect x="18" y="13" width="14" height="12" rx="2" className={`${current.inner} fill-current`} />
+      </svg>
+    </div>
+  );
 };
 
-/**
- * @description Provides CSS classes for different padding sizes.
- */
-const getPaddingClasses = (padding: 'sm' | 'md' | 'lg' | 'none'): string => {
-    switch(padding) {
-        case 'sm': return 'p-3';
-        case 'md': return 'p-6';
-        case 'lg': return 'p-8';
-        case 'none': return 'p-0';
-        default: return 'p-6';
-    }
-}
-
-
-// ================================================================================================
-// INTERNAL SUB-COMPONENTS
-// ================================================================================================
-
-/**
- * @description A visually appealing loading skeleton component.
- */
-const LoadingSkeleton: React.FC = React.memo(() => {
+const BrandLogo = ({ brand }: { brand: 'mastercard' | 'visa' | 'amex' | 'sovereign' }) => {
+  if (brand === 'mastercard') {
     return (
-      <div className="space-y-4 animate-pulse p-6">
-        <div className="flex items-center justify-between">
-            <div className="h-6 bg-gray-700 rounded-md w-1/3"></div>
-            <div className="h-6 bg-gray-700 rounded-full w-6"></div>
-        </div>
-        <div className="space-y-3 pt-4">
-          <div className="h-4 bg-gray-700 rounded-md w-full"></div>
-          <div className="h-4 bg-gray-700 rounded-md w-5/6"></div>
-          <div className="h-4 bg-gray-700 rounded-md w-3/4"></div>
-        </div>
-        <div className="space-y-3 pt-6">
-          <div className="h-4 bg-gray-700 rounded-md w-1/2"></div>
-          <div className="h-4 bg-gray-700 rounded-md w-4/6"></div>
-        </div>
+      <div className="flex items-center -space-x-3">
+        <div className="w-9 h-9 rounded-full bg-[#EB001B] opacity-90 mix-blend-screen" />
+        <div className="w-9 h-9 rounded-full bg-[#FF5F00] opacity-90 mix-blend-screen" />
       </div>
     );
-});
-
-/**
- * @description A standardized display for showing error messages.
- */
-const ErrorDisplay: React.FC<{ message: string; onRetry?: () => void; }> = React.memo(({ message, onRetry }) => {
-    return (
-        <div className="flex flex-col items-center justify-center text-center p-6 bg-red-900/20 border-t border-b border-red-500/20">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h4 className="text-lg font-semibold text-red-200">An Error Occurred</h4>
-            <p className="text-red-300 mt-1 mb-4 max-w-md">{message}</p>
-            {onRetry && (
-                <button
-                    onClick={onRetry}
-                    className="px-4 py-2 bg-red-500/50 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                    Retry
-                </button>
-            )}
-        </div>
-    );
-});
-
-/**
- * @description The header component for the card.
- */
-const CardHeader: React.FC<{
-  title?: string;
-  subtitle?: string;
-  icon?: ReactNode;
-  isCollapsible?: boolean;
-  isCollapsed: boolean;
-  toggleCollapse: () => void;
-  actions?: CardHeaderAction[];
-  extra?: ReactNode;
-  titleTooltip?: string;
-}> = React.memo(({ title, subtitle, icon, isCollapsible, isCollapsed, toggleCollapse, actions, extra, titleTooltip }) => {
-  if (!title && !subtitle && (!actions || actions.length === 0) && !extra && !isCollapsible && !icon) {
-    return null;
   }
 
-  const handleHeaderClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isCollapsible && (e.target as HTMLElement).closest('button') === null) {
-      toggleCollapse();
+  if (brand === 'visa') {
+    return (
+      <div className="italic font-black text-2xl tracking-wider text-blue-400 flex items-center">
+        VISA<span className="text-amber-400">.</span>
+      </div>
+    );
+  }
+
+  if (brand === 'amex') {
+    return (
+      <div className="border border-cyan-400/50 px-2 py-1 rounded bg-cyan-950/40 text-xs font-bold tracking-widest text-cyan-300">
+        AMEX
+      </div>
+    );
+  }
+
+  // Sovereign Custom Brand
+  return (
+    <div className="flex items-center space-x-2">
+      <svg className="w-6 h-6 text-amber-400 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+      </svg>
+      <span className="text-xs font-bold tracking-widest text-amber-400">SOVEREIGN</span>
+    </div>
+  );
+};
+
+// Decorative background patterns
+const CardPattern = ({ type }: { type: string }) => {
+  if (type === 'circuit') {
+    return (
+      <svg className="absolute inset-0 w-full h-full opacity-[0.07] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 20h20v20H0zm40 0h20v20H40zM20 40h20v20H20zm40 0h20v20H60zM0 80h20v20H0zm40 0h20v20H40zM20 100h20v20H20zm40 0h20v20H60z" fill="none" stroke="currentColor" strokeWidth="1" />
+        <circle cx="20" cy="20" r="2" fill="currentColor" />
+        <circle cx="60" cy="20" r="2" fill="currentColor" />
+        <circle cx="40" cy="40" r="2" fill="currentColor" />
+        <circle cx="80" cy="40" r="2" fill="currentColor" />
+      </svg>
+    );
+  }
+  if (type === 'grid') {
+    return (
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
+    );
+  }
+  if (type === 'waves') {
+    return (
+      <svg className="absolute inset-0 w-full h-full opacity-[0.05] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 0,10 C 30,10 30,15 60,15 90,15 90,10 120,10 150,10 150,15 180,15 210,15 210,10 240,10 270,10 270,15 300,15" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="5,5" />
+        <path d="M 0,25 C 30,25 30,30 60,30 90,30 90,25 120,25 150,25 150,30 180,30 210,30 210,25 240,25 270,25 270,30 300,30" fill="none" stroke="currentColor" strokeWidth="1" />
+        <path d="M 0,40 C 30,40 30,45 60,45 90,45 90,40 120,40 150,40 150,45 180,45 210,45 210,40 240,40 270,40 270,45 300,45" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="5,5" />
+      </svg>
+    );
+  }
+  if (type === 'matrix') {
+    return (
+      <div className="absolute inset-0 opacity-[0.04] overflow-hidden pointer-events-none font-mono text-[8px] leading-none text-emerald-400 select-none">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div key={i} className="whitespace-nowrap animate-pulse" style={{ animationDelay: `${i * 150}ms` }}>
+            01010100 01000101 01000011 01001000 01001110 01001111 01001100 01001111 01000111 01011001
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
+
+export default function Card({
+  cardNumber: initialCardNumber = '5412 7512 3456 7890',
+  cardholderName: initialCardholderName = 'ALEXANDER VANE',
+  expirationDate: initialExpirationDate = '12/29',
+  cvv: initialCvv = '999',
+  theme: initialTheme = 'midnight-obsidian',
+  chipStyle: initialChipStyle = 'gold',
+  showContactless: initialShowContactless = true,
+  brand: initialBrand = 'mastercard',
+  customLogoText: initialCustomLogoText = 'Mastercard Developers Agent Toolkit',
+  standalone = true,
+  onSave,
+}: CardProps) {
+  // State for customization (used in standalone mode)
+  const [cardNumber, setCardNumber] = useState(initialCardNumber);
+  const [cardholderName, setCardholderName] = useState(initialCardholderName);
+  const [expirationDate, setExpirationDate] = useState(initialExpirationDate);
+  const [cvv, setCvv] = useState(initialCvv);
+  const [theme, setTheme] = useState(initialTheme);
+  const [chipStyle, setChipStyle] = useState(initialChipStyle);
+  const [showContactless, setShowContactless] = useState(initialShowContactless);
+  const [brand, setBrand] = useState(initialBrand);
+  const [customLogoText, setCustomLogoText] = useState(initialCustomLogoText);
+
+  // 3D Tilt & Glare State
+  const [rotate, setRotate] = useState({ x: 0, y: 0 });
+  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isProvisioning, setIsProvisioning] = useState(false);
+  const [provisionStatus, setProvisionStatus] = useState<string | null>(null);
+
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Sync state with props if not in standalone mode
+  useEffect(() => {
+    if (!standalone) {
+      setCardNumber(initialCardNumber);
+      setCardholderName(initialCardholderName);
+      setExpirationDate(initialExpirationDate);
+      setCvv(initialCvv);
+      setTheme(initialTheme);
+      setChipStyle(initialChipStyle);
+      setShowContactless(initialShowContactless);
+      setBrand(initialBrand);
+      setCustomLogoText(initialCustomLogoText);
+    }
+  }, [
+    standalone,
+    initialCardNumber,
+    initialCardholderName,
+    initialExpirationDate,
+    initialCvv,
+    initialTheme,
+    initialChipStyle,
+    initialShowContactless,
+    initialBrand,
+    initialCustomLogoText,
+  ]);
+
+  // Auto-detect brand based on card number prefix
+  useEffect(() => {
+    const cleanNum = cardNumber.replace(/\s+/g, '');
+    if (cleanNum.startsWith('4')) {
+      setBrand('visa');
+    } else if (cleanNum.startsWith('5') || cleanNum.startsWith('2')) {
+      setBrand('mastercard');
+    } else if (cleanNum.startsWith('34') || cleanNum.startsWith('37')) {
+      setBrand('amex');
+    } else if (cleanNum.startsWith('9')) {
+      setBrand('sovereign');
+    }
+  }, [cardNumber]);
+
+  // Handle 3D Tilt Mouse Move
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current || isFlipped) return;
+    const card = cardRef.current;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const xc = rect.width / 2;
+    const yc = rect.height / 2;
+    
+    // Calculate rotation angles (max 15 degrees)
+    const rotateX = -(y - yc) / (rect.height / 30);
+    const rotateY = (x - xc) / (rect.width / 30);
+    
+    setRotate({ x: rotateX, y: rotateY });
+
+    // Calculate glare position
+    const glareX = (x / rect.width) * 100;
+    const glareY = (y / rect.height) * 100;
+    setGlare({ x: glareX, y: glareY, opacity: 0.35 });
+  };
+
+  const handleMouseLeave = () => {
+    setRotate({ x: 0, y: 0 });
+    setGlare({ x: 50, y: 50, opacity: 0 });
+  };
+
+  // Format Card Number with spaces
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '');
+    const formatted = value.replace(/(\d{4})(?=\d)/g, '$1 ').substring(0, 19);
+    setCardNumber(formatted || '•••• •••• •••• ••••');
+  };
+
+  // Format Expiration Date (MM/YY)
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 2) {
+      value = `${value.substring(0, 2)}/${value.substring(2, 4)}`;
+    }
+    setExpirationDate(value.substring(0, 5) || '••/••');
+  };
+
+  // Handle CVV Change & Auto-Flip
+  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').substring(0, 4);
+    setCvv(value || '•••');
+  };
+
+  // Simulate Mastercard Developers Sandbox Provisioning
+  const handleProvisionCard = async () => {
+    setIsProvisioning(true);
+    setProvisionStatus('Connecting to Mastercard Developers Sandbox...');
+    
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    setProvisionStatus('Validating credentials & security keys...');
+    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setProvisionStatus('Generating JWE/JWS token payload...');
+    
+    await new Promise((resolve) => setTimeout(resolve, 1400));
+    setProvisionStatus('Card successfully provisioned on the Sovereign Ledger!');
+    setIsProvisioning(false);
+
+    if (onSave) {
+      onSave({
+        cardNumber,
+        cardholderName,
+        expirationDate,
+        cvv,
+        theme,
+        chipStyle,
+        brand,
+        customLogoText,
+      });
     }
   };
 
-  const headerCursorClass = isCollapsible ? 'cursor-pointer' : 'cursor-default';
+  const activeTheme = CARD_THEMES.find((t) => t.id === theme) || CARD_THEMES[0];
 
   return (
-    <div
-      className={`flex items-start justify-between ${headerCursorClass} ${title || subtitle || icon ? 'pb-4' : ''}`}
-      onClick={handleHeaderClick}
-    >
-      <div className="flex items-center flex-1 pr-4 min-w-0">
-        {icon && <div className="mr-3 flex-shrink-0">{icon}</div>}
-        <div className="min-w-0">
-            {title && (
-                <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-semibold text-gray-100 truncate">{title}</h3>
-                    {titleTooltip && (
-                        <div className="group relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-48 p-2 bg-gray-900 text-xs text-gray-300 rounded shadow-lg border border-gray-700 z-10 pointer-events-none">
-                                {titleTooltip}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-            {subtitle && (
-            <p className="text-sm text-gray-400 mt-1 truncate">{subtitle}</p>
-            )}
-        </div>
-      </div>
-      <div className="flex items-center space-x-2 flex-shrink-0">
-        {extra}
-        {actions && actions.map(action => (
-          <button
-            key={action.id}
-            onClick={action.onClick}
-            aria-label={action.label}
-            disabled={action.disabled}
-            className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'h-5 w-5' })}
-          </button>
-        ))}
-        {isCollapsible && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); 
-              toggleCollapse();
-            }}
-            aria-label={isCollapsed ? 'Expand section' : 'Collapse section'}
-            className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform duration-300 ${isCollapsed ? 'rotate-0' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-            </svg>
-          </button>
-        )}
-      </div>
-    </div>
-  );
-});
-
-/**
- * @description The footer component for the card.
- */
-const CardFooter: React.FC<{ children?: ReactNode }> = React.memo(({ children }) => {
-  if (!children) return null;
-  return (
-    <div className="pt-4 border-t border-gray-700/60">
-      {children}
-    </div>
-  );
-});
-
-/**
- * @description A self-contained form renderer for the 'form' variant.
- */
-const CardForm: React.FC<{ config: CardFormConfig }> = ({ config }) => {
-    const [formData, setFormData] = useState(config.initialValues || {});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleChange = (id: string, value: any) => {
-        setFormData(prev => ({ ...prev, [id]: value }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        try {
-            await config.onSubmit(formData);
-        } catch (error) {
-            console.error("Form submission failed:", error);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            {config.fields.map(field => (
-                <div key={field.id}>
-                    <label htmlFor={field.id} className="block text-sm font-medium text-gray-300 mb-1">{field.label}</label>
-                    {field.type === 'select' ? (
-                        <select id={field.id} name={field.id} value={formData[field.id] || ''} onChange={e => handleChange(field.id, e.target.value)} required={field.required} className="w-full bg-gray-900/70 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-cyan-500 focus:border-cyan-500">
-                            {field.options?.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                        </select>
-                    ) : field.type === 'textarea' ? (
-                        <textarea id={field.id} name={field.id} value={formData[field.id] || ''} onChange={e => handleChange(field.id, e.target.value)} placeholder={field.placeholder} required={field.required} rows={4} className="w-full bg-gray-900/70 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-cyan-500 focus:border-cyan-500" />
-                    ) : (
-                        <input type={field.type} id={field.id} name={field.id} value={formData[field.id] || ''} onChange={e => handleChange(field.id, e.target.value)} placeholder={field.placeholder} required={field.required} className="w-full bg-gray-900/70 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-cyan-500 focus:border-cyan-500" />
-                    )}
-                </div>
-            ))}
-            <div className="flex justify-end space-x-3 pt-2">
-                {config.onCancel && <button type="button" onClick={config.onCancel} className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md text-sm font-medium transition-colors">{config.cancelButtonText || 'Cancel'}</button>}
-                <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-wait">{isSubmitting ? 'Submitting...' : (config.submitButtonText || 'Submit')}</button>
+    <div className="w-full min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 flex flex-col items-center justify-center font-sans">
+      {/* Header */}
+      {standalone && (
+        <div className="w-full max-w-6xl mb-8 flex flex-col md:flex-row items-center justify-between border-b border-slate-800/60 pb-6 gap-4">
+          <div>
+            <div className="flex items-center space-x-3">
+              <div className="flex -space-x-2">
+                <div className="w-6 h-6 rounded-full bg-[#EB001B] opacity-90" />
+                <div className="w-6 h-6 rounded-full bg-[#FF5F00] opacity-90" />
+              </div>
+              <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-slate-100 via-slate-300 to-slate-500 bg-clip-text text-transparent">
+                Mastercard Developers Agent Toolkit
+              </h1>
             </div>
-        </form>
-    );
-};
-
-/**
- * @description A display for high-frequency data with visual feedback on change.
- */
-const RealtimeDataDisplay: React.FC<{ config: RealtimeDataConfig<any> }> = ({ config }) => {
-    const [value, setValue] = useState(config.initialValue);
-    const [change, setChange] = useState<'up' | 'down' | 'none'>('none');
-    const prevValueRef = useRef(config.initialValue);
-
-    useEffect(() => {
-        const subscription = config.dataStream$.subscribe(newValue => {
-            const numericPrev = parseFloat(prevValueRef.current);
-            const numericNew = parseFloat(newValue);
-            if (!isNaN(numericPrev) && !isNaN(numericNew)) {
-                setChange(numericNew > numericPrev ? 'up' : 'down');
-            }
-            setValue(newValue);
-            prevValueRef.current = newValue;
-            
-            const timeoutId = setTimeout(() => setChange('none'), 500);
-            return () => clearTimeout(timeoutId);
-        });
-        return () => subscription.unsubscribe();
-    }, [config.dataStream$]);
-
-    const changeClass = useMemo(() => {
-        switch(change) {
-            case 'up': return 'bg-green-500/30 text-green-200';
-            case 'down': return 'bg-red-500/30 text-red-200';
-            default: return 'bg-transparent';
-        }
-    }, [change]);
-
-    return (
-        <div className={`p-4 text-center transition-colors duration-150 ${changeClass}`}>
-            <div className="text-4xl font-mono tracking-wider">
-                {config.valueFormatter(value)}
-            </div>
-        </div>
-    );
-};
-
-
-// ================================================================================================
-// MAIN CARD COMPONENT
-// ================================================================================================
-
-const Card: React.FC<CardProps> = ({
-  title,
-  subtitle,
-  icon,
-  children,
-  className = '',
-  variant = 'default',
-  padding = 'md',
-  headerActions,
-  extra,
-  footerContent,
-  isCollapsible = false,
-  defaultCollapsed = false,
-  isLoading = false,
-  errorState = null,
-  onRetry,
-  loadingIndicator,
-  onClick,
-  isMetric = false,
-  style,
-  titleTooltip,
-  formConfig,
-  realtimeDataConfig,
-}) => {
-  const [isCollapsed, setIsCollapsed] = useState(isCollapsible && defaultCollapsed);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState<number | string>('auto');
-
-  const toggleCollapse = useCallback(() => {
-    if (isCollapsible) {
-      setIsCollapsed(prev => !prev);
-    }
-  }, [isCollapsible]);
-  
-  useEffect(() => {
-    if (isCollapsible) {
-      if (isCollapsed) {
-        setContentHeight(0);
-      } else {
-        requestAnimationFrame(() => {
-            const contentEl = contentRef.current;
-            if (contentEl) {
-                setContentHeight(contentEl.scrollHeight);
-            }
-        });
-      }
-    }
-  }, [isCollapsed, isCollapsible, children, formConfig, realtimeDataConfig]);
-
-  useEffect(() => {
-    if (!isCollapsible && isCollapsed) {
-        setIsCollapsed(false);
-    }
-  }, [isCollapsible, isCollapsed]);
-
-
-  // Explicitly cast variant to CardVariant to resolve type mismatch in getVariantClasses
-  const baseClasses = getVariantClasses(variant as CardVariant);
-  const finalPadding = isMetric && padding === 'md' ? 'sm' : padding;
-  // Explicitly cast finalPadding to the expected union type for getPaddingClasses
-  const paddingClasses = getPaddingClasses(finalPadding as 'sm' | 'md' | 'lg' | 'none');
-
-  const finalContainerClasses = `
-    ${baseClasses}
-    ${className}
-    overflow-hidden
-  `;
-  
-  const renderCardContent = (): ReactNode => {
-    if (isLoading) {
-      return loadingIndicator || <LoadingSkeleton />;
-    }
-
-    if (errorState) {
-      return <ErrorDisplay message={errorState} onRetry={onRetry} />;
-    }
-
-    const contentWrapperStyle: React.CSSProperties = {
-      height: isCollapsible ? contentHeight : 'auto',
-    };
-
-    const needsContentPadding = (title || subtitle || icon || headerActions) && !isMetric;
-
-    let mainContent: ReactNode = null;
-    if (formConfig) {
-        mainContent = <CardForm config={formConfig} />;
-    } else if (realtimeDataConfig) {
-        mainContent = <RealtimeDataDisplay config={realtimeDataConfig} />;
-    } else {
-        mainContent = children;
-    }
-
-    return (
-        <div
-          style={contentWrapperStyle}
-          className={`transition-[height] duration-500 ease-in-out overflow-hidden ${isCollapsible ? 'relative' : ''}`}
-          aria-hidden={isCollapsed}
-        >
-          <div 
-            ref={contentRef} 
-            className={isCollapsible ? 'absolute top-0 left-0 right-0 w-full' : ''}
-          >
-             <div className={needsContentPadding ? 'pt-4' : ''}>
-                {mainContent}
-             </div>
+            <p className="text-sm text-slate-400 mt-1">
+              Dynamic 3D-rendered credit card component with real-time customization & sandbox provisioning.
+            </p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              MCP Server Connected
+            </span>
           </div>
         </div>
-    );
-  };
-  
-  const hasHeader = !!(title || subtitle || icon || headerActions || isCollapsible);
-  const hasFooter = !!footerContent;
-  const hasLoadingOrError = isLoading || !!errorState;
-  const isContentless = !children && !formConfig && !realtimeDataConfig;
+      )}
 
-  // Special handling for padding when the card is in a loading or error state
-  // to prevent double padding.
-  const contentAreaPadding = hasLoadingOrError && !hasHeader ? 'p-0' : paddingClasses;
-
-  return (
-    <div className={finalContainerClasses.trim().replace(/\s+/g, ' ')} onClick={onClick} style={style}>
-      <div className={`${paddingClasses} ${isMetric ? 'text-center' : ''}`}>
-        <CardHeader
-          title={title}
-          subtitle={subtitle}
-          icon={icon}
-          isCollapsible={isCollapsible}
-          isCollapsed={!!isCollapsed}
-          toggleCollapse={toggleCollapse}
-          actions={headerActions}
-          extra={extra}
-          titleTooltip={titleTooltip}
-        />
+      <div className={`w-full ${standalone ? 'max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start' : 'flex justify-center'}`}>
         
-        {/* The main content area handles its own internal structure */}
-        {hasLoadingOrError ? (
-            <div className={contentAreaPadding}>
-                {renderCardContent()}
+        {/* LEFT COLUMN: 3D CARD DISPLAY */}
+        <div className={`${standalone ? 'lg:col-span-7' : 'w-full'} flex flex-col items-center justify-center space-y-8`}>
+          
+          {/* 3D Card Container */}
+          <div 
+            className="relative w-full max-w-[440px] h-[280px] cursor-pointer select-none"
+            style={{ perspective: '1200px' }}
+            onClick={() => setIsFlipped(!isFlipped)}
+          >
+            {/* Inner Card Wrapper with 3D rotation */}
+            <div
+              ref={cardRef}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              className="w-full h-full rounded-2xl transition-transform duration-700 ease-out relative shadow-2xl"
+              style={{
+                transformStyle: 'preserve-3d',
+                transform: isFlipped 
+                  ? 'rotateY(180deg)' 
+                  : `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
+              }}
+            >
+              {/* FRONT FACE */}
+              <div 
+                className={`absolute inset-0 w-full h-full rounded-2xl p-6 flex flex-col justify-between overflow-hidden border ${activeTheme.borderColor} ${activeTheme.bgClass} ${activeTheme.textColor}`}
+                style={{ 
+                  backfaceVisibility: 'hidden',
+                  boxShadow: `0 25px 50px -12px ${activeTheme.glowColor || 'rgba(0,0,0,0.5)'}`
+                }}
+              >
+                {/* Decorative Pattern */}
+                <CardPattern type={activeTheme.pattern} />
+
+                {/* Dynamic Glare Effect */}
+                <div 
+                  className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+                  style={{
+                    background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255, 255, 255, ${glare.opacity}), transparent 60%)`,
+                  }}
+                />
+
+                {/* Top Row: Custom Logo & Contactless */}
+                <div className="flex justify-between items-start z-10">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold tracking-widest uppercase opacity-60">
+                      {customLogoText || 'Sovereign Agent'}
+                    </span>
+                    <span className="text-[8px] tracking-wider opacity-40">SECURE CRYPTO-SHIELD</span>
+                  </div>
+                  {showContactless && (
+                    <div className="text-slate-300">
+                      <ContactlessIcon />
+                    </div>
+                  )}
+                </div>
+
+                {/* Middle Row: Chip & Brand */}
+                <div className="flex justify-between items-center z-10">
+                  <CardChip style={chipStyle} />
+                  <BrandLogo brand={brand} />
+                </div>
+
+                {/* Bottom Row: Card Number, Expiry, Cardholder */}
+                <div className="space-y-4 z-10">
+                  {/* Card Number */}
+                  <div className="text-xl md:text-2xl font-mono tracking-[0.18em] font-medium drop-shadow-md">
+                    {cardNumber}
+                  </div>
+
+                  {/* Cardholder & Expiry */}
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-bold tracking-wider uppercase opacity-50">CARDHOLDER</span>
+                      <span className="text-xs font-semibold tracking-widest uppercase truncate max-w-[220px]">
+                        {cardholderName}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[8px] font-bold tracking-wider uppercase opacity-50">EXPIRES</span>
+                      <span className="text-xs font-mono font-semibold tracking-widest">
+                        {expirationDate}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* BACK FACE */}
+              <div 
+                className={`absolute inset-0 w-full h-full rounded-2xl py-6 flex flex-col justify-between overflow-hidden border ${activeTheme.borderColor} ${activeTheme.bgClass} ${activeTheme.textColor}`}
+                style={{ 
+                  transform: 'rotateY(180deg)',
+                  backfaceVisibility: 'hidden',
+                  boxShadow: `0 25px 50px -12px ${activeTheme.glowColor || 'rgba(0,0,0,0.5)'}`
+                }}
+              >
+                {/* Magnetic Strip */}
+                <div className="w-full h-12 bg-slate-950/90 absolute top-6 left-0 z-10" />
+
+                {/* Signature Strip & CVV */}
+                <div className="px-6 mt-16 z-10">
+                  <div className="flex items-center">
+                    <div className="w-3/4 h-9 bg-slate-100/10 rounded-l border border-slate-700/30 flex items-center px-3 text-xs italic text-slate-400 select-none">
+                      Sovereign Authorized Signature
+                    </div>
+                    <div className="w-1/4 h-9 bg-amber-100 text-slate-950 font-mono font-bold flex items-center justify-center rounded-r text-sm tracking-wider shadow-inner">
+                      {cvv}
+                    </div>
+                  </div>
+                  <span className="text-[7px] text-slate-500 mt-1 block text-right">SECURITY CODE (CVV)</span>
+                </div>
+
+                {/* Back Footer */}
+                <div className="px-6 flex justify-between items-end z-10">
+                  <div className="text-[7px] text-slate-400/60 max-w-[240px] leading-relaxed">
+                    This card is issued by Sovereign Intelligence under license by Mastercard Developers. Use is subject to the terms of the Agent Toolkit Agreement.
+                  </div>
+                  <div className="flex flex-col items-end space-y-1">
+                    <BrandLogo brand={brand} />
+                    <span className="text-[6px] opacity-40 font-mono">ID: MT-8829-AQ</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
-        ) : (
-            <>
-                {!isContentless && renderCardContent()}
-                {hasFooter && <CardFooter>{footerContent}</CardFooter>}
-            </>
+          </div>
+
+          {/* Flip Hint */}
+          <button 
+            onClick={() => setIsFlipped(!isFlipped)}
+            className="px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-slate-100 transition-all flex items-center space-x-2 shadow-lg"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            <span>Flip Card to {isFlipped ? 'Front' : 'Back'}</span>
+          </button>
+
+          {/* Provisioning Status Console */}
+          {provisionStatus && (
+            <div className="w-full max-w-[440px] bg-slate-900/90 border border-slate-800 rounded-xl p-4 font-mono text-xs space-y-2 shadow-inner">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span className="text-slate-400 font-bold">SANDBOX CONSOLE</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              </div>
+              <p className="text-emerald-400">{provisionStatus}</p>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT COLUMN: CUSTOMIZATION CONTROLS */}
+        {standalone && (
+          <div className="lg:col-span-5 bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-md space-y-6 shadow-xl">
+            <h2 className="text-lg font-bold text-slate-100 border-b border-slate-800 pb-3 flex items-center space-x-2">
+              <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Card Customizer</span>
+            </h2>
+
+            {/* Cardholder Name Input */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Cardholder Name</label>
+              <input
+                type="text"
+                value={cardholderName}
+                onChange={(e) => setCardholderName(e.target.value.toUpperCase())}
+                placeholder="ALEXANDER VANE"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500/50 transition-colors"
+              />
+            </div>
+
+            {/* Card Number Input */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Card Number</label>
+              <input
+                type="text"
+                value={cardNumber}
+                onChange={handleCardNumberChange}
+                placeholder="5412 7512 3456 7890"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 font-mono focus:outline-none focus:border-amber-500/50 transition-colors"
+              />
+            </div>
+
+            {/* Expiry & CVV Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Expiration Date</label>
+                <input
+                  type="text"
+                  value={expirationDate}
+                  onChange={handleExpiryChange}
+                  placeholder="MM/YY"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 font-mono focus:outline-none focus:border-amber-500/50 transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">CVV</label>
+                <input
+                  type="text"
+                  value={cvv}
+                  onChange={handleCvvChange}
+                  onFocus={() => setIsFlipped(true)}
+                  onBlur={() => setIsFlipped(false)}
+                  placeholder="999"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 font-mono focus:outline-none focus:border-amber-500/50 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Theme Selector */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Card Theme</label>
+              <div className="grid grid-cols-3 gap-2">
+                {CARD_THEMES.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTheme(t.id)}
+                    className={`p-2 rounded-xl border text-left transition-all ${
+                      theme === t.id
+                        ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                        : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold truncate">{t.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Chip & Contactless Options */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Chip Style</label>
+                <select
+                  value={chipStyle}
+                  onChange={(e) => setChipStyle(e.target.value as any)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-amber-500/50"
+                >
+                  <option value="gold">Gold Foil</option>
+                  <option value="silver">Silver Matte</option>
+                  <option value="dark">Dark Obsidian</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Contactless</label>
+                <div className="flex items-center h-10">
+                  <input
+                    type="checkbox"
+                    checked={showContactless}
+                    onChange={(e) => setShowContactless(e.target.checked)}
+                    className="w-4 h-4 rounded bg-slate-950 border-slate-800 text-amber-500 focus:ring-amber-500/50"
+                  />
+                  <span className="ml-2 text-xs text-slate-400">Enable NFC Wave</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Custom Logo Text */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Custom Logo Text</label>
+              <input
+                type="text"
+                value={customLogoText}
+                onChange={(e) => setCustomLogoText(e.target.value)}
+                placeholder="Mastercard Developers Agent Toolkit"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500/50 transition-colors"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-4 border-t border-slate-800/60 space-y-3">
+              <button
+                onClick={handleProvisionCard}
+                disabled={isProvisioning}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-orange-500/10 flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                {isProvisioning ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-slate-950" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Provisioning...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Provision to Sandbox</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         )}
+
       </div>
     </div>
   );
-};
-
-export default Card;
+}

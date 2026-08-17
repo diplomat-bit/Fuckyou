@@ -1,1744 +1,1699 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
+  Home, 
   FileText, 
-  Upload, 
-  CheckCircle, 
-  AlertCircle, 
+  Shield, 
   DollarSign, 
-  Building, 
-  User, 
-  MapPin, 
-  Send, 
-  Loader2, 
-  Download, 
-  ExternalLink, 
-  ShieldCheck, 
+  Search, 
+  Plus, 
+  CheckCircle, 
   Clock, 
-  FileCheck,
-  Info,
-  BookOpen,
-  MessageSquare,
-  Cpu,
-  Landmark,
-  Sparkles,
-  Zap,
-  Scale,
-  Home,
-  CreditCard,
-  Layers,
-  Search,
-  Bot,
-  ChevronRight,
-  Copy,
-  Check,
-  Terminal,
-  Code2,
-  Globe,
-  Lock,
-  RefreshCw,
-  Database,
-  TrendingUp,
-  Coins
+  AlertTriangle, 
+  ArrowRight, 
+  MapPin, 
+  User, 
+  Key, 
+  Layers, 
+  Activity, 
+  Upload, 
+  Lock, 
+  Unlock, 
+  RefreshCw, 
+  FileCheck, 
+  History, 
+  Globe, 
+  Link, 
+  Check, 
+  X, 
+  ChevronRight, 
+  Info, 
+  Terminal, 
+  Cpu, 
+  Database, 
+  Map, 
+  Code, 
+  ExternalLink, 
+  Scale, 
+  FileSignature 
 } from 'lucide-react';
 
-// --- TYPES & INTERFACES ---
+// ==========================================
+// TYPES & INTERFACES
+// ==========================================
 
-interface DeedData {
-  id: string;
-  apn: string; // Assessor's Parcel Number
-  propertyAddress: string;
-  city: string;
-  state: string;
-  county: string;
-  zipCode: string;
-  grantorName: string; // Seller
-  grantorType: 'Individual' | 'Corporation' | 'LLC' | 'Trust';
-  granteeName: string; // Buyer
-  granteeType: 'Individual' | 'Corporation' | 'LLC' | 'Trust';
-  deedType: 'Warranty Deed' | 'Quitclaim Deed' | 'Grant Deed' | 'Special Warranty Deed' | 'Sheriff Deed';
-  considerationAmount: number;
-  legalDescription: string;
-  notaryName: string;
-  notaryCommissionNumber: string;
-  notaryState: string;
-  notaryExpirationDate: string;
-  signedDate: string;
-  zkProofHash?: string;
-  iso20022TxRef?: string;
-}
-
-interface CountyRecorder {
-  id: string;
-  name: string;
-  state: string;
-  baseRecordingFee: number;
-  perPageFee: number;
-  transferTaxRate: number; // Percentage
-  eRecordingSupported: boolean;
-  apiEndpoint: string;
-  estimatedProcessingTime: string;
-  jurisdictionCode: string;
-}
-
-interface RecordingStatus {
-  step: 'draft' | 'validating' | 'paying' | 'submitted' | 'recorded' | 'rejected';
-  message: string;
-  transactionHash?: string;
-  bookNumber?: string;
-  pageNumber?: string;
-  instrumentNumber?: string;
-  recordedAt?: string;
-  errors?: string[];
-}
-
-interface Citation {
-  id: string;
-  authors: string;
-  year: number;
-  title: string;
-  journalOrPublisher: string;
-  doi: string;
-  bibtex: string;
-  keyTakeaway: string;
-  technicalNut: string;
-}
-
-interface ChatMessage {
-  id: string;
-  sender: 'user' | 'agent';
-  text: string;
-  timestamp: string;
-  actionCard?: {
-    type: 'buy_house' | 'send_wire' | 'issue_permit' | 'calculate_tax';
-    data: any;
-  };
-}
-
-interface PropertyMarketItem {
+interface Property {
   id: string;
   address: string;
-  city: string;
-  state: string;
-  zip: string;
-  price: number;
-  apn: string;
-  sqft: number;
-  beds: number;
-  baths: number;
-  estimatedTax: number;
-  escrowStatus: 'Available' | 'Pending Escrow' | 'Sold';
-  imageUrl: string;
+  parcelId: string;
+  coordinates: { lat: number; lng: number };
+  propertyType: 'Residential' | 'Commercial' | 'Land' | 'Agricultural';
+  size: string;
+  ownerName: string;
+  ownerAddress: string;
+  status: 'Verified' | 'Pending' | 'In Escrow' | 'Disputed';
+  deedNftAddress: string;
+  tokenId: string;
+  ipfsHash: string;
+  registrationDate: string;
+  valuation: number;
+  history: Array<{
+    event: string;
+    from: string;
+    to: string;
+    price?: string;
+    date: string;
+    txHash: string;
+  }>;
 }
 
-interface GovernmentPermit {
+interface Escrow {
   id: string;
-  type: string;
-  applicant: string;
-  propertyApn: string;
-  status: 'Approved' | 'Under AI Review' | 'Inspection Required';
-  issueDate: string;
-  fee: number;
+  propertyId: string;
+  buyerAddress: string;
+  sellerAddress: string;
+  purchasePrice: number;
+  depositAmount: number;
+  status: 'Created' | 'Funded' | 'Inspected' | 'Approved' | 'Completed' | 'Refunded' | 'Disputed';
+  inspectionPeriodDays: number;
+  arbitratorAddress: string;
+  createdAt: string;
+  updatedAt: string;
+  txHash: string;
+  inspectionApproved: boolean;
+  buyerSigned: boolean;
+  sellerSigned: boolean;
 }
 
-// --- MOCK DATA & RESEARCH PAPERS ---
+interface LogEntry {
+  timestamp: string;
+  type: 'info' | 'success' | 'warning' | 'error' | 'contract';
+  message: string;
+}
 
-const RESEARCH_CITATIONS: Citation[] = [
+// ==========================================
+// INITIAL MOCK DATA
+// ==========================================
+
+const INITIAL_PROPERTIES: Property[] = [
   {
-    id: 'nakamoto-2022',
-    authors: 'Nakamoto, S., & Szabo, N.',
-    year: 2022,
-    title: 'Zero-Knowledge Title Verification and Autonomous Real-Time Escrow in Public-Private Land Registries',
-    journalOrPublisher: 'Journal of Real Estate Cryptography & Distributed Systems, 14(2), 101-128',
-    doi: '10.1016/j.jrecds.2022.04.009',
-    bibtex: `@article{nakamoto2022zk,
-  author = {Nakamoto, Satoshi and Szabo, Nick},
-  title = {Zero-Knowledge Title Verification and Autonomous Real-Time Escrow in Public-Private Land Registries},
-  journal = {Journal of Real Estate Cryptography \& Distributed Systems},
-  volume = {14},
-  number = {2},
-  pages = {101--128},
-  year = {2022},
-  doi = {10.1016/j.jrecds.2022.04.009}
-}`,
-    keyTakeaway: 'Demonstrates mathematically that zk-SNARK cryptographic proofs can verify title unencumberance without exposing private owner identity, enabling sub-second real estate clearing.',
-    technicalNut: 'ZK-Proof Circuit: R1CS constraints enforce `Hash(Grantor_Key + Title_Leaf) == Merkle_Root` while checking `Lien_Vector == 0` in O(1) verification time.'
+    id: 'PROP-001',
+    address: 'Plot 1714, Guzape District II, Abuja, Nigeria',
+    parcelId: 'FCDA-GZ2-1714',
+    coordinates: { lat: 9.0358, lng: 7.5083 },
+    propertyType: 'Land',
+    size: '100 Hectares',
+    ownerName: 'Sovereign Land Trust',
+    ownerAddress: '0x71a98C7115f3E2D1124199a1B881a992c71a98C7',
+    status: 'Verified',
+    deedNftAddress: '0xdeed72100000000000000000000000000000881a',
+    tokenId: '1092',
+    ipfsHash: 'QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco',
+    registrationDate: '2026-01-15',
+    valuation: 25000000,
+    history: [
+      { event: 'Deed Registered', from: 'FCDA Land Registry', to: 'Sovereign Land Trust', price: '$20,000,000', date: '2026-01-15', txHash: '0x88f1a...992c' },
+      { event: 'Title Verified', from: 'Sovereign Sentry', to: 'Sovereign Land Trust', date: '2026-01-16', txHash: '0x33a99...ff12' }
+    ]
   },
   {
-    id: 'fed-iso-2025',
-    authors: 'Federal Reserve Financial Services ISO Workgroup',
-    year: 2025,
-    title: 'ISO 20022 High-Value Payment Messaging (pacs.008) for Real Estate Title Settlement and FedNow Automated Clearing',
-    journalOrPublisher: 'Federal Reserve Monetary Technology Specification, Whitepaper 88-B',
-    doi: '10.2139/ssrn.fednow.2025.40912',
-    bibtex: `@techreport{fednow2025iso,
-  author = {{Federal Reserve Financial Services}},
-  title = {ISO 20022 High-Value Payment Messaging (pacs.008) for Real Estate Title Settlement and FedNow Automated Clearing},
-  institution = {Federal Reserve System},
-  type = {Specification},
-  number = {88-B},
-  year = {2025}
-}`,
-    keyTakeaway: 'Establishes direct integration protocols between ISO 20022 pacs.008 payment orders and County Register e-recording webhooks for atomic settlement.',
-    technicalNut: 'Atomic Swap Protocol: Funds locked in FedNow instant liquidity buffer are auto-released to Grantor upon receiving PRISM HTTP 200 payload containing Instrument Number.'
+    id: 'PROP-002',
+    address: 'Plot 48, Karasana West, Abuja, Nigeria',
+    parcelId: 'FCDA-KW-0048',
+    coordinates: { lat: 9.1124, lng: 7.3841 },
+    propertyType: 'Land',
+    size: '13.39 Hectares',
+    ownerName: 'Songbird Multimedia Ltd',
+    ownerAddress: '0x33a99fF124199a1B881a992c71a98C7115f3E2D1',
+    status: 'In Escrow',
+    deedNftAddress: '0xdeed72100000000000000000000000000000414b',
+    tokenId: '1093',
+    ipfsHash: 'QmYwAPJzv5CZsnA625s3Xf2nemtY26P4f9SgNvwbK6n1gA',
+    registrationDate: '2026-02-10',
+    valuation: 4500000,
+    history: [
+      { event: 'Deed Registered', from: 'FCDA Land Registry', to: 'Songbird Multimedia Ltd', price: '$3,500,000', date: '2026-02-10', txHash: '0x7f83b...99a1' },
+      { event: 'Escrow Initiated', from: 'Songbird Multimedia Ltd', to: 'Sovereign Wealth Fund', price: '$4,500,000', date: '2026-08-12', txHash: '0x99a1f...f3e2' }
+    ]
   },
   {
-    id: 'prism-simplifile-2024',
-    authors: 'Property Records Industry Association (PRIA) & ICE Mortgage Tech',
-    year: 2024,
-    title: 'PRISM XML Schema v4.2 Standard for Electronic Recording and Multi-Jurisdictional Deed Transfer Tax Algorithms',
-    journalOrPublisher: 'PRIA Standards Committee Technical Publication, Vol. 29',
-    doi: '10.1109/PRIA.2024.10822',
-    bibtex: `@manual{pria2024prism,
-  title = {PRISM XML Schema v4.2 Standard for Electronic Recording and Multi-Jurisdictional Deed Transfer Tax Algorithms},
-  organization = {Property Records Industry Association \& ICE Mortgage Technology},
-  year = {2024},
-  note = {Version 4.2 API Specification}
-}`,
-    keyTakeaway: 'Defines standard REST endpoints and XML payloads for eRecording in over 2,600 US counties with automated mill-rate tax calculation.',
-    technicalNut: 'Transfer Tax Formulation: Tax = Consideration * (State_Rate + County_Rate + City_Surcharge) - Local_Abatement_Exemption.'
-  },
-  {
-    id: 'oecd-govtech-2023',
-    authors: 'OECD Directorate for Public Governance & AI Taskforce',
-    year: 2023,
-    title: 'Autonomous Municipal Governance: AI-Driven Permitting, Zoning Compliance, and Automated Eminent Domain Protocols',
-    journalOrPublisher: 'OECD Digital Government Studies, No. 402, OECD Publishing, Paris',
-    doi: '10.1787/9789264311021-en',
-    bibtex: `@book{oecd2023govtech,
-  author = {{OECD Taskforce on Governance}},
-  title = {Autonomous Municipal Governance: AI-Driven Permitting, Zoning Compliance, and Automated Eminent Domain Protocols},
-  publisher = {OECD Publishing},
-  year = {2023},
-  address = {Paris},
-  doi = {10.1787/9789264311021-en}
-}`,
-    keyTakeaway: 'Proves AI agents reduce municipal property permit processing time from 45 days to 3.2 seconds while achieving 99.8% zoning code fidelity.',
-    technicalNut: 'NLP Zoning Parser: Vector embeddings match architectural CAD specs against Municipal Code Title 17 GIS overlays in real-time.'
+    id: 'PROP-003',
+    address: '777 Sovereign Way, Penthouse B, Miami, FL, USA',
+    parcelId: 'MIA-SOV-777',
+    coordinates: { lat: 25.7617, lng: -80.1918 },
+    propertyType: 'Residential',
+    size: '450 sq meters',
+    ownerName: 'Identity Citadel LLC',
+    ownerAddress: '0x88f1a992c71a98C7115f3E2D1124199a1B881a99',
+    status: 'Verified',
+    deedNftAddress: '0xdeed72100000000000000000000000000000992c',
+    tokenId: '1094',
+    ipfsHash: 'QmT5NvU9z5CZsnA625s3Xf2nemtY26P4f9SgNvwbK6n1gA',
+    registrationDate: '2025-11-01',
+    valuation: 1200000,
+    history: [
+      { event: 'Deed Registered', from: 'Miami-Dade County', to: 'Identity Citadel LLC', price: '$1,100,000', date: '2025-11-01', txHash: '0x11a98...39b2' },
+      { event: 'Title Verified', from: 'Sovereign Sentry', to: 'Identity Citadel LLC', date: '2025-11-02', txHash: '0x22b99...ee12' }
+    ]
   }
 ];
 
-const MOCK_COUNTIES: CountyRecorder[] = [
+const INITIAL_ESCROWS: Escrow[] = [
   {
-    id: 'maricopa-az',
-    name: 'Maricopa County Recorder',
-    state: 'AZ',
-    baseRecordingFee: 30.00,
-    perPageFee: 0.00,
-    transferTaxRate: 0.00,
-    eRecordingSupported: true,
-    apiEndpoint: 'https://api.maricopa.gov/recorder/v1/erecord',
-    estimatedProcessingTime: '2-4 Hours',
-    jurisdictionCode: 'AZ-013'
-  },
-  {
-    id: 'cook-il',
-    name: 'Cook County Clerk (Recorder of Deeds)',
-    state: 'IL',
-    baseRecordingFee: 98.00,
-    perPageFee: 2.00,
-    transferTaxRate: 0.0075,
-    eRecordingSupported: true,
-    apiEndpoint: 'https://api.cookcountyclerkil.gov/recording/v2',
-    estimatedProcessingTime: '1-2 Business Days',
-    jurisdictionCode: 'IL-031'
-  },
-  {
-    id: 'la-ca',
-    name: 'Los Angeles County Registrar-Recorder',
-    state: 'CA',
-    baseRecordingFee: 75.00,
-    perPageFee: 3.00,
-    transferTaxRate: 0.0011,
-    eRecordingSupported: true,
-    apiEndpoint: 'https://api.lavote.gov/erecord/v1',
-    estimatedProcessingTime: '24-48 Hours',
-    jurisdictionCode: 'CA-037'
-  },
-  {
-    id: 'miami-dade-fl',
-    name: 'Miami-Dade County Clerk of Courts',
-    state: 'FL',
-    baseRecordingFee: 10.00,
-    perPageFee: 8.50,
-    transferTaxRate: 0.0060,
-    eRecordingSupported: true,
-    apiEndpoint: 'https://api.miamidade.gov/clerk/erecord',
-    estimatedProcessingTime: '12-24 Hours',
-    jurisdictionCode: 'FL-086'
-  },
-  {
-    id: 'harris-tx',
-    name: 'Harris County Clerk',
-    state: 'TX',
-    baseRecordingFee: 26.00,
-    perPageFee: 4.00,
-    transferTaxRate: 0.00,
-    eRecordingSupported: true,
-    apiEndpoint: 'https://api.harriscountytx.gov/clerk/v1',
-    estimatedProcessingTime: '4-8 Hours',
-    jurisdictionCode: 'TX-201'
+    id: 'ESC-9021',
+    propertyId: 'PROP-002',
+    buyerAddress: '0xabc123F124199a1B881a992c71a98C7115f3E2D1',
+    sellerAddress: '0x33a99fF124199a1B881a992c71a98C7115f3E2D1',
+    purchasePrice: 4500000,
+    depositAmount: 450000,
+    status: 'Funded',
+    inspectionPeriodDays: 10,
+    arbitratorAddress: '0xScaleSovereignArbitratorContractAddress',
+    createdAt: '2026-08-12',
+    updatedAt: '2026-08-14',
+    txHash: '0x99a1f3e2b99a1f3e2b99a1f3e2b99a1f3e2b99a1f3e2b99a1f3e2b99a1f3e2b9',
+    inspectionApproved: false,
+    buyerSigned: true,
+    sellerSigned: false
   }
 ];
-
-const MARKETPLACE_PROPERTIES: PropertyMarketItem[] = [
-  {
-    id: 'prop-001',
-    address: '742 Evergreen Terrace',
-    city: 'Springfield',
-    state: 'OR',
-    zip: '97477',
-    price: 350000,
-    apn: '114-12-045B',
-    sqft: 2450,
-    beds: 4,
-    baths: 3,
-    estimatedTax: 3850,
-    escrowStatus: 'Available',
-    imageUrl: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'prop-002',
-    address: '1008 Ocean Avenue',
-    city: 'Santa Monica',
-    state: 'CA',
-    zip: '90403',
-    price: 2850000,
-    apn: '4282-019-004',
-    sqft: 3800,
-    beds: 5,
-    baths: 4.5,
-    estimatedTax: 31350,
-    escrowStatus: 'Available',
-    imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'prop-003',
-    address: '450 Brickell Bay Dr, Apt 3802',
-    city: 'Miami',
-    state: 'FL',
-    zip: '33131',
-    price: 1250000,
-    apn: '01-4138-089-1200',
-    sqft: 1850,
-    beds: 2,
-    baths: 2.5,
-    estimatedTax: 13750,
-    escrowStatus: 'Available',
-    imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&auto=format&fit=crop&q=80'
-  }
-];
-
-const INITIAL_DEED: DeedData = {
-  id: 'DEED-2026-9981A',
-  apn: '114-12-045B',
-  propertyAddress: '742 Evergreen Terrace',
-  city: 'Springfield',
-  state: 'OR',
-  county: 'Lane County',
-  zipCode: '97477',
-  grantorName: 'Montgomery Burns Real Estate Holdings LLC',
-  grantorType: 'LLC',
-  granteeName: 'Homer J. Simpson & Marge Simpson',
-  granteeType: 'Individual',
-  deedType: 'Warranty Deed',
-  considerationAmount: 350000,
-  legalDescription: 'LOT 14 OF BLOCK 3 OF THE EVERGREEN ESTATES SUBDIVISION, ACCORDING TO THE MAP OR PLAT THEREOF RECORDED IN BOOK 45 OF MAPS, PAGE 12, RECORDS OF LANE COUNTY, OREGON.',
-  notaryName: 'Lionel Hutz, Esq.',
-  notaryCommissionNumber: 'NOT-992811-OR',
-  notaryState: 'OR',
-  notaryExpirationDate: '2027-11-15',
-  signedDate: new Date().toISOString().split('T')[0],
-  zkProofHash: '0x8f3a21b9c9274e0d221ab93881f9a2e0192847c91039d',
-  iso20022TxRef: 'FEDNOW-20260809-90218491'
-};
 
 export default function DeedRegistrar() {
-  // Navigation & View States
-  const [activeTab, setActiveTab] = useState<'registrar' | 'banking' | 'gov' | 'ai_chat' | 'biblio'>('registrar');
-  const [subTab, setSubTab] = useState<'view' | 'edit' | 'recorder'>('view');
-
-  // Core App States
-  const [deed, setDeed] = useState<DeedData>(INITIAL_DEED);
-  const [selectedCountyId, setSelectedCountyId] = useState<string>(MOCK_COUNTIES[0].id);
-  const [pageCount, setPageCount] = useState<number>(3);
-  const [recordingStatus, setRecordingStatus] = useState<RecordingStatus>({
-    step: 'draft',
-    message: 'Deed drafted. Cryptographic ZK-proof generated. Ready for ISO 20022 wire escrow and county submission.'
+  // ==========================================
+  // STATE MANAGEMENT
+  // ==========================================
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'register' | 'escrow' | 'verify' | 'map' | 'contracts'>('dashboard');
+  const [properties, setProperties] = useState<Property[]>(INITIAL_PROPERTIES);
+  const [escrows, setEscrows] = useState<Escrow[]>(INITIAL_ESCROWS);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(INITIAL_PROPERTIES[0]);
+  const [selectedEscrow, setSelectedEscrow] = useState<Escrow | null>(INITIAL_ESCROWS[0]);
+  
+  // Wallet Simulation State
+  const [walletConnected, setWalletConnected] = useState<boolean>(true);
+  const [walletAddress, setWalletAddress] = useState<string>('0x99A1f3E2b99a1F3e2B99A1f3E2b99a1F3e2b99A1');
+  const [walletBalance, setWalletBalance] = useState<number>(142.50); // SOV tokens
+  
+  // Form States
+  const [newProperty, setNewProperty] = useState({
+    address: '',
+    parcelId: '',
+    lat: '9.0765',
+    lng: '7.3986',
+    propertyType: 'Land' as Property['propertyType'],
+    size: '',
+    ownerName: '',
+    valuation: '',
+    documentName: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [copiedBib, setCopiedBib] = useState<string | null>(null);
 
-  // AI Banking & Escrow Wallet State
-  const [userBalance, setUserBalance] = useState<number>(1450000.00); // $1.45M Liquid
-  const [escrowLocked, setEscrowLocked] = useState<number>(0);
-  const [transferAmount, setTransferAmount] = useState<string>('350000');
-  const [recipientRouting, setRecipientRouting] = useState<string>('021000021'); // Fed Routing
-  const [recipientAccount, setRecipientAccount] = useState<string>('88921049218');
-  const [wireMemo, setWireMemo] = useState<string>('ISO20022 Direct Escrow Funding - Deed ID DEED-2026-9981A');
-  const [isWiring, setIsWiring] = useState<boolean>(false);
-  const [wireSuccessMsg, setWireSuccessMsg] = useState<string | null>(null);
+  const [newEscrow, setNewEscrow] = useState({
+    propertyId: '',
+    buyerAddress: '',
+    purchasePrice: '',
+    depositAmount: '',
+    inspectionPeriodDays: '10'
+  });
 
-  // Marketplace & House Purchasing State
-  const [properties, setProperties] = useState<PropertyMarketItem[]>(MARKETPLACE_PROPERTIES);
-  const [selectedPropertyForBuy, setSelectedPropertyForBuy] = useState<PropertyMarketItem | null>(null);
-  const [isProcessingHousePurchase, setIsProcessingHousePurchase] = useState<boolean>(false);
-
-  // Government Permits & Super-App State
-  const [permits, setPermits] = useState<GovernmentPermit[]>([
-    {
-      id: 'PMT-2026-881',
-      type: 'Solar Panel & Electrical Grid Upgrade',
-      applicant: 'Homer Simpson',
-      propertyApn: '114-12-045B',
-      status: 'Approved',
-      issueDate: '2026-08-01',
-      fee: 250
-    },
-    {
-      id: 'PMT-2026-904',
-      type: 'Residential ADU Construction Zoning Clearance',
-      applicant: 'Homer Simpson',
-      propertyApn: '114-12-045B',
-      status: 'Under AI Review',
-      issueDate: '2026-08-08',
-      fee: 500
-    }
-  ]);
-  const [newPermitType, setNewPermitType] = useState<string>('HVAC & Heat Pump Permit');
-  const [isApplyingPermit, setIsApplyingPermit] = useState<boolean>(false);
-
-  // AI Chat Agent State
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: 'msg-1',
-      sender: 'agent',
-      text: "Greetings! I am the Sovereign AI Deed & Banking Agent. I can explain research paper citations, calculate multi-jurisdiction transfer taxes, execute FedNow ISO 20022 wire transfers, issue instant building permits, or buy you a property in 1-click. How can I serve your legal and banking needs today?",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
-  const [chatInput, setChatInput] = useState<string>('');
-  const [isAgentThinking, setIsAgentThinking] = useState<boolean>(false);
-  const chatBottomRef = useRef<HTMLDivElement>(null);
-
-  // Scroll chat to bottom
-  useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, isAgentThinking]);
-
-  // Selected county lookup
-  const selectedCounty = useMemo(() => {
-    return MOCK_COUNTIES.find(c => c.id === selectedCountyId) || MOCK_COUNTIES[0];
-  }, [selectedCountyId]);
-
-  // Calculate Fees with PRISM Transfer Tax Matrix formula
-  const feeBreakdown = useMemo(() => {
-    if (!selectedCounty) return { base: 0, pages: 0, transferTax: 0, total: 0 };
-    const base = selectedCounty.baseRecordingFee;
-    const pages = Math.max(0, pageCount - 1) * selectedCounty.perPageFee;
-    const transferTax = deed.considerationAmount * selectedCounty.transferTaxRate;
-    const convenienceFee = selectedCounty.eRecordingSupported ? 4.95 : 0;
-    return {
-      base,
-      pages,
-      transferTax,
-      convenienceFee,
-      total: base + pages + transferTax + convenienceFee
+  // Verification Search State
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [verificationResult, setVerificationResult] = useState<{
+    searched: boolean;
+    property: Property | null;
+    checks: {
+      titleChain: boolean;
+      noLiens: boolean;
+      taxCompliant: boolean;
+      gisVerified: boolean;
+      signatureValid: boolean;
     };
-  }, [selectedCounty, pageCount, deed.considerationAmount]);
+  } | null>(null);
 
-  // Deed Validation Logic
-  const validateDeed = (data: DeedData): string[] => {
-    const errors: string[] = [];
-    if (!data.apn.trim()) errors.push('Assessor\'s Parcel Number (APN) is required.');
-    if (!data.propertyAddress.trim()) errors.push('Property address is required.');
-    if (!data.grantorName.trim()) errors.push('Grantor (Seller) name is required.');
-    if (!data.granteeName.trim()) errors.push('Grantee (Buyer) name is required.');
-    if (data.considerationAmount < 0) errors.push('Consideration amount cannot be negative.');
-    if (!data.legalDescription.trim() || data.legalDescription.length < 15) {
-      errors.push('A valid legal description is required (minimum 15 characters).');
-    }
-    if (!data.notaryName.trim()) errors.push('Notary public name is required.');
-    if (!data.notaryCommissionNumber.trim()) errors.push('Notary commission number is required.');
-    return errors;
+  // Simulation & Console Logs State
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
+  const [simulationStep, setSimulationStep] = useState<string>('');
+  const [logs, setLogs] = useState<LogEntry[]>([
+    { timestamp: '10:42:15', type: 'info', message: 'Sovereign Deed Registrar Node initialized.' },
+    { timestamp: '10:42:16', type: 'contract', message: 'Listening to Sovereign Ledger Smart Contract: 0xDeedRegistryCoreV1...' },
+    { timestamp: '10:42:17', type: 'success', message: 'Connected to IPFS Gateway: https://ipfs.sovereign.io' }
+  ]);
+
+  const consoleEndRef = useRef<HTMLDivElement>(null);
+
+  // ==========================================
+  // HELPER FUNCTIONS
+  // ==========================================
+  
+  const addLog = (message: string, type: LogEntry['type'] = 'info') => {
+    const now = new Date();
+    const timestamp = now.toTimeString().split(' ')[0];
+    setLogs(prev => [...prev, { timestamp, type, message }]);
   };
 
   useEffect(() => {
-    setValidationErrors(validateDeed(deed));
-  }, [deed]);
+    if (consoleEndRef.current) {
+      consoleEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [logs]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setDeed(prev => ({
-      ...prev,
-      [name]: name === 'considerationAmount' ? parseFloat(value) || 0 : value
-    }));
+  const formatAddress = (addr: string) => {
+    if (!addr) return '';
+    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   };
 
-  // E-Filing Submission Protocol
-  const handleEFileSubmit = async () => {
-    const errors = validateDeed(deed);
-    if (errors.length > 0) {
-      setValidationErrors(errors);
-      setRecordingStatus({
-        step: 'rejected',
-        message: 'Submission blocked: Legal validation errors found.',
-        errors
-      });
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+  };
+
+  // ==========================================
+  // SIMULATED BLOCKCHAIN ACTIONS
+  // ==========================================
+
+  // 1. Register New Deed (Mint NFT)
+  const handleRegisterDeed = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!walletConnected) {
+      addLog('Error: Wallet not connected. Cannot sign transaction.', 'error');
+      return;
+    }
+    if (!newProperty.address || !newProperty.parcelId || !newProperty.size || !newProperty.ownerName) {
+      addLog('Error: Please fill in all required fields.', 'error');
       return;
     }
 
-    setIsSubmitting(true);
-    setRecordingStatus({
-      step: 'validating',
-      message: 'Running Nakamoto-Szabo ZK-Proof circuit verification and validating PRISM XML schema...'
-    });
+    setIsSimulating(true);
+    setSimulationStep('Hashing Deed Document...');
+    addLog(`Initiating registration for Parcel: ${newProperty.parcelId}`, 'info');
+    
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    const simulatedIpfsHash = 'Qm' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    addLog(`IPFS Document Hash generated: ${simulatedIpfsHash}`, 'success');
+    
+    setSimulationStep('Generating Cryptographic Proof...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    addLog('Zero-Knowledge ownership proof generated successfully.', 'success');
 
-    await new Promise(resolve => setTimeout(resolve, 1800));
-    setRecordingStatus({
-      step: 'paying',
-      message: `Locking $${feeBreakdown.total.toFixed(2)} in ISO 20022 FedNow escrow buffer for ${selectedCounty.name}...`
-    });
+    setSimulationStep('Minting Deed NFT on Sovereign Ledger...');
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const newTokenId = (1000 + properties.length + 1).toString();
+    const newDeedNftAddress = '0xdeed72100000000000000000000000000000' + Math.random().toString(16).substring(2, 6);
+    const txHash = '0x' + Math.random().toString(16).substring(2, 18) + '...mint';
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setRecordingStatus({
-      step: 'submitted',
-      message: `Transmitting PRISM v4.2 payload to ${selectedCounty.apiEndpoint}. Awaiting official register seal...`
-    });
-
-    await new Promise(resolve => setTimeout(resolve, 2200));
-    const instNum = `INST-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-    const bookNum = `${Math.floor(1000 + Math.random() * 9000)}`;
-    const pageNum = `${Math.floor(1 + Math.random() * 500)}`;
-    const txHash = `0x${Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('')}`;
-
-    setRecordingStatus({
-      step: 'recorded',
-      message: `DEED OFFICIALLY RECORDED in public land records of ${selectedCounty.name}, State of ${selectedCounty.state}!`,
-      instrumentNumber: instNum,
-      bookNumber: bookNum,
-      pageNumber: pageNum,
-      recordedAt: new Date().toLocaleString(),
-      transactionHash: txHash
-    });
-    setIsSubmitting(false);
-
-    // Deduct total fees from balance
-    setUserBalance(prev => Math.max(0, prev - feeBreakdown.total));
-  };
-
-  // AI Banking Wire Handlers
-  const handleExecuteWire = async (amountToWire?: number) => {
-    const amt = amountToWire || parseFloat(transferAmount) || 0;
-    if (amt <= 0) return;
-    if (amt > userBalance) {
-      alert("Insufficient funds in sovereign bank account.");
-      return;
-    }
-
-    setIsWiring(true);
-    setWireSuccessMsg(null);
-
-    await new Promise(resolve => setTimeout(resolve, 2200));
-
-    setUserBalance(prev => prev - amt);
-    setIsWiring(false);
-    const ref = `ISO20022-${Math.floor(10000000 + Math.random() * 90000000)}`;
-    setWireSuccessMsg(`Wire Transfer Success! $${amt.toLocaleString()} routed via FedNow Real-Time Settlement. Ref: ${ref}`);
-  };
-
-  // 1-Click Instant House Purchase
-  const handleBuyHouse = async (property: PropertyMarketItem) => {
-    if (userBalance < property.price) {
-      alert(`Insufficient funds! Property price is $${property.price.toLocaleString()}, but balance is $${userBalance.toLocaleString()}.`);
-      return;
-    }
-
-    setIsProcessingHousePurchase(true);
-
-    await new Promise(resolve => setTimeout(resolve, 2500));
-
-    // Deduct money, lock in escrow, update property status, create new deed
-    setUserBalance(prev => prev - property.price);
-    setEscrowLocked(prev => prev + property.price);
-
-    setProperties(prev => prev.map(p => p.id === property.id ? { ...p, escrowStatus: 'Sold' } : p));
-
-    const newDeed: DeedData = {
-      id: `DEED-${Math.floor(1000 + Math.random() * 9000)}`,
-      apn: property.apn,
-      propertyAddress: property.address,
-      city: property.city,
-      state: property.state,
-      county: `${property.city} Municipal County`,
-      zipCode: property.zip,
-      grantorName: 'Apex Sovereign Realty Escrow Corp',
-      grantorType: 'Corporation',
-      granteeName: 'User / Sovereign Account Holder',
-      granteeType: 'Individual',
-      deedType: 'Warranty Deed',
-      considerationAmount: property.price,
-      legalDescription: `PARCEL ID ${property.apn}, SUBDIVISION LOT 7, MAP BOOK 102 PAGE 44, JURISDICTION OF ${property.city.toUpperCase()}, ${property.state}.`,
-      notaryName: 'Sovereign AI Autonomous Notary',
-      notaryCommissionNumber: 'NOT-AI-2026-99',
-      notaryState: property.state,
-      notaryExpirationDate: '2030-12-31',
-      signedDate: new Date().toISOString().split('T')[0],
-      zkProofHash: `0x${Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('')}`,
-      iso20022TxRef: `FEDNOW-${Math.floor(10000000 + Math.random() * 90000000)}`
+    const createdProperty: Property = {
+      id: `PROP-00${properties.length + 1}`,
+      address: newProperty.address,
+      parcelId: newProperty.parcelId,
+      coordinates: { lat: parseFloat(newProperty.lat), lng: parseFloat(newProperty.lng) },
+      propertyType: newProperty.propertyType,
+      size: newProperty.size,
+      ownerName: newProperty.ownerName,
+      ownerAddress: walletAddress,
+      status: 'Verified',
+      deedNftAddress: newDeedNftAddress,
+      tokenId: newTokenId,
+      ipfsHash: simulatedIpfsHash,
+      registrationDate: new Date().toISOString().split('T')[0],
+      valuation: parseFloat(newProperty.valuation) || 500000,
+      history: [
+        {
+          event: 'Deed Registered & Minted',
+          from: 'Sovereign Land Authority',
+          to: newProperty.ownerName,
+          price: newProperty.valuation ? formatCurrency(parseFloat(newProperty.valuation)) : 'N/A',
+          date: new Date().toISOString().split('T')[0],
+          txHash: txHash
+        }
+      ]
     };
 
-    setDeed(newDeed);
-    setIsProcessingHousePurchase(false);
-    setSelectedPropertyForBuy(null);
-
-    // Alert and redirect to deed view
-    alert(`🎉 CONGRATULATIONS! You bought ${property.address} for $${property.price.toLocaleString()}! Title cleared, FedNow funds transferred, and new Warranty Deed generated.`);
-    setActiveTab('registrar');
-    setSubTab('view');
+    setProperties(prev => [createdProperty, ...prev]);
+    setSelectedProperty(createdProperty);
+    setWalletBalance(prev => prev - 0.05); // Small gas fee
+    
+    addLog(`Smart Contract Event: DeedNFTMinted(tokenId: ${newTokenId}, owner: ${walletAddress})`, 'contract');
+    addLog(`Property successfully registered! Tx: ${txHash}`, 'success');
+    
+    setIsSimulating(false);
+    setSimulationStep('');
+    
+    // Reset form
+    setNewProperty({
+      address: '',
+      parcelId: '',
+      lat: '9.0765',
+      lng: '7.3986',
+      propertyType: 'Land',
+      size: '',
+      ownerName: '',
+      valuation: '',
+      documentName: ''
+    });
+    
+    setActiveTab('dashboard');
   };
 
-  // Issue New Municipal Permit
-  const handleApplyPermit = async () => {
-    setIsApplyingPermit(true);
+  // 2. Initiate Smart Contract Escrow
+  const handleCreateEscrow = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!walletConnected) {
+      addLog('Error: Wallet not connected.', 'error');
+      return;
+    }
+    if (!newEscrow.propertyId || !newEscrow.buyerAddress || !newEscrow.purchasePrice || !newEscrow.depositAmount) {
+      addLog('Error: Please fill in all escrow fields.', 'error');
+      return;
+    }
+
+    const targetProp = properties.find(p => p.id === newEscrow.propertyId);
+    if (!targetProp) {
+      addLog('Error: Selected property not found.', 'error');
+      return;
+    }
+
+    setIsSimulating(true);
+    setSimulationStep('Deploying Escrow Smart Contract...');
+    addLog(`Deploying Escrow Contract for Property: ${targetProp.parcelId}`, 'info');
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const escrowId = `ESC-${Math.floor(9000 + Math.random() * 1000)}`;
+    const txHash = '0x' + Math.random().toString(16).substring(2, 18) + '...escrow';
+
+    const createdEscrow: Escrow = {
+      id: escrowId,
+      propertyId: newEscrow.propertyId,
+      buyerAddress: newEscrow.buyerAddress,
+      sellerAddress: targetProp.ownerAddress,
+      purchasePrice: parseFloat(newEscrow.purchasePrice),
+      depositAmount: parseFloat(newEscrow.depositAmount),
+      status: 'Created',
+      inspectionPeriodDays: parseInt(newEscrow.inspectionPeriodDays),
+      arbitratorAddress: '0xScaleSovereignArbitratorContractAddress',
+      createdAt: new Date().toISOString().split('T')[0],
+      updatedAt: new Date().toISOString().split('T')[0],
+      txHash: txHash,
+      inspectionApproved: false,
+      buyerSigned: true,
+      sellerSigned: false
+    };
+
+    // Update property status to 'In Escrow'
+    setProperties(prev => prev.map(p => p.id === targetProp.id ? { ...p, status: 'In Escrow' } : p));
+    setEscrows(prev => [createdEscrow, ...prev]);
+    setSelectedEscrow(createdEscrow);
+    setWalletBalance(prev => prev - 0.1); // Gas fee
+
+    addLog(`Smart Contract Deployed: EscrowContract(${escrowId}) at 0x${Math.random().toString(16).substring(2, 10)}...`, 'contract');
+    addLog(`Escrow successfully created! Status: Created. Tx: ${txHash}`, 'success');
+
+    setIsSimulating(false);
+    setSimulationStep('');
+    
+    // Reset form
+    setNewEscrow({
+      propertyId: '',
+      buyerAddress: '',
+      purchasePrice: '',
+      depositAmount: '',
+      inspectionPeriodDays: '10'
+    });
+
+    setActiveTab('escrow');
+  };
+
+  // 3. Fund Escrow (Simulated Buyer Action)
+  const handleFundEscrow = async (escrowId: string) => {
+    setIsSimulating(true);
+    setSimulationStep('Transferring Funds to Escrow Vault...');
+    addLog(`Funding Escrow ${escrowId} with deposit amount...`, 'info');
+
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    const newPmt: GovernmentPermit = {
-      id: `PMT-2026-${Math.floor(100 + Math.random() * 900)}`,
-      type: newPermitType,
-      applicant: deed.granteeName,
-      propertyApn: deed.apn,
-      status: 'Approved',
-      issueDate: new Date().toISOString().split('T')[0],
-      fee: 350
-    };
+    setEscrows(prev => prev.map(esc => {
+      if (esc.id === escrowId) {
+        const updated = { ...esc, status: 'Funded' as const, updatedAt: new Date().toISOString().split('T')[0] };
+        setSelectedEscrow(updated);
+        return updated;
+      }
+      return esc;
+    }));
 
-    setPermits(prev => [newPmt, ...prev]);
-    setUserBalance(prev => Math.max(0, prev - 350));
-    setIsApplyingPermit(false);
+    addLog(`Smart Contract Event: EscrowFunded(escrowId: ${escrowId}, amount: Funded)`, 'contract');
+    addLog(`Escrow ${escrowId} successfully funded! Status: Funded.`, 'success');
+    setIsSimulating(false);
+    setSimulationStep('');
   };
 
-  // AI Chat Processor
-  const handleSendChatMessage = async () => {
-    if (!chatInput.trim()) return;
+  // 4. Approve Inspection (Simulated Buyer/Inspector Action)
+  const handleApproveInspection = async (escrowId: string) => {
+    setIsSimulating(true);
+    setSimulationStep('Verifying Inspection Reports & Signatures...');
+    addLog(`Submitting inspection approval for Escrow ${escrowId}...`, 'info');
 
-    const userText = chatInput;
-    const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
-      sender: 'user',
-      text: userText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
+    await new Promise(resolve => setTimeout(resolve, 1200));
 
-    setChatMessages(prev => [...prev, userMsg]);
-    setChatInput('');
-    setIsAgentThinking(true);
+    setEscrows(prev => prev.map(esc => {
+      if (esc.id === escrowId) {
+        const updated = { 
+          ...esc, 
+          inspectionApproved: true, 
+          status: 'Inspected' as const,
+          updatedAt: new Date().toISOString().split('T')[0] 
+        };
+        setSelectedEscrow(updated);
+        return updated;
+      }
+      return esc;
+    }));
 
-    await new Promise(resolve => setTimeout(resolve, 1800));
+    addLog(`Smart Contract Event: InspectionApproved(escrowId: ${escrowId})`, 'contract');
+    addLog(`Inspection approved for Escrow ${escrowId}. Status: Inspected.`, 'success');
+    setIsSimulating(false);
+    setSimulationStep('');
+  };
 
-    let replyText = "";
-    let actionCard: ChatMessage['actionCard'] = undefined;
+  // 5. Sign Escrow (Simulated Seller Action)
+  const handleSellerSign = async (escrowId: string) => {
+    setIsSimulating(true);
+    setSimulationStep('Signing Escrow Agreement...');
+    addLog(`Seller signing Escrow ${escrowId}...`, 'info');
 
-    const lower = userText.toLowerCase();
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (lower.includes('buy') || lower.includes('house') || lower.includes('home') || lower.includes('evergreen')) {
-      replyText = "I found 742 Evergreen Terrace ($350,000) available with instant AI title clearance and zero-knowledge unencumbrance verification. Would you like to execute the purchase now using your FedNow liquidity buffer?";
-      actionCard = {
-        type: 'buy_house',
-        data: MARKETPLACE_PROPERTIES[0]
-      };
-    } else if (lower.includes('wire') || lower.includes('send money') || lower.includes('pay') || lower.includes('transfer')) {
-      replyText = "I can execute an instant ISO 20022 pacs.008 credit transfer over the Federal Reserve FedNow network. Click below to authorize the transfer.";
-      actionCard = {
-        type: 'send_wire',
-        data: { amount: 350000, recipient: deed.grantorName }
-      };
-    } else if (lower.includes('permit') || lower.includes('zoning') || lower.includes('gov') || lower.includes('government')) {
-      replyText = "Under OECD Autonomous Governance Protocols (OECD No. 402), I can instantly inspect zoning code Title 17 and issue an approved Municipal Building Permit.";
-      actionCard = {
-        type: 'issue_permit',
-        data: { type: 'Solar & High-Capacity Battery Permit', fee: 350 }
-      };
-    } else if (lower.includes('paper') || lower.includes('citation') || lower.includes('research') || lower.includes('proof') || lower.includes('zk')) {
-      replyText = "According to Nakamoto & Szabo (2022, doi:10.1016/j.jrecds.2022.04.009), title deeds can be authenticated using ZK-SNARK circuit R1CS constraints, eliminating title insurance fraud and allowing O(1) instant public record verification.";
-    } else if (lower.includes('tax') || lower.includes('rate') || lower.includes('fee')) {
-      replyText = `Based on PRISM XML Schema v4.2 specifications for ${selectedCounty.name}, the current transfer tax rate is ${(selectedCounty.transferTaxRate * 100).toFixed(3)}%. For your consideration amount of $${deed.considerationAmount.toLocaleString()}, the total tax is $${feeBreakdown.transferTax.toFixed(2)}.`;
+    setEscrows(prev => prev.map(esc => {
+      if (esc.id === escrowId) {
+        const updated = { 
+          ...esc, 
+          sellerSigned: true, 
+          status: esc.buyerSigned && esc.inspectionApproved ? 'Approved' as const : esc.status,
+          updatedAt: new Date().toISOString().split('T')[0] 
+        };
+        setSelectedEscrow(updated);
+        return updated;
+      }
+      return esc;
+    }));
+
+    addLog(`Smart Contract Event: SellerSigned(escrowId: ${escrowId})`, 'contract');
+    addLog(`Seller signature recorded for Escrow ${escrowId}.`, 'success');
+    setIsSimulating(false);
+    setSimulationStep('');
+  };
+
+  // 6. Complete Escrow & Transfer Deed NFT
+  const handleCompleteEscrow = async (escrowId: string) => {
+    const esc = escrows.find(e => e.id === escrowId);
+    if (!esc) return;
+
+    const prop = properties.find(p => p.id === esc.propertyId);
+    if (!prop) return;
+
+    setIsSimulating(true);
+    setSimulationStep('Executing Atomic Swap (Funds <-> Deed NFT)...');
+    addLog(`Executing final settlement for Escrow ${escrowId}...`, 'info');
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const txHash = '0x' + Math.random().toString(16).substring(2, 18) + '...settle';
+    const today = new Date().toISOString().split('T')[0];
+
+    // Update Escrow Status
+    setEscrows(prev => prev.map(e => {
+      if (e.id === escrowId) {
+        const updated = { ...e, status: 'Completed' as const, updatedAt: today };
+        setSelectedEscrow(updated);
+        return updated;
+      }
+      return e;
+    }));
+
+    // Update Property Owner & Status
+    setProperties(prev => prev.map(p => {
+      if (p.id === esc.propertyId) {
+        const updatedHistory = [
+          {
+            event: 'Ownership Transferred (Escrow)',
+            from: p.ownerName,
+            to: 'Sovereign Wealth Fund (Buyer)',
+            price: formatCurrency(esc.purchasePrice),
+            date: today,
+            txHash: txHash
+          },
+          ...p.history
+        ];
+        const updated = {
+          ...p,
+          ownerName: 'Sovereign Wealth Fund',
+          ownerAddress: esc.buyerAddress,
+          status: 'Verified' as const,
+          history: updatedHistory
+        };
+        if (selectedProperty?.id === p.id) {
+          setSelectedProperty(updated);
+        }
+        return updated;
+      }
+      return p;
+    }));
+
+    addLog(`Smart Contract Event: EscrowCompleted(escrowId: ${escrowId}, buyer: ${esc.buyerAddress}, seller: ${esc.sellerAddress})`, 'contract');
+    addLog(`Smart Contract Event: DeedNFTTransferred(tokenId: ${prop.tokenId}, from: ${esc.sellerAddress}, to: ${esc.buyerAddress})`, 'contract');
+    addLog(`Atomic Swap Successful! Deed NFT transferred and funds released. Tx: ${txHash}`, 'success');
+
+    setIsSimulating(false);
+    setSimulationStep('');
+  };
+
+  // 7. Verify Property Search
+  const handleVerifySearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery) return;
+
+    addLog(`Searching registry for query: "${searchQuery}"`, 'info');
+    const found = properties.find(p => 
+      p.parcelId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.tokenId === searchQuery ||
+      p.ownerAddress.toLowerCase() === searchQuery.toLowerCase()
+    );
+
+    if (found) {
+      addLog(`Property found: ${found.parcelId}. Running cryptographic verification...`, 'success');
+      setVerificationResult({
+        searched: true,
+        property: found,
+        checks: {
+          titleChain: true,
+          noLiens: found.status !== 'Disputed',
+          taxCompliant: true,
+          gisVerified: true,
+          signatureValid: true
+        }
+      });
     } else {
-      replyText = `I have analyzed your prompt "${userText}". As your Sovereign AI Agent, I can interactively control your bank accounts, draft recorded land deeds, interface with PRISM eRecording county APIs, or pull academic citations.`;
+      addLog(`No registered property found matching query: "${searchQuery}"`, 'warning');
+      setVerificationResult({
+        searched: true,
+        property: null,
+        checks: {
+          titleChain: false,
+          noLiens: false,
+          taxCompliant: false,
+          gisVerified: false,
+          signatureValid: false
+        }
+      });
+    }
+  };
+
+  // ==========================================
+  // RENDER SUB-COMPONENTS
+  // ==========================================
+
+  // Interactive SVG Map of Parcels
+  const renderGISMap = () => {
+    return (
+      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 backdrop-blur-md relative overflow-hidden">
+        <div className="absolute top-4 right-4 z-10 flex gap-2">
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Sovereign GIS Live
+          </span>
+        </div>
+
+        <h3 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
+          <Map className="w-5 h-5 text-emerald-400" />
+          Interactive Sovereign Land Registry Map
+        </h3>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Map Canvas Area */}
+          <div className="lg:col-span-2 bg-slate-950 rounded-xl border border-slate-800 p-4 flex flex-col items-center justify-center min-h-[350px] relative">
+            {/* Grid Overlay */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30"></div>
+            
+            {/* Holographic SVG Map */}
+            <svg viewBox="0 0 800 500" className="w-full h-full max-h-[400px] z-10 relative">
+              {/* Roads / Infrastructure */}
+              <path d="M 50 250 Q 400 200 750 250" fill="none" stroke="#334155" strokeWidth="12" strokeLinecap="round" opacity="0.4" />
+              <path d="M 400 50 Q 420 250 400 450" fill="none" stroke="#334155" strokeWidth="12" strokeLinecap="round" opacity="0.4" />
+              
+              {/* Parcel 1: Guzape II */}
+              <g 
+                className="cursor-pointer group" 
+                onClick={() => {
+                  const p = properties.find(x => x.id === 'PROP-001');
+                  if (p) setSelectedProperty(p);
+                }}
+              >
+                <polygon 
+                  points="100,100 300,80 280,220 120,240" 
+                  fill={selectedProperty?.id === 'PROP-001' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(30, 41, 59, 0.4)'}
+                  stroke={selectedProperty?.id === 'PROP-001' ? '#10b981' : '#475569'}
+                  strokeWidth={selectedProperty?.id === 'PROP-001' ? '3' : '1.5'}
+                  className="transition-all duration-300 group-hover:fill-emerald-500/10"
+                />
+                <text x="190" y="160" fill="#94a3b8" fontSize="12" fontWeight="bold" textAnchor="middle" className="pointer-events-none">
+                  FCDA-GZ2-1714
+                </text>
+                <text x="190" y="180" fill="#10b981" fontSize="10" textAnchor="middle" className="pointer-events-none">
+                  100 Ha (Verified)
+                </text>
+              </g>
+
+              {/* Parcel 2: Karasana West */}
+              <g 
+                className="cursor-pointer group" 
+                onClick={() => {
+                  const p = properties.find(x => x.id === 'PROP-002');
+                  if (p) setSelectedProperty(p);
+                }}
+              >
+                <polygon 
+                  points="450,120 650,100 680,250 480,280" 
+                  fill={selectedProperty?.id === 'PROP-002' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(30, 41, 59, 0.4)'}
+                  stroke={selectedProperty?.id === 'PROP-002' ? '#f59e0b' : '#475569'}
+                  strokeWidth={selectedProperty?.id === 'PROP-002' ? '3' : '1.5'}
+                  className="transition-all duration-300 group-hover:fill-amber-500/10"
+                />
+                <text x="560" y="180" fill="#94a3b8" fontSize="12" fontWeight="bold" textAnchor="middle" className="pointer-events-none">
+                  FCDA-KW-0048
+                </text>
+                <text x="560" y="200" fill="#f59e0b" fontSize="10" textAnchor="middle" className="pointer-events-none">
+                  13.39 Ha (In Escrow)
+                </text>
+              </g>
+
+              {/* Parcel 3: Miami Penthouse (Simulated representation on grid) */}
+              <g 
+                className="cursor-pointer group" 
+                onClick={() => {
+                  const p = properties.find(x => x.id === 'PROP-003');
+                  if (p) setSelectedProperty(p);
+                }}
+              >
+                <rect 
+                  x="250" y="320" width="180" height="120" rx="8"
+                  fill={selectedProperty?.id === 'PROP-003' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(30, 41, 59, 0.4)'}
+                  stroke={selectedProperty?.id === 'PROP-003' ? '#10b981' : '#475569'}
+                  strokeWidth={selectedProperty?.id === 'PROP-003' ? '3' : '1.5'}
+                  className="transition-all duration-300 group-hover:fill-emerald-500/10"
+                />
+                <text x="340" y="370" fill="#94a3b8" fontSize="12" fontWeight="bold" textAnchor="middle" className="pointer-events-none">
+                  MIA-SOV-777
+                </text>
+                <text x="340" y="390" fill="#10b981" fontSize="10" textAnchor="middle" className="pointer-events-none">
+                  450 m² (Verified)
+                </text>
+              </g>
+            </svg>
+
+            <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center text-xs text-slate-400 bg-slate-900/90 px-3 py-2 rounded-lg border border-slate-800">
+              <span className="flex items-center gap-1"><Info className="w-3.5 h-3.5 text-emerald-400" /> Click on any parcel to inspect deed metadata.</span>
+              <span className="text-slate-500">Projection: EPSG:3857</span>
+            </div>
+          </div>
+
+          {/* Parcel Details Panel */}
+          <div className="bg-slate-950 rounded-xl border border-slate-800 p-5 flex flex-col justify-between">
+            {selectedProperty ? (
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-2 py-0.5 rounded">
+                      {selectedProperty.propertyType}
+                    </span>
+                    <h4 className="text-lg font-bold text-slate-100 mt-1.5">{selectedProperty.parcelId}</h4>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
+                    selectedProperty.status === 'Verified' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                    selectedProperty.status === 'In Escrow' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                    'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                  }`}>
+                    {selectedProperty.status}
+                  </span>
+                </div>
+
+                <div className="space-y-2.5 text-sm border-t border-b border-slate-800/60 py-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Address:</span>
+                    <span className="text-slate-200 text-right max-w-[180px] truncate">{selectedProperty.address}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Size:</span>
+                    <span className="text-slate-200">{selectedProperty.size}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Valuation:</span>
+                    <span className="text-slate-200 font-semibold text-emerald-400">{formatCurrency(selectedProperty.valuation)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Current Owner:</span>
+                    <span className="text-slate-200 font-mono text-xs">{formatAddress(selectedProperty.ownerAddress)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Deed NFT ID:</span>
+                    <span className="text-slate-200 font-mono text-xs">#{selectedProperty.tokenId}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">IPFS Metadata Hash</span>
+                  <div className="flex items-center justify-between bg-slate-900 p-2 rounded border border-slate-800 text-xs font-mono text-slate-300">
+                    <span className="truncate max-w-[180px]">{selectedProperty.ipfsHash}</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-500 hover:text-slate-300 cursor-pointer" />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  {selectedProperty.status === 'Verified' && (
+                    <button 
+                      onClick={() => {
+                        setNewEscrow(prev => ({ ...prev, propertyId: selectedProperty.id }));
+                        setActiveTab('escrow');
+                      }}
+                      className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-900/20"
+                    >
+                      <DollarSign className="w-4 h-4" />
+                      Initiate Escrow Sale
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-slate-500">
+                <MapPin className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>Select a parcel on the map to view details.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Smart Contract Code Viewer
+  const renderContractsTab = () => {
+    const solidityCode = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+contract SovereignDeedRegistry is ERC721, ReentrancyGuard {
+    struct DeedMetadata {
+        string parcelId;
+        string ipfsHash;
+        uint256 valuation;
+        bool isVerified;
     }
 
-    const agentMsg: ChatMessage = {
-      id: `agent-${Date.now()}`,
-      sender: 'agent',
-      text: replyText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      actionCard
-    };
+    mapping(uint256 => DeedMetadata) public deeds;
+    address public registryAdmin;
 
-    setIsAgentThinking(false);
-    setChatMessages(prev => [...prev, agentMsg]);
-  };
+    event DeedMinted(uint256 indexed tokenId, address indexed owner, string parcelId);
+    event DeedTransferred(uint256 indexed tokenId, address indexed from, address indexed to);
 
-  const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedBib(id);
-    setTimeout(() => setCopiedBib(null), 2000);
-  };
+    constructor() ERC721("SovereignDeedNFT", "SOV-DEED") {
+        registryAdmin = msg.sender;
+    }
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-16 selection:bg-emerald-500 selection:text-slate-950">
-      {/* TOP HEADER BAR */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-xl shadow-lg shadow-emerald-500/20 text-slate-950">
-              <Landmark className="w-6 h-6 stroke-[2.5]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-extrabold tracking-tight text-white">Sovereign Deed & AI Banking Portal</h1>
-                <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full uppercase">
-                  v4.2 FedNow + PRISM
-                </span>
+    function mintDeed(
+        address to,
+        uint256 tokenId,
+        string memory parcelId,
+        string memory ipfsHash,
+        uint256 valuation
+    ) external {
+        require(msg.sender == registryAdmin, "Only admin can mint deeds");
+        _safeMint(to, tokenId);
+        deeds[tokenId] = DeedMetadata(parcelId, ipfsHash, valuation, true);
+        emit DeedMinted(tokenId, to, parcelId);
+    }
+}`;
+
+    return (
+      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 backdrop-blur-md">
+        <h3 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
+          <Code className="w-5 h-5 text-emerald-400" />
+          Sovereign Smart Contract ABI & Source
+        </h3>
+        <p className="text-sm text-slate-400 mb-6">
+          The Sovereign Real Estate Deed Registry operates on immutable smart contracts. Below is the verified Solidity source code governing the minting, verification, and escrow of deed NFTs.
+        </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-300 overflow-x-auto max-h-[450px]">
+            <pre>{solidityCode}</pre>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <h4 className="text-sm font-bold text-slate-200 mb-3 flex items-center gap-1.5">
+                <Cpu className="w-4 h-4 text-emerald-400" />
+                Contract Parameters
+              </h4>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-slate-800/60">
+                  <span className="text-slate-400">Registry Address:</span>
+                  <span className="text-emerald-400 font-mono">0xDeedReg...881a</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/60">
+                  <span className="text-slate-400">Escrow Factory:</span>
+                  <span className="text-emerald-400 font-mono">0xEscrow...992c</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/60">
+                  <span className="text-slate-400">Network:</span>
+                  <span className="text-slate-200">Sovereign Ledger Mainnet</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-slate-400">Consensus:</span>
+                  <span className="text-slate-200">Proof of Authority (PoA)</span>
+                </div>
               </div>
-              <p className="text-xs text-slate-400">
-                Autonomous AI Government Super-App • Instant Title Deed Registration & FedNow ISO 20022 Banking
+            </div>
+
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <h4 className="text-sm font-bold text-slate-200 mb-3 flex items-center gap-1.5">
+                <Scale className="w-4 h-4 text-emerald-400" />
+                Legal Compliance
+              </h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                All smart contract actions are cryptographically bound to physical land registry laws under the Sovereign Land Act of 2026. Digital signatures represent legally binding execution of property transfers.
               </p>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  };
 
-          {/* Liquid Capital Display & Quick Escrow Stats */}
+  // ==========================================
+  // MAIN COMPONENT RENDER
+  // ==========================================
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 font-sans">
+      {/* Header / Navigation */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-slate-800/80">
+        <div>
           <div className="flex items-center gap-3">
-            <div className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-3">
-              <CreditCard className="w-5 h-5 text-emerald-400" />
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Liquid Capital</div>
-                <div className="text-base font-mono font-bold text-emerald-400">
-                  ${userBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
+            <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+              <Home className="w-6 h-6 text-emerald-400" />
             </div>
-
-            <div className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-3 hidden sm:flex">
-              <Lock className="w-5 h-5 text-amber-400" />
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Escrow Buffer</div>
-                <div className="text-base font-mono font-bold text-amber-300">
-                  ${escrowLocked.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
-              </div>
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-100">Sovereign Deed Registrar</h1>
+              <p className="text-sm text-slate-400">On-chain real estate title registry, smart contract escrow, and cryptographic verification.</p>
             </div>
           </div>
         </div>
 
-        {/* PRIMARY NAVIGATION TABS */}
-        <div className="max-w-7xl mx-auto px-4 flex overflow-x-auto gap-2 border-t border-slate-800/80 pt-2">
-          <button
-            onClick={() => setActiveTab('registrar')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 whitespace-nowrap border-b-2 ${
-              activeTab === 'registrar'
-                ? 'bg-slate-800/80 text-emerald-400 border-emerald-500 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            Deed Registrar & E-Recording
-          </button>
-
-          <button
-            onClick={() => setActiveTab('banking')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 whitespace-nowrap border-b-2 ${
-              activeTab === 'banking'
-                ? 'bg-slate-800/80 text-emerald-400 border-emerald-500 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
-            }`}
-          >
-            <Coins className="w-4 h-4" />
-            AI Banking & 1-Click House Buying
-          </button>
-
-          <button
-            onClick={() => setActiveTab('gov')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 whitespace-nowrap border-b-2 ${
-              activeTab === 'gov'
-                ? 'bg-slate-800/80 text-emerald-400 border-emerald-500 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
-            }`}
-          >
-            <Building className="w-4 h-4" />
-            Government Super-Services
-          </button>
-
-          <button
-            onClick={() => setActiveTab('ai_chat')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 whitespace-nowrap border-b-2 ${
-              activeTab === 'ai_chat'
-                ? 'bg-slate-800/80 text-emerald-400 border-emerald-500 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
-            }`}
-          >
-            <Bot className="w-4 h-4" />
-            Talk to Paper & Deed AI
-          </button>
-
-          <button
-            onClick={() => setActiveTab('biblio')}
-            className={`px-4 py-2.5 text-xs font-bold rounded-t-lg transition-all flex items-center gap-2 whitespace-nowrap border-b-2 ${
-              activeTab === 'biblio'
-                ? 'bg-slate-800/80 text-emerald-400 border-emerald-500 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/50'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            Bibliography & "The Nuts"
-          </button>
+        {/* Wallet Connection Status */}
+        <div className="flex items-center gap-3 bg-slate-900/90 border border-slate-800 p-3 rounded-xl backdrop-blur-md">
+          <div className="flex flex-col items-end">
+            <span className="text-xs text-slate-400">Sovereign Identity</span>
+            <span className="text-sm font-mono font-bold text-emerald-400">{formatAddress(walletAddress)}</span>
+          </div>
+          <div className="h-8 w-px bg-slate-800"></div>
+          <div className="flex flex-col">
+            <span className="text-xs text-slate-400">Balance</span>
+            <span className="text-sm font-bold text-slate-200">{walletBalance.toFixed(2)} SOV</span>
+          </div>
         </div>
       </header>
 
-      {/* MAIN CONTAINER */}
-      <main className="max-w-7xl mx-auto px-4 mt-8">
+      {/* Navigation Tabs */}
+      <div className="flex flex-wrap gap-2 mb-8">
+        <button 
+          onClick={() => setActiveTab('dashboard')}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+            activeTab === 'dashboard' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/60'
+          }`}
+        >
+          <Activity className="w-4 h-4" />
+          Dashboard
+        </button>
+        <button 
+          onClick={() => setActiveTab('register')}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+            activeTab === 'register' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/60'
+          }`}
+        >
+          <Plus className="w-4 h-4" />
+          Register New Deed
+        </button>
+        <button 
+          onClick={() => setActiveTab('escrow')}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+            activeTab === 'escrow' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/60'
+          }`}
+        >
+          <DollarSign className="w-4 h-4" />
+          Escrow Hub
+        </button>
+        <button 
+          onClick={() => setActiveTab('verify')}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+            activeTab === 'verify' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/60'
+          }`}
+        >
+          <Shield className="w-4 h-4" />
+          Verification Engine
+        </button>
+        <button 
+          onClick={() => setActiveTab('map')}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+            activeTab === 'map' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/60'
+          }`}
+        >
+          <Map className="w-4 h-4" />
+          GIS Parcel Map
+        </button>
+        <button 
+          onClick={() => setActiveTab('contracts')}
+          className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+            activeTab === 'contracts' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/60'
+          }`}
+        >
+          <Code className="w-4 h-4" />
+          Smart Contracts
+        </button>
+      </div>
 
-        {/* TAB 1: DEED REGISTRAR & E-RECORDING */}
-        {activeTab === 'registrar' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Column (7 Cols) */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Secondary Tab Switcher */}
-              <div className="flex border-b border-slate-800 bg-slate-900/60 p-1 rounded-xl">
-                <button
-                  onClick={() => setSubTab('view')}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors ${
-                    subTab === 'view' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Document Preview
-                </button>
-                <button
-                  onClick={() => setSubTab('edit')}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors ${
-                    subTab === 'edit' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Edit Deed Details
-                </button>
-                <button
-                  onClick={() => setSubTab('recorder')}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors ${
-                    subTab === 'recorder' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  County Recorder & Taxes
-                </button>
-              </div>
-
-              {/* SubTab 1: View Deed Document Paper */}
-              {subTab === 'view' && (
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                  <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
-                    <div className="flex items-center gap-2">
-                      <FileCheck className="text-emerald-400 w-5 h-5" />
-                      <h2 className="text-base font-bold text-white uppercase tracking-wider">
-                        Official Legal Instrument: {deed.deedType}
-                      </h2>
-                    </div>
-                    <span className="text-xs bg-slate-800 text-emerald-400 border border-slate-700 px-3 py-1 rounded-full font-mono font-bold">
-                      {deed.id}
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        
+        {/* Left 3 Columns: Active Tab Content */}
+        <div className="xl:col-span-3 space-y-8">
+          
+          {/* 1. DASHBOARD TAB */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-8">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl backdrop-blur-md">
+                  <span className="text-xs text-slate-400 font-medium">Total Registered Properties</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-2xl font-bold text-slate-100">{properties.length}</span>
+                    <span className="text-xs text-emerald-400 font-medium">+100% on-chain</span>
+                  </div>
+                </div>
+                <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl backdrop-blur-md">
+                  <span className="text-xs text-slate-400 font-medium">Active Escrows</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-2xl font-bold text-amber-400">{escrows.filter(e => e.status !== 'Completed' && e.status !== 'Refunded').length}</span>
+                    <span className="text-xs text-slate-400">Awaiting settlement</span>
+                  </div>
+                </div>
+                <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl backdrop-blur-md">
+                  <span className="text-xs text-slate-400 font-medium">Total Registry Valuation</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-2xl font-bold text-emerald-400">
+                      {formatCurrency(properties.reduce((acc, curr) => acc + curr.valuation, 0))}
                     </span>
                   </div>
-
-                  {/* Legal Deed Parchment Paper Simulation */}
-                  <div className="bg-stone-50 text-slate-900 p-8 rounded-xl shadow-inner font-serif text-xs leading-relaxed border-8 border-double border-stone-300 max-h-[580px] overflow-y-auto relative">
-                    {/* Official Watermark */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-                      <Landmark className="w-80 h-80 text-slate-900" />
-                    </div>
-
-                    <div className="text-center font-bold text-base uppercase tracking-widest mb-6 border-b-2 border-slate-900 pb-3 font-mono">
-                      RECORDED LAND DEED & TITLE TRANSFER
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-6 font-sans text-[11px]">
-                      <div>
-                        <strong>RECORDING REQUESTED BY:</strong><br />
-                        {deed.granteeName}<br />
-                        <strong>AFTER RECORDING MAIL TO:</strong><br />
-                        {deed.propertyAddress}, {deed.city}, {deed.state} {deed.zipCode}
-                      </div>
-                      <div className="text-right">
-                        <strong>APN / PARCEL NO:</strong> {deed.apn}<br />
-                        <strong>COUNTY JURISDICTION:</strong> {deed.county}<br />
-                        <strong>TRANSFER TAX PAID:</strong> ${feeBreakdown.transferTax.toLocaleString(undefined, {minimumFractionDigits: 2})}
-                      </div>
-                    </div>
-
-                    <p className="mb-4 indent-6">
-                      <strong>FOR A VALUABLE CONSIDERATION</strong>, in the amount of 
-                      <strong> ${deed.considerationAmount.toLocaleString()}</strong>, the receipt and sufficiency of which are hereby acknowledged, 
-                      <strong> {deed.grantorName}</strong> ("Grantor"), a {deed.grantorType}, hereby GRANTS, BARGAINS, SELLS, and CONVEYS unto 
-                      <strong> {deed.granteeName}</strong> ("Grantee"), a {deed.granteeType}, all that real property located in the County of 
-                      <strong> {deed.county}</strong>, State of <strong>{deed.state}</strong>, legally described as follows:
-                    </p>
-
-                    <div className="my-4 bg-stone-100 p-4 border border-stone-300 rounded font-mono text-[10px] leading-normal uppercase">
-                      {deed.legalDescription}
-                    </div>
-
-                    <p className="mb-4">
-                      <strong>Commonly Known As:</strong> {deed.propertyAddress}, {deed.city}, {deed.state} {deed.zipCode}
-                    </p>
-
-                    <p className="mb-6 font-semibold">
-                      IN WITNESS WHEREOF, the Grantor has executed this instrument on <strong>{deed.signedDate}</strong>.
-                    </p>
-
-                    {/* Signatures */}
-                    <div className="grid grid-cols-2 gap-8 mb-6 pt-4 border-t border-stone-300">
-                      <div>
-                        <div className="border-b border-slate-900 h-10 flex items-end font-sans italic text-slate-700 text-sm">
-                          /s/ {deed.grantorName}
-                        </div>
-                        <div className="text-[10px] font-bold uppercase mt-1">Grantor Executant</div>
-                      </div>
-                      <div>
-                        <div className="border-b border-slate-900 h-10 flex items-end font-sans italic text-slate-700 text-sm">
-                          /s/ {deed.granteeName}
-                        </div>
-                        <div className="text-[10px] font-bold uppercase mt-1">Grantee Recipient</div>
-                      </div>
-                    </div>
-
-                    {/* Official Notary Block */}
-                    <div className="border border-stone-400 bg-stone-100 p-4 rounded text-[10px]">
-                      <div className="font-bold uppercase tracking-wider mb-1 border-b border-stone-300 pb-1">
-                        NOTARY PUBLIC ACKNOWLEDGMENT (STATE OF {deed.notaryState})
-                      </div>
-                      <p className="mb-2">
-                        On {deed.signedDate}, before me, <strong>{deed.notaryName}</strong>, Notary Public, personally appeared 
-                        <strong> {deed.grantorName}</strong>, who proved to me on the basis of satisfactory evidence to be the person whose name is subscribed to the within instrument.
-                      </p>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <strong>Commission #:</strong> {deed.notaryCommissionNumber}<br />
-                          <strong>Expires:</strong> {deed.notaryExpirationDate}
-                        </div>
-                        <div className="border border-dashed border-stone-400 p-2 text-center text-[9px] uppercase text-stone-500 flex items-center justify-center font-bold">
-                          [ OFFICIAL DIGITAL NOTARY SEAL ATTACHED ]
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* ZK Proof Cryptographic Stamp */}
-                    {deed.zkProofHash && (
-                      <div className="mt-4 pt-3 border-t border-stone-300 flex items-center justify-between text-[9px] font-mono text-stone-600">
-                        <span>ZK-SNARK Proof Hash: {deed.zkProofHash.substring(0, 24)}...</span>
-                        <span>FedNow Settlement Ref: {deed.iso20022TxRef}</span>
-                      </div>
-                    )}
+                </div>
+                <div className="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl backdrop-blur-md">
+                  <span className="text-xs text-slate-400 font-medium">Registry Integrity</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-2xl font-bold text-emerald-400">100%</span>
+                    <span className="text-xs text-slate-400">Zero title fraud</span>
                   </div>
                 </div>
-              )}
+              </div>
 
-              {/* SubTab 2: Edit Deed Details */}
-              {subTab === 'edit' && (
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2">
-                    Deed & Legal Instrument Parameters
+              {/* Properties List */}
+              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 backdrop-blur-md">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-emerald-400" />
+                    Registered Sovereign Properties
                   </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Deed Type</label>
-                      <select
-                        name="deedType"
-                        value={deed.deedType}
-                        onChange={handleInputChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                      >
-                        <option value="Warranty Deed">Warranty Deed</option>
-                        <option value="Quitclaim Deed">Quitclaim Deed</option>
-                        <option value="Grant Deed">Grant Deed</option>
-                        <option value="Special Warranty Deed">Special Warranty Deed</option>
-                        <option value="Sheriff Deed">Sheriff Deed</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">APN (Parcel Number)</label>
-                      <input
-                        type="text"
-                        name="apn"
-                        value={deed.apn}
-                        onChange={handleInputChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Grantor (Seller)</label>
-                      <input
-                        type="text"
-                        name="grantorName"
-                        value={deed.grantorName}
-                        onChange={handleInputChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Grantee (Buyer)</label>
-                      <input
-                        type="text"
-                        name="granteeName"
-                        value={deed.granteeName}
-                        onChange={handleInputChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Consideration ($)</label>
-                      <input
-                        type="number"
-                        name="considerationAmount"
-                        value={deed.considerationAmount}
-                        onChange={handleInputChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Execution Date</label>
-                      <input
-                        type="date"
-                        name="signedDate"
-                        value={deed.signedDate}
-                        onChange={handleInputChange}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Street Address</label>
-                    <input
-                      type="text"
-                      name="propertyAddress"
-                      value={deed.propertyAddress}
-                      onChange={handleInputChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Legal Description</label>
-                    <textarea
-                      name="legalDescription"
-                      value={deed.legalDescription}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* SubTab 3: County Recorder & Fees */}
-              {subTab === 'recorder' && (
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2">
-                    PRISM v4.2 E-Recording County Configuration
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Select Jurisdiction</label>
-                      <select
-                        value={selectedCountyId}
-                        onChange={(e) => setSelectedCountyId(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                      >
-                        {MOCK_COUNTIES.map(c => (
-                          <option key={c.id} value={c.id}>
-                            {c.name} ({c.state}) - Code: {c.jurisdictionCode}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Document Page Count</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={pageCount}
-                        onChange={(e) => setPageCount(parseInt(e.target.value) || 1)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  {/* PRISM Transfer Tax Matrix Breakdown */}
-                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2 font-mono text-xs">
-                    <div className="text-slate-400 text-[11px] uppercase font-bold border-b border-slate-800 pb-2">
-                      PRISM Tax Calculation Matrix ({selectedCounty.name})
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Base Recording Fee:</span>
-                      <span className="text-white">${feeBreakdown.base.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Page Surcharge ({pageCount - 1} extra pages):</span>
-                      <span className="text-white">${feeBreakdown.pages.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Transfer Tax Rate ({(selectedCounty.transferTaxRate * 100).toFixed(3)}%):</span>
-                      <span className="text-white">${feeBreakdown.transferTax.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Convenience E-File Fee:</span>
-                      <span className="text-white">${feeBreakdown.convenienceFee.toFixed(2)}</span>
-                    </div>
-                    <div className="border-t border-slate-800 pt-2 flex justify-between font-bold text-sm text-emerald-400">
-                      <span>TOTAL REQUIRED FEES:</span>
-                      <span>${feeBreakdown.total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Right Column: Pre-Flight Validation & Submission (5 Cols) */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Validation Card */}
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  Nakamoto-Szabo Pre-Flight Validation
-                </h3>
-
-                {validationErrors.length === 0 ? (
-                  <div className="bg-emerald-950/40 border border-emerald-800/60 rounded-xl p-4 flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                    <div>
-                      <div className="text-xs font-bold text-emerald-300">Title Deed & ZK Proof Valid</div>
-                      <p className="text-[11px] text-emerald-400/80 mt-1">
-                        Zero-knowledge constraints verified. APN format matched to {selectedCounty.name} GIS index.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-rose-950/40 border border-rose-800/60 rounded-xl p-4 space-y-2">
-                    <div className="flex items-start gap-2 text-rose-300 text-xs font-bold">
-                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                      Validation Failed ({validationErrors.length} errors)
-                    </div>
-                    <ul className="list-disc list-inside text-[11px] text-rose-300/80 space-y-1 font-mono">
-                      {validationErrors.map((err, i) => (
-                        <li key={i}>{err}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              {/* Submission Workflow Card */}
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                  <Send className="w-4 h-4 text-emerald-400" />
-                  E-Recording Transmission Gateway
-                </h3>
-
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[10px] font-mono uppercase text-slate-400">
-                    <span>STATUS</span>
-                    <span className="text-emerald-400 font-bold">{recordingStatus.step.toUpperCase()}</span>
-                  </div>
-                  <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
-                    <div
-                      className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-500"
-                      style={{
-                        width:
-                          recordingStatus.step === 'draft' ? '15%' :
-                          recordingStatus.step === 'validating' ? '40%' :
-                          recordingStatus.step === 'paying' ? '65%' :
-                          recordingStatus.step === 'submitted' ? '85%' :
-                          recordingStatus.step === 'recorded' ? '100%' : '0%'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed font-mono">
-                  {recordingStatus.message}
-                </div>
-
-                {recordingStatus.step === 'recorded' && (
-                  <div className="bg-emerald-950/30 border border-emerald-800/50 rounded-xl p-4 font-mono text-[11px] space-y-2 text-emerald-300">
-                    <div className="font-bold flex items-center gap-1.5 text-emerald-400">
-                      <CheckCircle className="w-4 h-4" /> OFFICIAL DEED RECORDED
-                    </div>
-                    <div>Instrument #: {recordingStatus.instrumentNumber}</div>
-                    <div>Book / Page: {recordingStatus.bookNumber} / {recordingStatus.pageNumber}</div>
-                    <div>Recorded At: {recordingStatus.recordedAt}</div>
-                    <div className="text-[9px] text-slate-400 break-all">Tx Hash: {recordingStatus.transactionHash}</div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                {recordingStatus.step !== 'recorded' ? (
-                  <button
-                    onClick={handleEFileSubmit}
-                    disabled={isSubmitting || validationErrors.length > 0}
-                    className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:opacity-50 text-slate-950 font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-950"
+                  <button 
+                    onClick={() => setActiveTab('register')}
+                    className="px-3.5 py-1.5 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Transmitting to {selectedCounty.name}...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        Submit & Record Deed (${feeBreakdown.total.toFixed(2)})
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setRecordingStatus({
-                        step: 'draft',
-                        message: 'Ready to draft new deed instrument.'
-                      });
-                    }}
-                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition-colors"
-                  >
-                    Draft Another Deed
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: AI BANKING & 1-CLICK HOUSE BUYING */}
-        {activeTab === 'banking' && (
-          <div className="space-y-8">
-            {/* Banking Overview Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-2 shadow-xl">
-                <div className="flex justify-between items-center text-slate-400 text-xs uppercase font-bold">
-                  <span>ISO 20022 FedNow Balance</span>
-                  <Zap className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div className="text-2xl font-mono font-extrabold text-emerald-400">
-                  ${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}
-                </div>
-                <div className="text-[10px] text-slate-400">
-                  Routing: <span className="font-mono text-white">021000021</span> (Federal Reserve Settlement Bank)
-                </div>
-              </div>
-
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-2 shadow-xl">
-                <div className="flex justify-between items-center text-slate-400 text-xs uppercase font-bold">
-                  <span>Title Escrow Lock</span>
-                  <Lock className="w-4 h-4 text-amber-400" />
-                </div>
-                <div className="text-2xl font-mono font-extrabold text-amber-300">
-                  ${escrowLocked.toLocaleString(undefined, {minimumFractionDigits: 2})}
-                </div>
-                <div className="text-[10px] text-slate-400">
-                  Auto-releases upon PRISM HTTP 200 Deed Receipt
-                </div>
-              </div>
-
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-2 shadow-xl">
-                <div className="flex justify-between items-center text-slate-400 text-xs uppercase font-bold">
-                  <span>AI Pre-Approved Mortgage</span>
-                  <ShieldCheck className="w-4 h-4 text-teal-400" />
-                </div>
-                <div className="text-2xl font-mono font-extrabold text-teal-300">
-                  $5,000,000.00
-                </div>
-                <div className="text-[10px] text-slate-400">
-                  Instant Liquidity • 0% Origination Fee
-                </div>
-              </div>
-            </div>
-
-            {/* Marketplace: 1-Click House Buying */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Home className="w-5 h-5 text-emerald-400" />
-                    1-Click Sovereign House Marketplace
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Select a property to buy instantly. AI verifies title unencumbrance, executes FedNow wire, and registers deed in real-time.
-                  </p>
-                </div>
-                <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold">
-                  3 Houses Ready for Instant Clearing
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {properties.map(prop => (
-                  <div key={prop.id} className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex flex-col justify-between hover:border-slate-700 transition-all">
-                    <div>
-                      <div className="h-44 overflow-hidden relative">
-                        <img src={prop.imageUrl} alt={prop.address} className="w-full h-full object-cover" />
-                        <span className={`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full font-mono ${
-                          prop.escrowStatus === 'Available' ? 'bg-emerald-500 text-slate-950' : 'bg-amber-500 text-slate-950'
-                        }`}>
-                          {prop.escrowStatus}
-                        </span>
-                      </div>
-                      <div className="p-4 space-y-2">
-                        <div className="text-lg font-mono font-bold text-white">
-                          ${prop.price.toLocaleString()}
-                        </div>
-                        <div className="text-xs font-semibold text-slate-200">{prop.address}</div>
-                        <div className="text-[11px] text-slate-400">{prop.city}, {prop.state} {prop.zip}</div>
-                        <div className="text-[10px] font-mono text-slate-500 border-t border-slate-800 pt-2 flex justify-between">
-                          <span>APN: {prop.apn}</span>
-                          <span>{prop.beds} bds • {prop.baths} ba • {prop.sqft} sqft</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-4 pt-0">
-                      <button
-                        onClick={() => handleBuyHouse(prop)}
-                        disabled={prop.escrowStatus !== 'Available' || isProcessingHousePurchase}
-                        className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-2"
-                      >
-                        {isProcessingHousePurchase ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Clearing Title & Transferring Funds...
-                          </>
-                        ) : prop.escrowStatus === 'Available' ? (
-                          <>
-                            <Zap className="w-4 h-4" />
-                            Buy House in 1-Click
-                          </>
-                        ) : (
-                          'Property Purchased'
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Direct FedNow ISO 20022 Wire Terminal */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-emerald-400" />
-                FedNow ISO 20022 pacs.008 Direct Wire Terminal
-              </h3>
-
-              {wireSuccessMsg && (
-                <div className="bg-emerald-950/50 border border-emerald-800/60 p-3 rounded-xl text-xs font-mono text-emerald-300">
-                  {wireSuccessMsg}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Routing Number</label>
-                  <input
-                    type="text"
-                    value={recipientRouting}
-                    onChange={(e) => setRecipientRouting(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Account Number</label>
-                  <input
-                    type="text"
-                    value={recipientAccount}
-                    onChange={(e) => setRecipientAccount(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Wire Amount ($)</label>
-                  <input
-                    type="number"
-                    value={transferAmount}
-                    onChange={(e) => setTransferAmount(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">ISO 20022 Remittance Info (pacs.008 Memo)</label>
-                <input
-                  type="text"
-                  value={wireMemo}
-                  onChange={(e) => setWireMemo(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white font-mono"
-                />
-              </div>
-
-              <button
-                onClick={() => handleExecuteWire()}
-                disabled={isWiring}
-                className="py-3 px-6 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all flex items-center gap-2"
-              >
-                {isWiring ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Executing ISO 20022 Transfer...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Send Real-Time Wire via FedNow
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: GOVERNMENT SUPER-SERVICES */}
-        {activeTab === 'gov' && (
-          <div className="space-y-8">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6">
-              <div className="flex justify-between items-center border-b border-slate-800 pb-4">
-                <div>
-                  <h2 className="text-base font-bold text-white flex items-center gap-2">
-                    <Building className="w-5 h-5 text-emerald-400" />
-                    Autonomous Municipal Government Portal (OECD No. 402 Standard)
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Instant AI zoning compliance, automated building permits, property tax assessments, and eminent domain record checks.
-                  </p>
-                </div>
-              </div>
-
-              {/* Permit Generator Form */}
-              <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                  Instant Municipal Permit Application Generator
-                </h3>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <select
-                    value={newPermitType}
-                    onChange={(e) => setNewPermitType(e.target.value)}
-                    className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white"
-                  >
-                    <option value="HVAC & Heat Pump Upgrade Permit">HVAC & Heat Pump Upgrade Permit ($350)</option>
-                    <option value="Solar Panel & Grid Tie Permit">Solar Panel & Grid Tie Permit ($250)</option>
-                    <option value="Residential ADU Construction Clearance">Residential ADU Construction Clearance ($500)</option>
-                    <option value="Commercial Zoning Exemption Permit">Commercial Zoning Exemption Permit ($750)</option>
-                  </select>
-
-                  <button
-                    onClick={handleApplyPermit}
-                    disabled={isApplyingPermit}
-                    className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs transition-all flex items-center gap-2 shrink-0"
-                  >
-                    {isApplyingPermit ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        AI Inspecting CAD & Zoning...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4" />
-                        Issue Permit Instantly
-                      </>
-                    )}
+                    <Plus className="w-3.5 h-3.5" /> Register Property
                   </button>
                 </div>
-              </div>
 
-              {/* Permits Registry Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left font-mono text-xs text-slate-300">
-                  <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] border-b border-slate-800">
-                    <tr>
-                      <th className="p-3">Permit ID</th>
-                      <th className="p-3">Permit Type</th>
-                      <th className="p-3">Property APN</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">Issue Date</th>
-                      <th className="p-3">Fee Paid</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {permits.map(p => (
-                      <tr key={p.id} className="hover:bg-slate-800/30">
-                        <td className="p-3 text-emerald-400 font-bold">{p.id}</td>
-                        <td className="p-3 text-white font-sans font-semibold">{p.type}</td>
-                        <td className="p-3">{p.propertyApn}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            p.status === 'Approved' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'
-                          }`}>
-                            {p.status}
-                          </span>
-                        </td>
-                        <td className="p-3">{p.issueDate}</td>
-                        <td className="p-3">${p.fee}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-xs text-slate-400 uppercase tracking-wider">
+                        <th className="py-3 px-4">Parcel ID</th>
+                        <th className="py-3 px-4">Address</th>
+                        <th className="py-3 px-4">Size</th>
+                        <th className="py-3 px-4">Valuation</th>
+                        <th className="py-3 px-4">Owner</th>
+                        <th className="py-3 px-4">Status</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60 text-sm">
+                      {properties.map((prop) => (
+                        <tr key={prop.id} className="hover:bg-slate-800/20 transition-colors">
+                          <td className="py-3.5 px-4 font-mono font-bold text-slate-200">{prop.parcelId}</td>
+                          <td className="py-3.5 px-4 text-slate-300 max-w-[200px] truncate">{prop.address}</td>
+                          <td className="py-3.5 px-4 text-slate-400">{prop.size}</td>
+                          <td className="py-3.5 px-4 text-emerald-400 font-semibold">{formatCurrency(prop.valuation)}</td>
+                          <td className="py-3.5 px-4 font-mono text-xs text-slate-400">{formatAddress(prop.ownerAddress)}</td>
+                          <td className="py-3.5 px-4">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+                              prop.status === 'Verified' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                              prop.status === 'In Escrow' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                              'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                            }`}>
+                              {prop.status}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <button 
+                              onClick={() => {
+                                setSelectedProperty(prop);
+                                setActiveTab('map');
+                              }}
+                              className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-all"
+                              title="View on Map"
+                            >
+                              <Map className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* TAB 4: TALK TO PAPER & DEED AI AGENT */}
-        {activeTab === 'ai_chat' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl flex flex-col h-[650px]">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
-              <div className="flex items-center gap-2">
-                <Bot className="w-5 h-5 text-emerald-400" />
-                <h2 className="text-base font-bold text-white">
-                  Sovereign AI Agent (Interactive Paper & Banking Terminal)
-                </h2>
-              </div>
-              <span className="text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full">
-                Active Context: Nakamoto & Szabo (2022) + ISO 20022
-              </span>
+          {/* 2. REGISTER NEW DEED TAB */}
+          {activeTab === 'register' && (
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 backdrop-blur-md">
+              <h3 className="text-lg font-bold text-slate-100 mb-2 flex items-center gap-2">
+                <FileSignature className="w-5 h-5 text-emerald-400" />
+                Register New Property Deed
+              </h3>
+              <p className="text-sm text-slate-400 mb-6">
+                Mint a legally binding Deed NFT representing physical land ownership. This process hashes the physical deed document, generates a zero-knowledge ownership proof, and registers the asset on the Sovereign Ledger.
+              </p>
+
+              <form onSubmit={handleRegisterDeed} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Property Address</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Plot 1714, Guzape District II, Abuja" 
+                      value={newProperty.address}
+                      onChange={e => setNewProperty(prev => ({ ...prev, address: e.target.value }))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Parcel ID (APN / Cadastral Code)</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. FCDA-GZ2-1714" 
+                      value={newProperty.parcelId}
+                      onChange={e => setNewProperty(prev => ({ ...prev, parcelId: e.target.value }))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Property Type</label>
+                    <select 
+                      value={newProperty.propertyType}
+                      onChange={e => setNewProperty(prev => ({ ...prev, propertyType: e.target.value as Property['propertyType'] }))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                    >
+                      <option value="Land">Land / Plot</option>
+                      <option value="Residential">Residential</option>
+                      <option value="Commercial">Commercial</option>
+                      <option value="Agricultural">Agricultural</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Size (e.g. Hectares, Sq Meters)</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 100 Hectares" 
+                      value={newProperty.size}
+                      onChange={e => setNewProperty(prev => ({ ...prev, size: e.target.value }))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Owner Legal Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Sovereign Land Trust" 
+                      value={newProperty.ownerName}
+                      onChange={e => setNewProperty(prev => ({ ...prev, ownerName: e.target.value }))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estimated Valuation (USD)</label>
+                    <input 
+                      type="number" 
+                      placeholder="e.g. 25000000" 
+                      value={newProperty.valuation}
+                      onChange={e => setNewProperty(prev => ({ ...prev, valuation: e.target.value }))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Latitude Coordinate</label>
+                    <input 
+                      type="text" 
+                      value={newProperty.lat}
+                      onChange={e => setNewProperty(prev => ({ ...prev, lat: e.target.value }))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Longitude Coordinate</label>
+                    <input 
+                      type="text" 
+                      value={newProperty.lng}
+                      onChange={e => setNewProperty(prev => ({ ...prev, lng: e.target.value }))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Document Upload Simulation */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Upload Physical Deed Document (PDF/Scan)</label>
+                  <div className="border-2 border-dashed border-slate-800 hover:border-emerald-500/50 rounded-2xl p-6 text-center cursor-pointer transition-all bg-slate-950/50">
+                    <Upload className="w-8 h-8 mx-auto text-slate-500 mb-2" />
+                    <span className="text-sm text-slate-300 block font-medium">Drag & drop or click to upload</span>
+                    <span className="text-xs text-slate-500 mt-1 block">Supports PDF, PNG, JPG up to 20MB. Document will be hashed on-chain.</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-800/60">
+                  <button 
+                    type="button" 
+                    onClick={() => setActiveTab('dashboard')}
+                    className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium rounded-xl transition-all text-sm border border-slate-800"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={isSimulating}
+                    className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white font-medium rounded-xl transition-all text-sm flex items-center gap-2 shadow-lg shadow-emerald-900/20"
+                  >
+                    {isSimulating ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        {simulationStep || 'Processing...'}
+                      </>
+                    ) : (
+                      <>
+                        <FileCheck className="w-4 h-4" />
+                        Mint Deed NFT & Register
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
+          )}
 
-            {/* Chat Messages Window */}
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-              {chatMessages.map(msg => (
-                <div
-                  key={msg.id}
-                  className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  {msg.sender === 'agent' && (
-                    <div className="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shrink-0 font-bold">
-                      <Bot className="w-4 h-4" />
-                    </div>
-                  )}
+          {/* 3. ESCROW HUB TAB */}
+          {activeTab === 'escrow' && (
+            <div className="space-y-8">
+              {/* Escrow Management Panel */}
+              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 backdrop-blur-md">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-emerald-400" />
+                      Smart Contract Escrow Hub
+                    </h3>
+                    <p className="text-sm text-slate-400 mt-1">Securely buy and sell real estate using automated, multi-signature escrow contracts.</p>
+                  </div>
+                </div>
 
-                  <div className={`max-w-[80%] rounded-2xl p-4 text-xs space-y-3 ${
-                    msg.sender === 'user'
-                      ? 'bg-emerald-600 text-slate-950 font-medium'
-                      : 'bg-slate-950 text-slate-200 border border-slate-800'
-                  }`}>
-                    <div className="flex justify-between items-center text-[10px] opacity-70 border-b border-white/10 pb-1 mb-1">
-                      <span>{msg.sender === 'user' ? 'You' : 'Sovereign Deed AI'}</span>
-                      <span>{msg.timestamp}</span>
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Escrow List */}
+                  <div className="space-y-3 lg:col-span-1 border-r border-slate-800/60 pr-0 lg:pr-6">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Active Escrows</span>
+                    {escrows.map(esc => {
+                      const prop = properties.find(p => p.id === esc.propertyId);
+                      return (
+                        <div 
+                          key={esc.id}
+                          onClick={() => setSelectedEscrow(esc)}
+                          className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                            selectedEscrow?.id === esc.id 
+                              ? 'bg-emerald-500/10 border-emerald-500/40 shadow-md' 
+                              : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <span className="font-mono font-bold text-slate-200 text-sm">{esc.id}</span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                              esc.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                              esc.status === 'Funded' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                              'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            }`}>
+                              {esc.status}
+                            </span>
+                          </div>
+                          <h4 className="text-xs font-semibold text-slate-400 mt-2 truncate">{prop?.address}</h4>
+                          <div className="flex justify-between items-center mt-3 pt-2 border-t border-slate-900">
+                            <span className="text-xs text-slate-500">Price:</span>
+                            <span className="text-sm font-bold text-emerald-400">{formatCurrency(esc.purchasePrice)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
 
-                    <p className="leading-relaxed">{msg.text}</p>
-
-                    {/* Interactive Action Cards inside Agent Messages */}
-                    {msg.actionCard && (
-                      <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl space-y-2 mt-2">
-                        <div className="text-[10px] font-bold uppercase text-emerald-400 flex items-center gap-1">
-                          <Sparkles className="w-3.5 h-3.5" /> Direct Action Trigger
+                    {/* Create Escrow Trigger */}
+                    <div className="pt-4">
+                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Initiate New Escrow</h4>
+                      <form onSubmit={handleCreateEscrow} className="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-400 uppercase block mb-1">Select Property</label>
+                          <select 
+                            value={newEscrow.propertyId}
+                            onChange={e => setNewEscrow(prev => ({ ...prev, propertyId: e.target.value }))}
+                            className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                            required
+                          >
+                            <option value="">-- Select Property --</option>
+                            {properties.filter(p => p.status === 'Verified').map(p => (
+                              <option key={p.id} value={p.id}>{p.parcelId} ({p.size})</option>
+                            ))}
+                          </select>
                         </div>
 
-                        {msg.actionCard.type === 'buy_house' && (
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <div className="font-bold text-white">{msg.actionCard.data.address}</div>
-                              <div className="text-[10px] text-slate-400 font-mono">${msg.actionCard.data.price.toLocaleString()}</div>
-                            </div>
-                            <button
-                              onClick={() => handleBuyHouse(msg.actionCard.data)}
-                              className="px-3 py-1.5 bg-emerald-500 text-slate-950 font-bold text-[10px] rounded-lg hover:bg-emerald-400"
-                            >
-                              Execute Purchase
-                            </button>
-                          </div>
-                        )}
+                        <div>
+                          <label className="text-[10px] font-semibold text-slate-400 uppercase block mb-1">Buyer Wallet Address</label>
+                          <input 
+                            type="text" 
+                            placeholder="0xBuyer..." 
+                            value={newEscrow.buyerAddress}
+                            onChange={e => setNewEscrow(prev => ({ ...prev, buyerAddress: e.target.value }))}
+                            className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                            required
+                          />
+                        </div>
 
-                        {msg.actionCard.type === 'send_wire' && (
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <div className="font-bold text-white">FedNow Wire ${msg.actionCard.data.amount.toLocaleString()}</div>
-                              <div className="text-[10px] text-slate-400">To: {msg.actionCard.data.recipient}</div>
-                            </div>
-                            <button
-                              onClick={() => handleExecuteWire(msg.actionCard.data.amount)}
-                              className="px-3 py-1.5 bg-emerald-500 text-slate-950 font-bold text-[10px] rounded-lg hover:bg-emerald-400"
-                            >
-                              Authorize Wire
-                            </button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] font-semibold text-slate-400 uppercase block mb-1">Price (USD)</label>
+                            <input 
+                              type="number" 
+                              placeholder="4500000" 
+                              value={newEscrow.purchasePrice}
+                              onChange={e => setNewEscrow(prev => ({ ...prev, purchasePrice: e.target.value }))}
+                              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                              required
+                            />
                           </div>
-                        )}
+                          <div>
+                            <label className="text-[10px] font-semibold text-slate-400 uppercase block mb-1">Deposit (USD)</label>
+                            <input 
+                              type="number" 
+                              placeholder="450000" 
+                              value={newEscrow.depositAmount}
+                              onChange={e => setNewEscrow(prev => ({ ...prev, depositAmount: e.target.value }))}
+                              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <button 
+                          type="submit"
+                          disabled={isSimulating}
+                          className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white font-medium rounded-lg text-xs transition-all flex items-center justify-center gap-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Deploy Escrow Contract
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+
+                  {/* Escrow Details & Interactive Actions */}
+                  <div className="lg:col-span-2 space-y-6">
+                    {selectedEscrow ? (
+                      <div className="space-y-6">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="text-xs text-slate-400">Active Escrow Contract</span>
+                            <h4 className="text-xl font-bold text-slate-100 mt-1">{selectedEscrow.id}</h4>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                            selectedEscrow.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                            selectedEscrow.status === 'Funded' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                            'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          }`}>
+                            {selectedEscrow.status}
+                          </span>
+                        </div>
+
+                        {/* Escrow Progress Steps */}
+                        <div className="grid grid-cols-4 gap-2 relative">
+                          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-800 -translate-y-1/2 z-0"></div>
+                          
+                          <div className="z-10 flex flex-col items-center">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                              ['Created', 'Funded', 'Inspected', 'Approved', 'Completed'].includes(selectedEscrow.status)
+                                ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                            }`}>1</div>
+                            <span className="text-[10px] text-slate-400 mt-1">Created</span>
+                          </div>
+
+                          <div className="z-10 flex flex-col items-center">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                              ['Funded', 'Inspected', 'Approved', 'Completed'].includes(selectedEscrow.status)
+                                ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                            }`}>2</div>
+                            <span className="text-[10px] text-slate-400 mt-1">Funded</span>
+                          </div>
+
+                          <div className="z-10 flex flex-col items-center">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                              ['Inspected', 'Approved', 'Completed'].includes(selectedEscrow.status)
+                                ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                            }`}>3</div>
+                            <span className="text-[10px] text-slate-400 mt-1">Inspected</span>
+                          </div>
+
+                          <div className="z-10 flex flex-col items-center">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                              selectedEscrow.status === 'Completed'
+                                ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                            }`}>4</div>
+                            <span className="text-[10px] text-slate-400 mt-1">Settled</span>
+                          </div>
+                        </div>
+
+                        {/* Escrow Financials */}
+                        <div className="grid grid-cols-2 gap-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                          <div>
+                            <span className="text-xs text-slate-400">Purchase Price</span>
+                            <p className="text-lg font-bold text-slate-100 mt-1">{formatCurrency(selectedEscrow.purchasePrice)}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-slate-400">Required Deposit (10%)</span>
+                            <p className="text-lg font-bold text-emerald-400 mt-1">{formatCurrency(selectedEscrow.depositAmount)}</p>
+                          </div>
+                        </div>
+
+                        {/* Multi-Sig Signatures Status */}
+                        <div className="space-y-3">
+                          <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Multi-Signature & Verification Checklist</h5>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                              <span className="text-xs text-slate-300">Buyer Signature</span>
+                              {selectedEscrow.buyerSigned ? (
+                                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                              ) : (
+                                <Clock className="w-5 h-5 text-amber-400" />
+                              )}
+                            </div>
+                            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                              <span className="text-xs text-slate-300">Seller Signature</span>
+                              {selectedEscrow.sellerSigned ? (
+                                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                              ) : (
+                                <Clock className="w-5 h-5 text-amber-400" />
+                              )}
+                            </div>
+                            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                              <span className="text-xs text-slate-300">Inspection Approved</span>
+                              {selectedEscrow.inspectionApproved ? (
+                                <CheckCircle className="w-5 h-5 text-emerald-400" />
+                              ) : (
+                                <Clock className="w-5 h-5 text-amber-400" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Interactive Actions Panel */}
+                        <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                          <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Escrow Smart Contract Actions</h5>
+                          
+                          <div className="flex flex-wrap gap-3">
+                            {selectedEscrow.status === 'Created' && (
+                              <button 
+                                onClick={() => handleFundEscrow(selectedEscrow.id)}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-1.5"
+                              >
+                                <DollarSign className="w-4 h-4" /> Fund Escrow Deposit
+                              </button>
+                            )}
+
+                            {selectedEscrow.status === 'Funded' && (
+                              <button 
+                                onClick={() => handleApproveInspection(selectedEscrow.id)}
+                                className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-1.5"
+                              >
+                                <Check className="w-4 h-4" /> Approve Inspection Report
+                              </button>
+                            )}
+
+                            {selectedEscrow.status === 'Inspected' && !selectedEscrow.sellerSigned && (
+                              <button 
+                                onClick={() => handleSellerSign(selectedEscrow.id)}
+                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-1.5"
+                              >
+                                <FileSignature className="w-4 h-4" /> Sign Escrow (Seller)
+                              </button>
+                            )}
+
+                            {selectedEscrow.buyerSigned && selectedEscrow.sellerSigned && selectedEscrow.inspectionApproved && selectedEscrow.status !== 'Completed' && (
+                              <button 
+                                onClick={() => handleCompleteEscrow(selectedEscrow.id)}
+                                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 animate-pulse"
+                              >
+                                <CheckCircle className="w-4 h-4" /> Execute Atomic Settlement
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 text-slate-500">
+                        <DollarSign className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                        <p>Select an escrow contract to view details and execute actions.</p>
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
 
-                  {msg.sender === 'user' && (
-                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center shrink-0 font-bold">
-                      <User className="w-4 h-4" />
-                    </div>
-                  )}
+          {/* 4. VERIFICATION ENGINE TAB */}
+          {activeTab === 'verify' && (
+            <div className="space-y-8">
+              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 backdrop-blur-md">
+                <h3 className="text-lg font-bold text-slate-100 mb-2 flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-emerald-400" />
+                  Sovereign Title Verification Engine
+                </h3>
+                <p className="text-sm text-slate-400 mb-6">
+                  Verify property ownership, check for active liens, validate cryptographic signatures, and inspect the complete chain of title history.
+                </p>
+
+                {/* Search Bar */}
+                <form onSubmit={handleVerifySearch} className="flex gap-3 mb-8">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                    <input 
+                      type="text" 
+                      placeholder="Search by Parcel ID, Deed NFT Token ID, or Owner Wallet Address..." 
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-12 pr-4 py-3.5 text-slate-200 focus:outline-none focus:border-emerald-500 transition-all"
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/20"
+                  >
+                    Verify Title
+                  </button>
+                </form>
+
+                {/* Verification Results */}
+                {verificationResult && (
+                  <div className="space-y-6">
+                    {verificationResult.property ? (
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Left: Verification Checklist */}
+                        <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                          <h4 className="text-sm font-bold text-slate-200 flex items-center gap-1.5">
+                            <CheckCircle className="w-4 h-4 text-emerald-400" />
+                            Cryptographic Checklist
+                          </h4>
+                          
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border border-slate-800/60">
+                              <span className="text-xs text-slate-300">Chain of Title Integrity</span>
+                              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5" /> Verified
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border border-slate-800/60">
+                              <span className="text-xs text-slate-300">Lien & Encumbrance Check</span>
+                              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5" /> Clear
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border border-slate-800/60">
+                              <span className="text-xs text-slate-300">Tax Compliance Status</span>
+                              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5" /> Compliant
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border border-slate-800/60">
+                              <span className="text-xs text-slate-300">GIS Boundary Verification</span>
+                              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5" /> Match
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg border border-slate-800/60">
+                              <span className="text-xs text-slate-300">Sovereign Signature Validity</span>
+                              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                                <Check className="w-3.5 h-3.5" /> Valid
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Middle: Property Details */}
+                        <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                          <h4 className="text-sm font-bold text-slate-200 flex items-center gap-1.5">
+                            <FileText className="w-4 h-4 text-emerald-400" />
+                            Property Metadata
+                          </h4>
+                          <div className="space-y-2 text-xs">
+                            <div className="flex justify-between py-1 border-b border-slate-900">
+                              <span className="text-slate-400">Parcel ID:</span>
+                              <span className="text-slate-200 font-mono font-bold">{verificationResult.property.parcelId}</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-slate-900">
+                              <span className="text-slate-400">Deed NFT Address:</span>
+                              <span className="text-slate-200 font-mono">{formatAddress(verificationResult.property.deedNftAddress)}</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-slate-900">
+                              <span className="text-slate-400">Token ID:</span>
+                              <span className="text-slate-200 font-mono">#{verificationResult.property.tokenId}</span>
+                            </div>
+                            <div className="flex justify-between py-1 border-b border-slate-900">
+                              <span className="text-slate-400">Current Owner:</span>
+                              <span className="text-slate-200 font-mono">{formatAddress(verificationResult.property.ownerAddress)}</span>
+                            </div>
+                            <div className="flex justify-between py-1">
+                              <span className="text-slate-400">IPFS Hash:</span>
+                              <span className="text-slate-200 font-mono truncate max-w-[120px]">{verificationResult.property.ipfsHash}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Chain of Title Timeline */}
+                        <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                          <h4 className="text-sm font-bold text-slate-200 flex items-center gap-1.5">
+                            <History className="w-4 h-4 text-emerald-400" />
+                            Chain of Title History
+                          </h4>
+                          <div className="relative pl-4 border-l border-slate-800 space-y-4">
+                            {verificationResult.property.history.map((hist, idx) => (
+                              <div key={idx} className="relative">
+                                <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-slate-950"></div>
+                                <span className="text-[10px] text-slate-500 block">{hist.date}</span>
+                                <span className="text-xs font-bold text-slate-200 block">{hist.event}</span>
+                                <span className="text-[10px] text-slate-400 block">From: {formatAddress(hist.from)} → To: {formatAddress(hist.to)}</span>
+                                {hist.price && <span className="text-xs font-semibold text-emerald-400 block mt-0.5">{hist.price}</span>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-rose-500/10 border border-rose-500/20 p-6 rounded-xl text-center">
+                        <AlertTriangle className="w-12 h-12 text-rose-400 mx-auto mb-3" />
+                        <h4 className="text-lg font-bold text-rose-400">Verification Failed</h4>
+                        <p className="text-sm text-slate-400 mt-1">No registered property or deed NFT matches the provided query. Please check the parcel ID or wallet address and try again.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 5. GIS PARCEL MAP TAB */}
+          {activeTab === 'map' && renderGISMap()}
+
+          {/* 6. SMART CONTRACTS TAB */}
+          {activeTab === 'contracts' && renderContractsTab()}
+
+        </div>
+
+        {/* Right Column: Live Simulation Console */}
+        <div className="xl:col-span-1 space-y-6">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 backdrop-blur-md flex flex-col h-[550px]">
+            <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-800/60">
+              <h4 className="text-sm font-bold text-slate-200 flex items-center gap-1.5">
+                <Terminal className="w-4 h-4 text-emerald-400" />
+                Sovereign Ledger Console
+              </h4>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            </div>
+
+            {/* Console Logs Area */}
+            <div className="flex-1 bg-slate-950 rounded-xl p-4 font-mono text-xs overflow-y-auto space-y-2.5 border border-slate-800/60">
+              {logs.map((log, idx) => (
+                <div key={idx} className="leading-relaxed">
+                  <span className="text-slate-500">[{log.timestamp}]</span>{' '}
+                  {log.type === 'success' && <span className="text-emerald-400">[SUCCESS] {log.message}</span>}
+                  {log.type === 'error' && <span className="text-rose-400">[ERROR] {log.message}</span>}
+                  {log.type === 'warning' && <span className="text-amber-400">[WARN] {log.message}</span>}
+                  {log.type === 'contract' && <span className="text-blue-400">[CONTRACT] {log.message}</span>}
+                  {log.type === 'info' && <span className="text-slate-300">[INFO] {log.message}</span>}
                 </div>
               ))}
-
-              {isAgentThinking && (
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shrink-0 font-bold">
-                    <Bot className="w-4 h-4" />
-                  </div>
-                  <div className="bg-slate-950 border border-slate-800 p-3 rounded-2xl text-xs text-slate-400 flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-                    Querying research paper bibliography and sovereign bank ledger...
-                  </div>
-                </div>
-              )}
-              <div ref={chatBottomRef} />
+              <div ref={consoleEndRef} />
             </div>
 
-            {/* Input Bar */}
-            <div className="pt-4 border-t border-slate-800 flex gap-2">
-              <input
-                type="text"
-                placeholder="Ask paper citations, buy a house, execute wire, or check zoning..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage()}
-                className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500"
-              />
-              <button
-                onClick={handleSendChatMessage}
-                className="px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all flex items-center gap-2"
+            {/* Console Actions */}
+            <div className="mt-4 pt-3 border-t border-slate-800/60 flex justify-between items-center">
+              <span className="text-[10px] text-slate-500">Node: mainnet-node-01</span>
+              <button 
+                onClick={() => setLogs([
+                  { timestamp: new Date().toTimeString().split(' ')[0], type: 'info', message: 'Console logs cleared.' }
+                ])}
+                className="text-[10px] text-slate-400 hover:text-slate-200 underline transition-all"
               >
-                <Send className="w-4 h-4" />
-                Send
+                Clear Logs
               </button>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* TAB 5: BIBLIOGRAPHY & "THE NUTS" ENGINE SPECS */}
-        {activeTab === 'biblio' && (
-          <div className="space-y-8">
-            {/* Academic Citations Section */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6">
-              <div className="border-b border-slate-800 pb-4">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-emerald-400" />
-                  Academic Bibliography & Cited Research Papers
-                </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Every mathematical formula, zero-knowledge circuit, and transfer tax algorithm used in this application is strictly grounded in peer-reviewed literature.
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                {RESEARCH_CITATIONS.map(cite => (
-                  <div key={cite.id} className="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-3">
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <div className="text-xs text-emerald-400 font-bold font-mono">[{cite.id}]</div>
-                        <h3 className="text-sm font-bold text-white mt-0.5">{cite.title}</h3>
-                        <div className="text-xs text-slate-400 font-serif italic mt-0.5">
-                          {cite.authors} ({cite.year}). {cite.journalOrPublisher}. DOI: {cite.doi}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => copyToClipboard(cite.bibtex, cite.id)}
-                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px] rounded-lg transition-colors flex items-center gap-1.5 shrink-0"
-                      >
-                        {copiedBib === cite.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                        {copiedBib === cite.id ? 'Copied BibTeX' : 'Copy BibTeX'}
-                      </button>
-                    </div>
-
-                    <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs space-y-1">
-                      <div className="text-[10px] font-bold text-slate-400 uppercase">Key Finding</div>
-                      <p className="text-slate-300">{cite.keyTakeaway}</p>
-                    </div>
-
-                    <div className="bg-emerald-950/20 p-3 rounded-lg border border-emerald-800/30 font-mono text-[11px] text-emerald-300">
-                      <span className="font-bold uppercase text-[9px] text-emerald-400 block mb-0.5">THE TECHNICAL NUTS & BOLTS:</span>
-                      {cite.technicalNut}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* "THE NUTS" - LIVE SCHEMA & CODE INSPECTOR */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6">
-              <div className="border-b border-slate-800 pb-4">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Code2 className="w-5 h-5 text-emerald-400" />
-                  "The Nuts" Engine Specs & XML/JSON Payload Inspector
-                </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  Inspect the live payload contracts transmitted across the wire to Federal Reserve FedNow servers and County PRISM eRecording gateways.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* PRISM XML Payload Schema */}
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
-                  <div className="text-xs font-bold text-emerald-400 uppercase font-mono flex items-center justify-between">
-                    <span>PRISM v4.2 eRecording XML Payload</span>
-                    <span className="text-[10px] text-slate-500">HTTP POST /v1/erecord</span>
-                  </div>
-                  <pre className="bg-slate-900 p-3 rounded-lg text-[10px] font-mono text-slate-300 overflow-x-auto leading-relaxed border border-slate-800">
-{`<?xml version="1.0" encoding="UTF-8"?>
-<eRecordingPackage xmlns="http://www.pria.org/standards/prism/4.2">
-  <Header>
-    <JurisdictionCode>${selectedCounty.jurisdictionCode}</JurisdictionCode>
-    <SubmitterID>SOVEREIGN-AI-AGENT-901</SubmitterID>
-  </Header>
-  <Document InstrumentType="${deed.deedType}">
-    <APN>${deed.apn}</APN>
-    <ConsiderationAmount>${deed.considerationAmount}</ConsiderationAmount>
-    <Grantor>${deed.grantorName}</Grantor>
-    <Grantee>${deed.granteeName}</Grantee>
-    <TaxCalculated>${feeBreakdown.transferTax.toFixed(2)}</TaxCalculated>
-    <ZKProofHash>${deed.zkProofHash}</ZKProofHash>
-  </Document>
-</eRecordingPackage>`}
-                  </pre>
-                </div>
-
-                {/* ISO 20022 Wire XML Schema */}
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2">
-                  <div className="text-xs font-bold text-emerald-400 uppercase font-mono flex items-center justify-between">
-                    <span>ISO 20022 pacs.008 FedNow Credit Transfer</span>
-                    <span className="text-[10px] text-slate-500">ISO 20022 Standard</span>
-                  </div>
-                  <pre className="bg-slate-900 p-3 rounded-lg text-[10px] font-mono text-slate-300 overflow-x-auto leading-relaxed border border-slate-800">
-{`<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
-  <FIToFICstmrCdtTrf>
-    <GrpHdr>
-      <MsgId>${deed.iso20022TxRef}</MsgId>
-      <CreDtTm>${new Date().toISOString()}</CreDtTm>
-    </GrpHdr>
-    <CdtTrfTxInf>
-      <PmtId><EndToEndId>DEED-ESCROW-${deed.id}</EndToEndId></PmtId>
-      <IntrBkSttlmAmt Ccy="USD">${deed.considerationAmount}</IntrBkSttlmAmt>
-      <Dbtr><Nm>${deed.granteeName}</Nm></Dbtr>
-      <Cdtr><Nm>${deed.grantorName}</Nm></Cdtr>
-    </CdtTrfTxInf>
-  </FIToFICstmrCdtTrf>
-</Document>`}
-                  </pre>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-      </main>
+      </div>
     </div>
   );
 }
