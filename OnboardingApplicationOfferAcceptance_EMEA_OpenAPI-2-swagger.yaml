@@ -1,0 +1,397 @@
+openapi: 3.0.1
+info:
+  title: OnboardingApplicationOfferAcceptance_EMEA_OpenAPI
+  description: "This API allows the applicant to choose/accept from the different\
+    \ offers which were offered by bank after his IPA eligibility check in the assisted\
+    \ channel. These offers include cross sell offers,suggested offers or counter\
+    \ offers."
+  version: 1.2.0
+  x-linked-api: OfferAcceptance
+servers:
+- url: "https://127.0.0.1/openapi/v1/emea/onboarding/applications/{applicationId}/offerAcceptance"
+paths:
+  /:
+    post:
+      tags:
+      - Acquisitions_Application Management_Application Decisioning
+      summary: Create Assisted Offer Acceptance Request.
+      description: "This API allows the applicant to choose/accept from the different\
+        \ offers which were offered by bank after his IPA eligibility check in the\
+        \ assisted channel. These offers include cross sell offers,suggested offers\
+        \ or counter offers. offers."
+      parameters:
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        description: Input Data to accept the product offered in the application.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfferAcceptanceRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferAcceptanceResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr><tr><td>error</td><td>invalidProductCode</td><td>invalid
+            ProductCode</td></tr><tr><td>error</td><td>applicationRejected</td><td>applicationRejected</td></tr><tr><td>error</td><td>incorrectProductSelected</td><td>incorrect
+            Product Selected</td></tr><tr><td>error</td><td>exceededApprovedCreditLimit</td><td>You
+            cannot choose higher credit limit from what is offered during IPA.</td></tr><tr><td>invalid</td><td>productAgreementExpired</td><td>Agreement
+            duration of this product is expired</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr><tr><td>error</td><td>invalidRequestSequence</td><td>Request
+            sequence is not correct.</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+      x-codegen-request-body-name: OfferAcceptanceRequest
+components:
+  schemas:
+    OfferAcceptanceRequest:
+      type: object
+      properties:
+        offerProductConfirmation:
+          type: array
+          items:
+            $ref: "#/components/schemas/OfferProductConfirmation"
+        requestedProductConfirmation:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestedProductConfirmation"
+        controlFlowId:
+          type: string
+          description: Control flow id is used to control the flow for subsequent
+            requests in the session..
+          example: "2345"
+    OfferAcceptanceResponse:
+      type: object
+      properties:
+        loanDetails:
+          type: array
+          description: Loan details associated with the loan specific selection by
+            the applicant
+          items:
+            $ref: "#/components/schemas/LoanDetail"
+    LoanDetail:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          description: Account number associated with the loan
+          example: "122123123"
+        interBankOfferedRate:
+          type: number
+          description: The Interbank Offered Rates are daily reference rates based
+            on the averaged interest rates at which banks offer to lend unsecured
+            funds to other banks in wholesale money markets.This rate will fluctuate
+            every day
+          format: double
+          example: 12.2
+        loanIndexRate:
+          type: number
+          description: An interest rate charged on loans to borrowers that is calculated
+            by taking the sum of a benchmark index interest rate and a specified margin
+          format: double
+          example: 12.2
+    OfferProductConfirmation:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: A unique code that identifies the product
+        sourceCode:
+          type: string
+          description: A source code to identify the product
+        organization:
+          type: string
+          description: Card issuing Organisation code
+        offerProductAcceptedFlag:
+          type: boolean
+          description: "Flag to indicate a counter offer selected by an applicant.\
+            \ Valid values: True or False"
+        offerSequenceId:
+          type: string
+          description: Unique offer sequence id to identify an offer
+        productProgramIndicator:
+          type: string
+          description: "Product program indicator.This a reference data field. Please\
+            \ use /utilities/referenceData/{productProgramIndicator} resource to get\
+            \ valid values of this field with descriptions. You can use the fieldname\
+            \ as the referenceCode parameter to retrieve the values."
+        creditSpecificSelection:
+          $ref: "#/components/schemas/CreditSpecificSelection"
+        loanSpecificSelection:
+          $ref: "#/components/schemas/LoanSpecificSelection"
+    CreditSpecificSelection:
+      type: object
+      properties:
+        requestCreditShield:
+          type: boolean
+          description: "Insurance enrollment for outstanding balance on the card.\
+            \ Valid values: True or False"
+        embossName:
+          type: string
+          description: Name to be embossed on card
+        billingAddress:
+          type: string
+          description: Billing address of applicant
+        cardDeliveryAddress:
+          type: string
+          description: Card delivery address of applicant
+        pinDeliveryAddress:
+          type: string
+          description: Card pin delivery address of applicant
+        requestedCreditLimit:
+          type: number
+          description: Credit limit accepted by customer
+          format: double
+        atmRequiredFlag:
+          type: boolean
+          description: "Option to get ATM card along with product. Valid values: True\
+            \ or False"
+        chequeBookRequiredFlag:
+          type: boolean
+          description: "Option to get cheque book along with product. Valid values:\
+            \ True or False"
+        creditLimitIncreaseIndicator:
+          type: boolean
+          description: "Option  to increase credit limit. Valid values: True or False"
+    LoanSpecificSelection:
+      type: object
+      properties:
+        loanAmount:
+          type: number
+          description: Loan Amount accepted by customer
+          format: double
+        tenor:
+          type: string
+          description: "Tenure of loan. This a reference data field. Please use /utilities/referenceData/{tenure}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrive the values."
+        interestRate:
+          type: number
+          description: Interest rate of the loan
+          format: double
+        billingAddress:
+          type: string
+          description: Billing address of applicant
+        annualPercentageRate:
+          type: number
+          description: Applicable Annual Percentage Rate on the product
+          format: double
+        handlingFeeAmount:
+          type: number
+          description: Handling fee for processing of the loan
+          format: double
+        monthlyFeeAmount:
+          type: number
+          description: Monthly fee amount is the amount paid by customer as the fixed
+            processing charges every month
+          format: double
+        insurancePremiumAmount:
+          type: number
+          description: Insurance premium amount is the i insurance amount paid by
+            customer for availing the insurance product against the loan
+          format: double
+        totalLoanAmountWithoutSpouseConsent:
+          type: number
+          description: Total loan amount with out the spouse consent
+          format: double
+        pricingPlanId:
+          type: string
+          description: Pricing plan id is the unique id of pricing plan which is selected
+            by customer
+        handlingFeePercentage:
+          type: string
+          description: Handling fee percentage for the loan processing. Its represented
+            as the percentage of the loan amount
+        grossLoanAmount:
+          type: number
+          description: Gross Loan Amount availed by the customer
+          format: double
+        totalCostOfCreditWithoutInsurance:
+          type: number
+          description: "Total Cost of credit without the insurance amount for the\
+            \ tenor selected. Formula for calculating the value: (InstallmtAmtWithoutIns\
+            \ + Monthly Fee) * Tenor - Loan Amount"
+          format: double
+        totalCostOfCreditWithInsurance:
+          type: number
+          description: "Total Cost of credit with the insurance amount for the tenor\
+            \ selected. Formula for calculating the value: (InstallmtAmtWithIns +Monthly\
+            \ Fee) * Tenor - Loan Amount"
+          format: double
+        installmentAmount:
+          type: number
+          description: Installment amount to be paid. This is calculated without the
+            insurance amount.Insurance option is applicable for EMEA countries
+          format: double
+        installmentAmountWithInsurance:
+          type: number
+          description: Installment amount to be paid. This is calculated with the
+            insurance amount.Insurance option is applicable for EMEA countries
+          format: double
+        interBankOfferedRate:
+          type: number
+          description: The Interbank Offered Rates are daily reference rates based
+            on the averaged interest rates at which banks offer to lend unsecured
+            funds to other banks in wholesale money markets.This rate will fluctuate
+            every day
+          format: double
+    RequestedProductConfirmation:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: A unique code that identifies the product
+        sourceCode:
+          type: string
+          description: A source code to identify the product
+        organization:
+          type: string
+          description: Card issuing Organisation code
+        productProgramIndicator:
+          type: string
+          description: "Product program indicator.This a reference data field. Please\
+            \ use /utilities/referenceData/{productProgramIndicator} resource to get\
+            \ valid values of this field with descriptions. You can use the fieldname\
+            \ as the referenceCode parameter to retrieve the values."
+        creditSpecificSelection:
+          $ref: "#/components/schemas/CreditSpecificSelection"
+        loanSpecificSelection:
+          $ref: "#/components/schemas/LoanSpecificSelection"
+    ErrorList:
+      type: object
+      properties:
+        errors:
+          type: array
+          description: List of one or more errors
+          items:
+            $ref: "#/components/schemas/ErrorResponse"
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+  parameters:
+    client_id:
+      name: client_id
+      in: header
+      description: The client ID you received while Onboarding with Citi to use these
+        API's. This will be generated and shared while registring in the developer
+        portal.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Authorization:
+      name: Authorization
+      in: header
+      description: The Authorization Token
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit UUID that you generate for every request
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Types that are acceptable for the response. Currently we
+        support application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: The media type of the body of the request (used with POST and PUT
+        requests) Currently we support application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: Device and browser information. Refer the developer portal for
+        more information. Please ensure the header is base64 encoded
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    applicationId:
+      name: applicationId
+      in: path
+      description: the ID of the application
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string

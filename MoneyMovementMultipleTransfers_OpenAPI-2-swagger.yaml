@@ -1,0 +1,693 @@
+openapi: 3.0.1
+info:
+  title: MoneyMovementMultipleTransfers_OpenAPI
+  description: This API contains endpoints related to multiple transfers.
+  version: 1.2.0
+  x-linked-api: "ExecutePaymentInitiationTransactionMultipleTransfersAsync, ExecutePaymentInitiationTransactionMultipleTransfersConfirmationAsync,\
+    \ RetrievePaymentInitiationTransactionMultipleTransfersStatus"
+servers:
+- url: https://127.0.0.1/openapi/v1/paymentInitiation/multipleTransfers
+paths:
+  /async:
+    post:
+      tags:
+      - Money Movement_Transfers
+      summary: Execute Multiple Transfers
+      description: "This API is used for retail Citi Customers to process multiple\
+        \ payment requests for predefined payees. In case authorization is required,\
+        \ this API will throw mfaRequried error. Prerequisite Retrieve the applicable\
+        \ payment types, eligible source accounts and payees combination from RetrievePaymentInitiationTransactionBulkSourceAccountAndPayeeEligibility\
+        \ API."
+      operationId: ExecutePaymentInitiationTransactionMultipleTransfersAsync
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - name: x-jws-signature
+        in: header
+        description: "This field is signature generated when partner sign API payload.This\
+          \ signature will be used to validate that the call is coming from a valid\
+          \ partner. This signature is a JWT token, which will be validated with partner’\
+          s JWK stored in DB"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        description: ExecutePaymentInitiationTransactionMultipleTransfersAsyncRequest
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExecutePaymentInitiationTransactionMultipleTransfersAsyncRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutePaymentInitiationTransactionMultipleTransfersAsyncResponse"
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutePaymentInitiationTransactionMultipleTransfersAsyncResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>InvalidRequest</td><td>Missing
+            or invalid Parameters</td></tr><tr><td>error</td><td>InvalidRequest</td><td>Invalid
+            source account</td></tr><tr><td>error</td><td>InvalidRequest</td><td>Invalid
+            payee id</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: ExecutePaymentInitiationTransactionMultipleTransfersAsyncRequest
+  /confirmation/async:
+    post:
+      tags:
+      - Money Movement_Transfers
+      summary: Execute Multiple Transfers Confirmation
+      description: This API is a confirmation API of multiple transfer.
+      operationId: ExecutePaymentInitiationTransactionMultipleTransfersConfirmationAsync
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: controlFllowId
+        in: query
+        description: This is control flow ID
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutePaymentInitiationTransactionMultipleTransfersConfirmationAsyncResponse"
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutePaymentInitiationTransactionMultipleTransfersConfirmationAsyncResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><tr><td>error</td><td>InvalidRequest</td><td>Missing
+            or invalid Parameters</td></tr><tr><td>error</td><td>InvalidRequest</td><td>Invalid
+            source account</td></tr><tr><td>error</td><td>InvalidRequest</td><td>Invalid
+            payee id</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal </td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr><tr><td>fatal </td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /{citiBundleId}/status:
+    get:
+      tags:
+      - Money Movement_Transfers
+      summary: Retrieve Multiple Transfers Status
+      description: This API is used to retrieve the status of the muliple transfer.
+      operationId: RetrievePaymentInitiationTransactionMultipleTransfersStatus
+      parameters:
+      - name: Authorization
+        in: header
+        description: "The most recent Authorization token. This will have the format\
+          \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: uuid
+        in: header
+        description: 128 bit random UUID generated uniquely for every request.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: Accept
+        in: header
+        description: Content-Type that are acceptable for the response.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: client_id
+        in: header
+        description: Client ID generated during application registration.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: clientDetails
+        in: header
+        description: "This field is used to capture device,browser and network information.\
+          \ Refer the developer portal for more information.These are the fields which\
+          \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: citiBundleId
+        in: path
+        description: This is bundle id or unique identifier for bulk transfers shared
+          when the transactions order was taken
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: startIndex
+        in: query
+        description: "to request subsequent transactions in the bundle, the nextstartindex\
+          \ given in the previous call should be passed here"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrievePaymentInitiationTransactionMultipleTransfersStatusResponse"
+        "204":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><tr><td>error</td><td>noContent</td><td>No
+            content found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: <table><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    ExecutePaymentInitiationTransactionMultipleTransfersAsyncRequest:
+      type: object
+      properties:
+        totalTransferAmount:
+          type: number
+          description: This is total transfer amount
+          format: double
+          example: 100.0
+        typeOfTransfers:
+          type: string
+          description: This is type of transfers
+          example: INTERNAL
+        internalDomesticPayments:
+          type: array
+          items:
+            $ref: "#/components/schemas/InternalDomesticPayments"
+        externalDomesticPayments:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExternalDomesticPayments"
+    InternalDomesticPayments:
+      required:
+      - payeeId
+      - sourceAccountId
+      - transferCurrencyIndicator
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: "The source account identifier in encrypted format.Typically,\
+            \ this is not displayed to the customer."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+        transactionAmount:
+          type: number
+          description: Refers to the total amount of the transaction.This includes
+            all the fee and charges.
+          format: double
+          example: 4500.25
+        transferCurrencyIndicator:
+          type: string
+          description: "Indicator to specify whether the transfer is in source or\
+            \ destination account currency.The acceptable forms of remittance for\
+            \ a given payments and transfer transaction.This is a reference data field.\
+            \ Please use /v1/apac/utilities/referenceData/{transferCurrencyIndicator}\
+            \ resource to get valid value of this field with description. You can\
+            \ use transferCurrencyIndicator as the referenceCode parameter to retrieve\
+            \ the values"
+          example: SOURCE_ACCOUNT_CURRENCY
+        payeeId:
+          type: string
+          description: "The payee identifier in encrypted format.Typically, this is\
+            \ not displayed to the customer."
+          example: C$0003019202$AU$XX$01000540000001
+        chargeBearer:
+          type: string
+          description: "Field to identify charge bearer.The acceptable forms of remittance\
+            \ for a given payments and transfer transaction.This is a reference data\
+            \ field. Please use /v1/apac/utilities/referenceData/{chargeBearer} resource\
+            \ to get valid value of this field with description. You can use chargeBearer\
+            \ as the referenceCode parameter to retrieve the values"
+          example: BENEFICIARY
+        foreignExchangeReferenceNumber:
+          type: string
+          description: Fx deal reference number
+          example: "12345678"
+        remarks:
+          type: string
+          description: Payment notes. Free text from screen$$O
+        transferPurpose:
+          type: string
+          description: "Purpose of transfer. Applicable if paymentMethod is GIRO,\
+            \ FAST. This is a reference data field.This is a reference data field.\
+            \ Please use /v1/apac/utilities/referenceData/{transferPurpose} resource\
+            \ to get valid value of this field with description. You can use transferPurpose\
+            \ as the referenceCode parameter to retrieve the values."
+          example: CASH_DISBURSEMENT
+        futureDatedTransaction:
+          $ref: "#/components/schemas/FutureDatedTransaction"
+        standingInstruction:
+          $ref: "#/components/schemas/StandingInstruction"
+        paymentScheduleType:
+          type: string
+          description: From various Option Support - CVT table. - Immediate -  FutureDated
+            ( Date Selection ) - Future Dated Recurring ( Date Selection and Frequency
+            - Last Date ) for Poland only Immediate and One Time Future Dated
+          example: IMMEDIATE
+        anticipatoryPaymentFlag:
+          type: boolean
+          description: This indicator will be sent by channel and help differentiate
+            if payment is normal or anticipatory
+          example: false
+    FutureDatedTransaction:
+      required:
+      - scheduleDate
+      type: object
+      properties:
+        scheduleDate:
+          type: string
+          description: Date on which the future transaction is scheduled in ISO 8601
+            format YYYY-MM-DD.$$M
+          format: date
+    StandingInstruction:
+      required:
+      - standingInstructionEndDate
+      type: object
+      properties:
+        standingInstructionStartDate:
+          type: string
+          description: "Date on which Future transaction will be executed / Initiated,\
+            \ start date in ISO 8601 format YYYY-MM-DD."
+          format: date
+          example: 2021-10-18
+        paymentFrequency:
+          type: string
+          description: "The frequency of payment. This is a reference data. Please\
+            \ use /v1/apac/utilities/referenceData/{paymentFrequency} resource to\
+            \ get valid value of this field."
+          example: Monthly
+        perpetualFlag:
+          type: boolean
+          description: standingInstruction  This will be mandatory when Payment Schedule
+            Type is Future Dated Recurring.$$O
+        standingInstructionEndDate:
+          type: string
+          description: Standing instruction start date in ISO 8601 format YYYY-MM-DD.
+          format: date
+          example: 2021-10-18
+        standingInstructionCount:
+          type: number
+          description: This is no of payments instructed  to be made by customer from
+            start Date
+          format: integer
+          example: 8.0
+    ExternalDomesticPayments:
+      required:
+      - chargeBearer
+      - payeeId
+      - paymentMethod
+      - sourceAccountId
+      - transactionAmount
+      - transferCurrencyIndicator
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: "The source account identifier in encrypted format.Typically,\
+            \ this is not displayed to the customer."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+        transactionAmount:
+          type: number
+          description: Transaction Amount
+          format: double
+          example: 10.0
+        transferCurrencyIndicator:
+          type: string
+          description: "Indicator to specify whether the transfer is in source or\
+            \ destination account currency.The acceptable forms of remittance for\
+            \ a given payments and transfer transaction.This is a reference data field.\
+            \ Please use /v1/utilities/referenceData/{transferCurrencyIndicator} resource\
+            \ to get valid value of this field with description.\","
+          example: F
+        payeeId:
+          type: string
+          description: "The payee identifier in encrypted format.Typically, this is\
+            \ not displayed to the customer."
+        chargeBearer:
+          type: string
+          description: "Field to identify charge bearer.The acceptable forms of remittance\
+            \ for a given payments and transfer transaction.This is a reference data\
+            \ field. Please use /v1/utilities/referenceData/{chargeBearer} resource\
+            \ to get valid value of this field with description.\","
+          example: BENEFICIARY
+        paymentMethod:
+          type: string
+          description: "The acceptable forms of remittance for a given payments and\
+            \ transfer transaction.This is a reference data field. Please use /v1/utilities/referenceData/{paymentMethod}\
+            \ resource to get valid value of this field with description.\","
+          example: GIRO
+        foreignExchangeReferenceNumber:
+          type: string
+          description: Fx deal reference number
+          example: "123456"
+        remarks:
+          type: string
+          description: Payment notes. Free text from screen"
+        transferPurpose:
+          type: string
+          description: "Purpose of transfer. Applicable if paymentMethod is GIRO,\
+            \ FAST. This is a reference data field.This is a reference data field.\
+            \ Please use /v1/utilities/referenceData/{transferPurpose} resource to\
+            \ get valid value of this field with description."
+        transferSubPurpose:
+          type: string
+          description: Sub Purpose Of Transfer
+          example: REFERENCE
+        paymentScheduleType:
+          type: string
+          description: From various Option Support - CVT table. - Immediate -  FutureDated
+            ( Date Selection ) - Future Dated Recurring ( Date Selection and Frequency
+            - Last Date ) for Poland only Immediate and One Time Future Dated
+        futureDatedTransaction:
+          $ref: "#/components/schemas/FutureDatedTransaction"
+        standingInstruction:
+          $ref: "#/components/schemas/StandingInstruction"
+        anticipatoryPaymentFlag:
+          type: boolean
+          description: anticipatory paymentFlag
+        uniquePaymentId:
+          type: string
+          description: this is free text unique value. This is end to end identification
+            ID
+    ExecutePaymentInitiationTransactionMultipleTransfersAsyncResponse:
+      type: object
+      properties:
+        transactionStatus:
+          type: string
+          description: This is transaction status
+        citiBundleId:
+          type: string
+          description: This is bundle/ bulk id of the transactions from Citi
+        totalTransactionCount:
+          type: string
+          description: This is total number of transactions
+    ExecutePaymentInitiationTransactionMultipleTransfersConfirmationAsyncResponse:
+      type: object
+      properties:
+        transactionStatus:
+          type: string
+          description: This is transaction status
+        tppBundleId:
+          type: string
+          description: This is bundle/ bulk id of the transactions from TPP
+        citiBundleId:
+          type: string
+          description: This is bundle/ bulk id of the transactions from CITI
+        totalTransactionCount:
+          type: string
+          description: This is total number of transactions
+    RetrievePaymentInitiationTransactionMultipleTransfersStatusResponse:
+      type: object
+      properties:
+        transactionDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionDetails"
+        nextStartIndex:
+          type: string
+          description: "This will indicate more records are present, if need to be\
+            \ viewed this needs to  sent in the subsequent request"
+          example: 2838djd3jduwjdjws
+    TransactionDetails:
+      required:
+      - individualBundleId
+      type: object
+      properties:
+        individualBundleId:
+          type: string
+          description: This is the individual bundle id assigned to the transaction
+          example: adf55we5e5d5e5d5001
+        transactionId:
+          type: string
+          description: id assigned to the transaction if it is successful
+          example: MBKFT0203820202
+        beneficiaryName:
+          type: string
+          description: Name of the beneficiary
+          example: Polksi
+        beneficiaryBankName:
+          type: string
+          description: Name of the beneficiary Bank
+          example: Polish Bank
+        transactionAmount:
+          type: number
+          description: Transaction Amount
+          format: double
+          example: 1600
+        transactionCurrencyCode:
+          type: string
+          description: Transaction Currency
+          example: PLN
+        transactionDate:
+          type: string
+          description: Date when the transaction was booked
+          format: date
+          example: 2021-08-19
+        transactionStatus:
+          type: string
+          description: Transaction Status
+          example: REJECTED
+        transactionType:
+          type: string
+          description: to define if transaction was future dated or same day
+          example: FutureDated
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the erro
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    x-jws-signature:
+      name: x-jws-signature
+      in: header
+      description: Required for partners connecting via 1-way SSL
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string

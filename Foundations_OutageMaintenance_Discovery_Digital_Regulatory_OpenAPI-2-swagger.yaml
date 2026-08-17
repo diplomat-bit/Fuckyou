@@ -1,0 +1,214 @@
+openapi: 3.0.1
+info:
+  title: Foundations_OutageMaintenance_Discovery_Digital_Regulatory_OPENAPI
+  description: This service is created for PSD2. This contains the  functions to retrieve
+    scheduled Outage information. <br/>PCF Deployment Reference name -->  FDN-R-OutageMaintenance-DSCR-DGL-PL
+  version: 1.0.0
+servers:
+- url: https://127.0.0.1/foundations/outageMaintenance/discovery/retrieval/v1
+paths:
+  /scheduled:
+    get:
+      tags:
+      - Foundations_Utilities_Outage Maintenance
+      summary: Obtain a list of scheduled outages for the implementation. This API
+        will be trigerred via client credentials.
+      description: Obtain a list of scheduled outages for the implementation. This
+        API will be trigerred via client credentials.
+      operationId: RetrieveScheduledOutages
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrieveScheduledOutagesResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    RetrieveScheduledOutagesResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Data"
+    Data:
+      type: object
+      properties:
+        outages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Outages"
+    Outages:
+      required:
+      - outageExplanation
+      - outageTimestamp
+      - plannedDuration
+      type: object
+      properties:
+        outageTimestamp:
+          type: string
+          description: Date and time that the outage is scheduled to begin
+          example: 2023-07-22T14:00.000Z
+        plannedDuration:
+          type: string
+          description: Planned duration of the outage. Formatted according to ISO
+            8601 Durations (excludes recurrence syntax)
+          example: PT8H
+        partialOutageFlag:
+          type: boolean
+          description: "Flag that indicates, if present and set to true, that the\
+            \ outage is only partial meaning that only a subset of normally available\
+            \ end points will be affected by the outage"
+          example: true
+        outageExplanation:
+          type: string
+          description: Provides an explanation of the current outage that can be displayed
+            to an end customer
+          example: "Citi will be conducting routine maintenance on its website, online\
+            \ banking and API services on: Sunday 23rd July 2023 from 12:00 AM to\
+            \ 8:00 AM AEST. During this time, these services will be unavailable.\
+            \ We apologise for any inconvenience this may cause."
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      description: List of acceptable human languages for response.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string

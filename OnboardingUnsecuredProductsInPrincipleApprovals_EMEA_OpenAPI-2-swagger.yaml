@@ -1,0 +1,1239 @@
+openapi: 3.0.1
+info:
+  title: OnboardingUnsecuredProductsInPrincipleApprovals_EMEA_OpenAPI
+  description: This API is used to check in principal approval eligibility for unsecured
+    product.
+  version: 1.3.0
+  x-linked-api: InPrincipleApprovals
+servers:
+- url: "https://127.0.0.1/openapi/v1/emea/onboarding/applications/{applicationId}/inPrincipleApprovals"
+paths:
+  /:
+    post:
+      tags:
+      - Acquisitions_Application Management_Applicaton Decisioning
+      summary: Credit Application Decision
+      description: "This API returns the results of a decision inquiry for an application,\
+        \ including credit limit, counter-product offers and cross-sell offers along\
+        \ with the list of required documents."
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - name: x-jws-signature
+        in: header
+        description: "This field is signature generated when partner sign API payload.This\
+          \ signature will be used to validate that the call is coming from a valid\
+          \ partner. This signature is a JWT token, which will be validated with partner’\
+          s JWK stored in DB"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        description: In principle approval request.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InPrincipleApprovalRequest"
+        required: true
+      responses:
+        "200":
+          description: The request has succeeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InPrincipleApprovalResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr><tr><td>error</td><td>applicationRejected</td><td>Application
+            Rejected.Cannot process further</td></tr><tr><td>error</td><td>applicationNeedsManualReview</td><td>Application
+            needs manual review. IPA not applicable. Please fill all details and do
+            final submission</td></tr><tr><td>error</td><td>awaitingBackgroundScreeningResult</td><td>Please
+            trigger after sometime. Awaiting background screening response</td></tr><tr><td>error</td><td>performBackgroundScreeningFirst</td><td>Please
+            perform background screening first</td></tr><tr><td>error</td><td>inPrincipalApprovalAlreadyGiven</td><td>InPrincipalApproval
+            already given</td></tr><tr><td>invalid</td><td>productAgreementExpired</td><td>Agreement
+            duration of this product is expired</td></tr><tr><td>error</td><td>invalidRequestSequence</td><td>Request
+            sequence is not correct.</td></tr><tr><td>error</td><td>ipaNotInitiated</td><td>IPA
+            not initiated due to background screening failedscreening failed</td></tr><tr><td>error</td><td>ipaFailed</td><td>IPA
+            failed</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+      x-codegen-request-body-name: InPrincipleApprovalRequest
+components:
+  schemas:
+    ErrorList:
+      type: object
+      properties:
+        errors:
+          type: array
+          description: List of one or more errors
+          items:
+            $ref: "#/components/schemas/ErrorResponse"
+    InPrincipleApprovalRequest:
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow id is used to control the flow for subsequent
+            requests in the session..
+          example: "2345"
+    InPrincipleApprovalResponse:
+      type: object
+      properties:
+        providerInfo:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProviderInfo"
+        applicationStage:
+          type: string
+          description: "Application Stage of an Application.Please use /utilities/referenceData/{applicationStage}\
+            \ resource to get valid values of this field with descriptions"
+          example: BACKGROUND_SCREENING
+        ipaExpiryDate:
+          type: string
+          description: In principle approval expiration date in  ISO 8601 date format
+            YYYY-MM-DD
+          format: date
+          example: 2016-09-15
+        kycCustomerRiskLevelFlag:
+          type: boolean
+          description: 'AML risk level result '
+          example: true
+        kbaRequiredFlag:
+          type: boolean
+          description: Flag to mark if KBA (Knowledge Base Assesment) is required.Possible
+            values are true or false
+          example: true
+        bureauPullExpiredFlag:
+          type: boolean
+          description: Flag to indicate if the bureau pull data is expired or not.Possible
+            values are true or false
+          example: true
+        ekycRecommendedFlag:
+          type: boolean
+          description: Flag to indicate if the E KYC is recommended or not
+          example: true
+        requestedProductDecision:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestedProductDecision"
+        counterOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CounterOffer"
+        crossSellOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CrossSellOffer"
+        suggestedOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SuggestedOffer"
+        kbaQuestionnaire:
+          $ref: "#/components/schemas/KbaQuestionnaire"
+    ProviderInfo:
+      required:
+      - code
+      - detail
+      type: object
+      properties:
+        code:
+          type: string
+          description: "Codes for overridable host errors, warning messages, or additional\
+            \ info."
+        detail:
+          type: string
+          description: "Description for the host error, warning, or additional info."
+        fieldID:
+          type: string
+          description: "The ICR step which generated the host error, warning, or additional\
+            \ info."
+    RequestedProductDecision:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: A unique code that identifies the product
+          example: VC830
+        organisationCode:
+          type: string
+          description: Card issuing Organisation code
+          example: "888"
+        sourceCode:
+          type: string
+          description: A source code to identify the product
+          example: WW5ARCE1
+        creditDecision:
+          type: string
+          description: "Evaluated Applicant Credit Decision. Possible values: 000,002,003.\
+            \ 000 - APPROVED,003 - REJECTED,002 - REFERRED"
+          example: "000"
+        offerProductCategory:
+          type: string
+          description: "Product category associated with the offer.AM - Loan,PC -\
+            \ cards.This a reference data field. Please use /utilities/referenceData/{offerProductCategory}\
+            \ resource to get valid values of this field with descriptions."
+          example: AM
+        offerDocumentCriteria:
+          type: string
+          description: "Document category associated with the offer. Ex: WD(With Document),WO(Without\
+            \ Document).This a reference data field. Please use /utilities/referenceData/{documentCriteria}\
+            \ resource to get valid values of this field with descriptions."
+          example: WD
+        ipaRecommendation:
+          type: string
+          description: "IPA recommendation to the customer. Ex: 11 - PARTIAL,10 -\
+            \ FULL etc.Please use /utilities/referenceData/{ipaRecommendation} resource\
+            \ to get valid values of this field with descriptions."
+          example: "99"
+        offerSequenceId:
+          type: string
+          description: Unique offer sequence id to identify an offer
+          example: "99"
+        marketingOfferOriginatingBranchId:
+          type: string
+          description: Originating branch id of the citi bank branch where the marketing
+            offer was created.
+          example: "99"
+        marketingOfferCampaignId:
+          type: string
+          description: Campaign Id associated with the marketing offer.
+          example: CA13
+        marketingOfferWaveId:
+          type: string
+          description: Wave id associated with the marketing offer
+          example: IE12
+        creditSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditSpecificRecommendations"
+        loanSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanSpecificRecommendations"
+        requiredDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequiredDocuments"
+    CreditSpecificRecommendations:
+      type: object
+      properties:
+        recommendedCreditLimit:
+          type: number
+          description: Eligible Credit limit
+          format: double
+          example: 25000.0
+        btMaximumLoanPercentage:
+          type: number
+          description: Balance transfer maximum loan percentage. Applicable to Counter
+            and Cross-sell offers
+          format: double
+          example: 5.0
+        btMonthlyInterestRate:
+          type: number
+          description: Balance transfer monthly interest rate. Applicable to Counter
+            and Cross-sell offers
+          format: double
+          example: 500.0
+        eppMaximumLoanPercentage:
+          type: number
+          description: Equal payment plan max loan percentage. Applicable to Counter
+            and Cross-sell offers
+          format: double
+          example: 5.0
+        eppMonthlyInterestRate:
+          type: number
+          description: Equal payment plan monthly interest rate. Applicable to Counter
+            and Cross-sell offers
+          format: double
+          example: 5.0
+        btCampaignId:
+          type: string
+          description: Balance transfer CampaignId. Applicable to Counter and Cross-sell
+            offers.
+          example: "34543634"
+        eppPromoId:
+          type: string
+          description: "PromoId of equal payment plan. Applicable for ready credit,\
+            \ Counter and Cross-sell offers"
+          example: "34543634"
+        effectiveInterestRate:
+          type: number
+          description: The effective rate of interest applicable to product
+          format: double
+          example: 5.0
+        annualPercentageRate:
+          type: number
+          description: Applicable Annual Percentage Rate on the product
+          format: double
+          example: 5.0
+        totalRepaymentAmount:
+          type: number
+          description: Total repayment amount to be paid by the customer
+          format: double
+          example: 34543634
+        dailyInterestAmount:
+          type: number
+          description: Daily interest amount to be paid by the customer
+          format: double
+          example: 256.36
+        annualFeeAmount:
+          type: number
+          description: Annual fee amountis the amount paid by customer as the fixed
+            processing charges every year.
+          format: double
+          example: 256.36
+        creditApprovalExpiryDate:
+          type: string
+          description: Credit Approval Expiry Date by CDE for credit specific recommendation
+          format: date
+          example: 1972-09-15
+        creditApprovalExpiredFlag:
+          type: boolean
+          description: Flag to indicate if the Credit Approval is expired.Valid values
+            are true and false.
+          example: true
+        eligibleForEqualPaymentPlanFlag:
+          type: boolean
+          description: Flag to indicate if customer is eligible to avail of the Equal
+            Payment Plan (EPP) for the credit card.
+          example: true
+        equalPaymentPlanId:
+          type: string
+          description: Plan id for the Equal Payment Plan which will be used to retrieve
+            the promo id and applicable APR (annual percentage rate) for the EPP.
+          example: "10021"
+    LoanSpecificRecommendations:
+      type: object
+      properties:
+        loanAmount:
+          type: number
+          description: Eligible Loan amount.
+          format: double
+          example: 25000.0
+        tenor:
+          type: string
+          description: "Tenor for the loan repayment. This a reference data field.\
+            \ Please use /utilities/referenceData/{tenor} resource to get valid values\
+            \ of this field with descriptions."
+          example: "45"
+        interestRate:
+          type: number
+          description: Interest rate of the loan
+          format: double
+          example: 5.0
+        handlingFee:
+          type: number
+          description: Handling fee to be paid.
+          format: double
+          example: 5.0
+        installmentAmount:
+          type: number
+          description: Installment amount to be paid. This is calculated without the
+            insurance amount.Insurance option is applicable for EMEA countries
+          format: double
+          example: 500.0
+        installmentAmountWithInsurance:
+          type: number
+          description: Installment amount to be paid. This is calculated with the
+            insurance amount.Insurance option is applicable for EMEA countries
+          format: double
+          example: 500.0
+        annualPercentageRate:
+          type: number
+          description: Applicable Annual Percentage Rate
+          format: double
+          example: 5.0
+        totalPrincipalAmount:
+          type: number
+          description: Total principal to be paid by customer
+          format: double
+          example: 5000.0
+        totalInterestAmount:
+          type: number
+          description: Total interest to be paid by customer
+          format: double
+          example: 500.0
+        totalInstallmentAmount:
+          type: number
+          description: Total installment amount to be paid by customer
+          format: double
+          example: 500.0
+        monthlyFeeAmount:
+          type: number
+          description: Monthly fee amount is the amount paid by customer as the fixed
+            processing charges every month
+          format: double
+          example: 500.0
+        insurancePremiumAmount:
+          type: number
+          description: Insurance premium amount is the i insurance amount paid by
+            customer for availing the insurance product against the loan
+          format: double
+          example: 500.0
+        pricingPlanId:
+          type: string
+          description: Pricing plan id is the unique id of pricing plan which is selected
+            by customer
+          example: "12354"
+        totalRepaymentAmount:
+          type: number
+          description: "Total repayment amount to be paid by the customer. Formula\
+            \ for calculating the value: EMI + Monthly Fee"
+          format: double
+          example: 500.0
+        grossLoanAmount:
+          type: number
+          description: "Gross loan amount is the total loan amount including upfront\
+            \ fee and the insurance(if availed by customer). Formula for calculating\
+            \ the value: Loan Amount + Upfront Fee (handling Fee) + Insurance"
+          format: double
+          example: 500.0
+        totalCostOfCreditWithoutInsurance:
+          type: number
+          description: "Total Cost of credit without the insurance amount for the\
+            \ tenor selected. Formula for calculating the value: (InstallmtAmtWithoutIns\
+            \ + Monthly Fee) * Tenor - Loan Amount"
+          format: double
+          example: 500.0
+        totalCostOfCreditWithInsurance:
+          type: number
+          description: "Total Cost of credit with the insurance amount for the tenor\
+            \ selected. Formula for calculating the value: (InstallmtAmtWithIns +\
+            \ Monthly Fee) * Tenor - Loan Amount"
+          format: double
+          example: 500.0
+        aprRetentionFlag:
+          type: boolean
+          description: Indicates if the loan is allowed for APR retention
+          example: true
+        creditApprovalExpiryDate:
+          type: string
+          description: Credit Approval Expiry Date by CDE for loan specific recommendation
+          format: date
+          example: 1972-09-15
+        repaymentScheduleIssueDate:
+          type: string
+          description: Repayment schedule start date in ISO 8601 date format YYYY-MM-DD
+          format: date
+          example: 1972-09-15
+        repaymentSchedule:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepaymentSchedule"
+        handlingFeePercentage:
+          type: string
+          description: Handling fee percentage for the loan processing. Its represented
+            as the percentage of the loan amount
+          example: "1"
+        maximumInstallmentAmount:
+          type: number
+          description: Maximum installment amount which can be selected by the customer
+            to avail the loan
+          format: double
+          example: 500.0
+        maximumTenor:
+          type: string
+          description: Maximum tenor value which can be selected by the customer to
+            avail the loan
+          example: "10"
+        maximumLoanAmountWithDocument:
+          type: number
+          description: Maximum Loan amount which can be selected by the customer with
+            documents to avail the loan
+          format: double
+          example: 23654.0
+        maximumLoanAmountWithoutDocument:
+          type: number
+          description: Maximum Loan amount which can be selected by the customer without
+            documents to avail the loan
+          format: double
+          example: 21654.0
+        maximumLoanAmtWithoutSpouseConsent:
+          type: number
+          description: Maximum loan amount which can be selected by the customer without
+            his spouse consent to avail the loan
+          format: double
+          example: 21654.0
+        topupLoanFlag:
+          type: boolean
+          description: If existing CITI Customer would like to avail a top up to the
+            existing CITI Bank loan then this flag would be set to true
+          example: true
+        topupLoanExpiryDate:
+          type: string
+          description: Topup expiry date is the date at which the top up loan option
+            expires. After this date channel should reinitiate the IPA. Date is in
+            ISO 8601 date format YYYY-MM-DD
+          format: date
+        totalLoanAmountIncExistingLoanAmt:
+          type: number
+          description: Total loan disbursement amount including the existing loan
+            amount plus the new requested loan amount
+          format: double
+          example: 2400.0
+        offeredFutureAnnualPercentageRate:
+          type: number
+          description: Future Annual Percentage Rate offered in the case of an event
+            like the employee(applicant) exits.
+          format: double
+          example: 2.4
+        existingLoanDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExistingLoanDetail"
+        creditApprovalExpiredFlag:
+          type: boolean
+          description: Flag to indicate if the Credit Approval is expired.Valid values
+            are true and false.
+          example: true
+        topupLoanExpiredFlag:
+          type: boolean
+          description: Flag to indicate if the Top up loan is expired.Valid values
+            are true and false.
+          example: true
+    ExistingLoanDetail:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: A unique code that identifies the existing loan product
+          example: VC830
+        organisationCode:
+          type: string
+          description: Card issuing Organisation code associated with the existing
+            loan
+          example: "888"
+        sourceCode:
+          type: string
+          description: A source code to identify the product associated with the existing
+            loan
+          example: WW5ARCE1
+        requestedLoanAmount:
+          type: number
+          description: Requested Loan Amount of existing loan availed by the customer
+          format: double
+          example: 25000.0
+        outstandingLoanAmount:
+          type: number
+          description: 'Outstanding Loan Amount for the existing loan availed by the
+            customer '
+          format: double
+          example: 25000.0
+        loanPayoffAmount:
+          type: number
+          description: 'Loan payoff amount for the existing CITI bank loan availed
+            by the customer.It includes the overall prinicipal amount plus the interest
+            amount and all other charges '
+          format: double
+          example: 25000.0
+        installmentAmount:
+          type: number
+          description: Installment amount to be paid by customer for the existing
+            CITI bank loan
+          format: double
+          example: 500.0
+        annualPercentageRate:
+          type: number
+          description: Applicable Annual Percentage Rate on the existing loan product
+          format: double
+          example: 5.0
+        accountOpenedDate:
+          type: string
+          description: Loan account opened date of the existing CITI Bank loan
+          format: date
+          example: 0018-04-07
+        accountNumber:
+          type: string
+          description: Account number of the existing CITI Bank loan
+          example: "1234567890"
+    RepaymentSchedule:
+      type: object
+      properties:
+        tenorOccurence:
+          type: string
+          description: Different tenor applicable for repayment
+          example: "10"
+        paymentDueDate:
+          type: string
+          description: Payment due date for each installment in ISO 8601 date format
+            YYYY-MM-DD
+          format: date
+          example: 1972-09-15
+        monthlyInstallmentAmount:
+          type: number
+          description: Monthly installment amount for loan taken
+          format: double
+          example: 500.0
+        principalAmount:
+          type: number
+          description: Principal amount of installment
+          format: double
+          example: 500.0
+        interestAmount:
+          type: number
+          description: Interest amount of installment
+          format: double
+          example: 500.0
+        remainingPrincipalAmount:
+          type: number
+          description: Remaining Principal Amount after each installment has been
+            paid by customer
+          format: double
+          example: 500.0
+    RequiredDocuments:
+      type: object
+      properties:
+        documentId:
+          type: string
+          description: "Document ID for each proof. This a reference data field. Please\
+            \ use /utilities/referenceData/{documentId} resource to get valid values\
+            \ of this field with descriptions"
+          example: IC
+        documentStatus:
+          type: string
+          description: "Status of document proof.Possible values are 00001 PENDING,00002\
+            \ PRINTED,00003 SIGNED,00004 SUBMITTED,,00005 VERIFIED,000006 RECEIVED,00007\
+            \ WAIVED,00008 NOT APPLICABLE,00009 NOT REQUIRED,00010 RE-SUBMIT"
+          example: "00001"
+        documentType:
+          type: string
+          description: "Type of document. This a reference data field. Please use\
+            \ /utilities/referenceData/{proofType} resource to get possible values\
+            \ of this field with descriptions."
+          example: NRIC
+        applicantType:
+          type: string
+          description: "Applicant relationship with the Bank. Possible values are\
+            \ Primary - P.Credit Card - Co Applicant, S1 Supplementary 1,S2 Supplementary\
+            \ 2,Loan  Co Applicant,S Spouse (Poland specific).This a reference data\
+            \ field. Please use /utilities/referenceData/{applicantType} resource\
+            \ to get valid values of this field with descriptions."
+          example: P
+        documentInternalId:
+          type: string
+          description: "Document internal id is the id which is used as an identifier\
+            \ to link two document proofs. Ex: NRIC can be used for both address and\
+            \ id proof"
+          example: "123"
+    CounterOffer:
+      type: object
+      properties:
+        offerProductCode:
+          type: string
+          description: A unique code that identifies the offered product to applicant
+          example: VC830
+        offerProductOrganisationCode:
+          type: string
+          description: offered card issuing organization name
+          example: "888"
+        offerSourceCode:
+          type: string
+          description: A source code to identify the product
+          example: WW5ARCE1
+        offerProductCategory:
+          type: string
+          description: "Product category associated with the offer.AM - Loan,PC -\
+            \ cards.This a reference data field. Please use /utilities/referenceData/{offerProductCategory}\
+            \ resource to get valid values of this field with descriptions. "
+          example: MF
+        offerDocumentCriteria:
+          type: string
+          description: "Document category associated with the offer. Ex: WD(With Document),WO(Without\
+            \ Document).This a reference data field. Please use /utilities/referenceData/{documentCriteria}\
+            \ resource to get valid values of this field with descriptions. "
+          example: WD
+        ipaRecommendation:
+          type: string
+          description: "IPA recommendation to the customer. Ex: 11 - PARTIAL,10 -\
+            \ FULL etc.Please use /utilities/referenceData/{ipaRecommendation} resource\
+            \ to get valid values of this field with descriptions."
+          example: "99"
+        offerSequenceId:
+          type: string
+          description: Unique offer sequence id to identify an offer
+          example: "99"
+        marketingOfferOriginatingBranchId:
+          type: string
+          description: Originating branch id of the citi bank branch where the marketing
+            offer was created.
+          example: "99"
+        marketingOfferCampaignId:
+          type: string
+          description: Campaign Id of the marketing offer.
+          example: CA13
+        marketingOfferWaveId:
+          type: string
+          description: Wave id associated with the marketing offer
+          example: IE12
+        creditSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditSpecificRecommendations"
+        loanSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanSpecificRecommendations"
+        requiredDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequiredDocuments"
+    CrossSellOffer:
+      type: object
+      properties:
+        offerProductCode:
+          type: string
+          description: A unique code that identifies the offered product to applicant
+          example: VC830
+        offerProductOrganisationCode:
+          type: string
+          description: offered card issuing organization name
+          example: "888"
+        offerSourceCode:
+          type: string
+          description: A source code to identify the product
+          example: WW5ARCE1
+        offerProductCategory:
+          type: string
+          description: "Product category associated with the offer.AM - Loan,PC -\
+            \ cards.This a reference data field. Please use /utilities/referenceData/{offerProductCategory}\
+            \ resource to get valid values of this field with descriptions. "
+          example: MF
+        offerDocumentCriteria:
+          type: string
+          description: "Document category associated with the offer. Ex: WD(With Document),WO(Without\
+            \ Document).This a reference data field. Please use /utilities/referenceData/{documentCriteria}\
+            \ resource to get valid values of this field with descriptions. "
+          example: WD
+        ipaRecommendation:
+          type: string
+          description: "IPA recommendation to the customer. Ex: 11 - PARTIAL,10 -\
+            \ FULL etc.Please use /utilities/referenceData/{ipaRecommendation} resource\
+            \ to get valid values of this field with descriptions."
+          example: "99"
+        offerSequenceId:
+          type: string
+          description: Unique offer sequence id to identify an offer
+          example: "99"
+        marketingOfferOriginatingBranchId:
+          type: string
+          description: Originating branch id of the citi bank branch where the marketing
+            offer was created.
+          example: "99"
+        marketingOfferCampaignId:
+          type: string
+          description: Campaign Id of the marketing offer.
+          example: CA13
+        marketingOfferWaveId:
+          type: string
+          description: Wave id associated with the marketing offer
+          example: IE12
+        creditSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditSpecificRecommendations"
+        loanSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanSpecificRecommendations"
+        requiredDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequiredDocuments"
+    SuggestedOffer:
+      type: object
+      properties:
+        offerProductCode:
+          type: string
+          description: A unique code that identifies the offered product to applicant
+          example: VC830
+        offerProductOrganisationCode:
+          type: string
+          description: offered card issuing organization code
+          example: "888"
+        offerSourceCode:
+          type: string
+          description: A source code to identify the product
+          example: WW5ARCE1
+        offerProductCategory:
+          type: string
+          description: "Product category associated with the offer.AM - Loan,PC -\
+            \ cards.This a reference data field. Please use /utilities/referenceData/{offerProductCategory}\
+            \ resource to get valid values of this field with descriptions. "
+          example: MF
+        offerDocumentCriteria:
+          type: string
+          description: "Document category associated with the offer. Ex: WD(With Document),WO(Without\
+            \ Document).This a reference data field. Please use /utilities/referenceData/{documentCriteria}\
+            \ resource to get valid values of this field with descriptions. "
+          example: WD
+        ipaRecommendation:
+          type: string
+          description: "IPA recommendation to the customer. Ex: 11 - PARTIAL,10 -\
+            \ FULL etc.Please use /utilities/referenceData/{ipaRecommendation} resource\
+            \ to get valid values of this field with descriptions."
+          example: "99"
+        offerSequenceId:
+          type: string
+          description: Unique offer sequence id to identify an offer
+          example: "99"
+        marketingOfferOriginatingBranchId:
+          type: string
+          description: Originating branch id of the citi bank branch where the marketing
+            offer was created.
+          example: "99"
+        marketingOfferCampaignId:
+          type: string
+          description: Campaign Id of the marketing offer.
+          example: CA13
+        marketingOfferWaveId:
+          type: string
+          description: Wave id associated with the marketing offer
+          example: IE12
+        creditSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditSpecificRecommendations"
+        loanSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanSpecificRecommendations"
+        requiredDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequiredDocuments"
+    KbaQuestionnaire:
+      type: object
+      properties:
+        vedaQuestionnaire:
+          type: array
+          description: Applicable for Australia
+          items:
+            $ref: "#/components/schemas/VedaQuestionnaire"
+        tuQuestionnaire:
+          type: array
+          description: Applicable for Hong Kong
+          items:
+            $ref: "#/components/schemas/TuQuestionnaire"
+        bureauRecommendedQuestionnaire:
+          type: array
+          description: KBA Questionnaire
+          items:
+            $ref: "#/components/schemas/BureauRecommendedQuestionnaire"
+    BureauRecommendedQuestionnaire:
+      type: object
+      properties:
+        questionId:
+          type: string
+          description: Identifier of the question from the question pool
+          example: "1"
+        sequenceNumber:
+          type: string
+          description: Bureau recommended question sequence number which is used in
+            request to map a question to a given enquiry
+          example: "1"
+        questionTextDetails:
+          $ref: "#/components/schemas/QuestionTextDetails"
+        questionType:
+          type: string
+          description: "Bureau recommended question type. Possible values are TEXT,NUMBER,AMOUNT,CHOICE\
+            \ and LIST.Both Choice and list will have options choice will have Y/N\
+            \ as options."
+          example: OPTIONS
+        dependentQuestionDetails:
+          $ref: "#/components/schemas/DependentQuestionDetails"
+        bureauRecommendedResponseOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/BureauRecommendedResponseOption"
+    QuestionTextDetails:
+      type: object
+      properties:
+        englishQuestionText:
+          type: string
+          description: Question text to be displayed to the applicant in English
+          example: Question?
+        localLanguageQuestionText:
+          type: string
+          description: Question text to be displayed to the applicant in local Language
+          example: Question?
+    DependentQuestionDetails:
+      type: object
+      properties:
+        isDependentQuestion:
+          type: boolean
+          description: Indicates if this question is a dependent question and is associated
+            with any primary question
+          example: true
+        primaryQuestionId:
+          type: string
+          description: Primary question id to which the dependent question is tagged
+            to. This is only applicable for dependent questions.
+          example: "1234"
+    BureauRecommendedResponseOption:
+      type: object
+      properties:
+        optionKey:
+          type: string
+          description: The key of Bureau recommended question
+          example: "1"
+        optionText:
+          type: string
+          description: The text associated with the Bureau recommended question
+          example: Answer.
+    VedaQuestionnaire:
+      type: object
+      properties:
+        kbaInquiryId:
+          type: string
+          description: Unique inquiry ID to validate the answers submitted
+          example: "1234"
+        multipleChoiceQuestionnaire:
+          type: array
+          items:
+            $ref: "#/components/schemas/MultipleChoiceQuestionnaire"
+        trueOrFalseQuestionnaire:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrueOrFalseQuestionnaire"
+        freeTextQuestionnaire:
+          type: array
+          items:
+            $ref: "#/components/schemas/FreeTextQuestionnaire"
+    MultipleChoiceQuestionnaire:
+      type: object
+      properties:
+        questionText:
+          type: string
+          description: Question text to be displayed to the applicant
+          example: Question?
+        sequenceNumber:
+          type: string
+          description: Identifer used in request to map a question to a given enquiry
+          example: "1"
+        responseOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResponseOptions"
+    ResponseOptions:
+      type: object
+      properties:
+        optionText:
+          type: string
+          description: Response for each questionnaire
+          example: Answer.
+        sequenceNumber:
+          type: string
+          description: Identifer used in request to map a response to a given enquiry
+          example: "1"
+    TrueOrFalseQuestionnaire:
+      type: object
+      properties:
+        questionText:
+          type: string
+          description: Question text to be displayed to the end user
+          example: Question?
+        sequenceNumber:
+          type: string
+          description: Identifer used in request to map a question to a given enquiry
+          example: "1"
+        responseOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResponseOptions"
+    FreeTextQuestionnaire:
+      type: object
+      properties:
+        questionText:
+          type: string
+          description: Question text to be displayed to the end user
+          example: Question?
+        sequenceNumber:
+          type: string
+          description: Identifer used in request to map a question to a given enquiry
+          example: "1"
+        responseOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResponseOptions"
+    TuQuestionnaire:
+      type: object
+      properties:
+        authenticationToken:
+          type: string
+          description: token to authenticate the answer submitted
+          example: wer523twed235
+        tuApplicationId:
+          type: string
+          description: Appliation ID from TU system
+          example: "23453265376"
+        queue:
+          type: string
+          description: queue
+          example: "2"
+        examDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExamDetails"
+    ExamDetails:
+      type: object
+      properties:
+        key:
+          type: string
+          description: 'Key attribute of the TU questionnaire '
+          example: "2"
+        title:
+          type: string
+          description: Exam Title of the TU questionnaire
+          example: KBA
+        languageCode:
+          type: string
+          description: "Language code attribute of the TU questionnaire.This a reference\
+            \ data field. Please use /utilities/referenceData/{languageCode} resource\
+            \ to get valid values of this field with descriptions."
+          example: EN
+        matchKeyId:
+          type: string
+          description: Language code attribute of the TU questionnaire
+          example: "2"
+        errorGeneratingQa:
+          type: string
+          description: Error generating Question and answers attribute of the TU Questionnaire
+          example: "2"
+        timeTakenToAnswer:
+          type: string
+          description: Time taken to answer for the TU questionnaire
+          example: "2"
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Questions"
+    Questions:
+      type: object
+      properties:
+        tuQuestionId:
+          type: string
+          description: Unique Identifier for the question instance
+          example: "1"
+        questionId:
+          type: string
+          description: Identifier of the question from the question pool
+          example: "1"
+        questionText:
+          type: string
+          description: TU question text
+          example: Question?
+        questionType:
+          type: string
+          description: TU question type
+          example: Choice
+        dummyQuestionFlag:
+          type: boolean
+          description: Flag to identify question if it based on existing applicant
+            information
+          example: true
+        multipleChoiceQuestionFlag:
+          type: boolean
+          description: Flag to mark if question has multiple choice for answer
+          example: true
+        listAnswerIndex:
+          type: string
+          description: Index for the list answer type question
+          example: "1"
+        expirationTime:
+          type: string
+          description: Expiration time of the TU question
+          format: date-time
+        timeTakenToAnswer:
+          type: string
+          description: Time taken to answer this question by customer
+          example: "2"
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Answers"
+    Answers:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Attributes of the TU KBA request
+          example: "2"
+        answerSelected:
+          type: string
+          description: Answer selected by the customer
+          example: "2"
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: "<br>invalid - Request did not confirm to the specification\
+            \ and was unprocessed & rejected. Please fix the value and try again</br>\
+            \                         <br>warn - Request was partially processed.\
+            \  E.g. some of the fields are missing in response to the system issues,\
+            \  request was accepted successfully but will be processed asynchronously</br>\
+            \                                                           <br>error\
+            \ - The request was accepted but could not be processed successfully</br>\
+            \            <br>fatal - There was an internal system error while processing\
+            \ the request. These are technical errors and will be resolved by Citi,\
+            \ and the consumer should retry after some time. Business errors will\
+            \ not be categorized as fatal </br>"
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+  parameters:
+    client_id:
+      name: client_id
+      in: header
+      description: The client ID you received while Onboarding with Citi to use these
+        API's. This will be generated and shared while registring in the developer
+        portal.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Authorization:
+      name: Authorization
+      in: header
+      description: The Authorization Token
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    countryCode:
+      name: countryCode
+      in: header
+      description: Country code in 2 character ISO 3166 format.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    businessCode:
+      name: businessCode
+      in: header
+      description: The 3 character business code. Use GCB for consumer banking.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit UUID that you generate for every request
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Types that are acceptable for the response. Currently we
+        support application/json.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      description: List of acceptable human languages for response
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: The media type of the body of the request (used with POST and PUT
+        requests). Currently we support application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: Device and browser information. Refer the developer portal for
+        more information. Please ensure the header is base64 encoded
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    x-jws-signature:
+      name: x-jws-signature
+      in: header
+      description: "Signature generated when partner sign API payload.This signature\
+        \ will be used to validate that the call is coming from a valid partner. This\
+        \ signature is a JWT token, which will be validated with partnerâ€™s JWK stored\
+        \ in DB"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    applicationId:
+      name: applicationId
+      in: path
+      description: the ID of the application
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string

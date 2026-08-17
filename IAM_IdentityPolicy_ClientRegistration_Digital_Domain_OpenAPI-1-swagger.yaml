@@ -1,0 +1,536 @@
+openapi: 3.0.1
+info:
+  title: IAM_IdentityPolicy_ClientRegistration_Digital_Domain_OpenAPI
+  description: The API allows the TPP to request the ASPSP to perform the management
+    of client registration.
+  version: 1.0.0
+  x-deployment-reference: AUTH-D-PartyAuth-DGL-EA
+  x-linked-api: PartyAuthentication_Digital_Domain
+servers:
+- url: https://127.0.0.1/openapi/v1/auth/clients/register
+paths:
+  /{countryCode}/{businessCode}:
+    post:
+      tags:
+      - IAM_Identity Administration_Identity Policy Management
+      summary: Submit Client Details for Dynamic Client Registration
+      description: This API is used by the registered Third Party( TPP ) to Submit
+        the client  details.
+      operationId: DynamicClientRegistration
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - name: countryCode
+        in: path
+        description: countryCode
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: businessCode
+        in: path
+        description: businessCode
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: DynamicClientRegistrationRequest
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DynamicClientRegistrationRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DynamicClientRegistrationResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: DynamicClientRegistrationRequest
+  /{client_id}:
+    get:
+      tags:
+      - IAM_Identity Administration_Identity Policy Management
+      summary: Retrieve Client Details for Dynamic Client Registration
+      description: This API is used by the registered Third Party( TPP ) to retrieve
+        the client  details.
+      operationId: DynamicClientRegistrationRetrieval
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - name: client_id
+        in: path
+        description: This refer to the unique client id for this information is require
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DynamicClientRegistrationRetrievalResponse"
+        "204":
+          description: No content
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+      - IAM_Identity Administration_Identity Policy Management
+      summary: Update Client Details for Dynamic Client Registration
+      description: This API is used by the registered Third Party( TPP ) to Update
+        the client  details.
+      operationId: DynamicClientRegistrationUpdate
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - name: client_id
+        in: path
+        description: This refer to the unique client id for this information is require
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: DynamicClientRegistrationUpdateRequest
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DynamicClientRegistrationUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DynamicClientRegistrationUpdateResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: DynamicClientRegistrationUpdateRequest
+    delete:
+      tags:
+      - IAM_Identity Administration_Identity Policy Management
+      summary: Delete Client Details for Dynamic Client Registration.
+      description: TThis API allows Third Party (TPP) to request for deletion of existing
+        client credentials.
+      operationId: DynamicClientRegistrationDeletion
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - name: client_id
+        in: path
+        description: This refer to the unique client id for this information is require
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    DynamicClientRegistrationRequest:
+      required:
+      - software_statement
+      type: object
+      properties:
+        software_statement:
+          type: string
+          description: This refer to unique identifier for the customer session
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjM4Mjc4MTZjLWJmMDktNDI4NC05MjY2LTdiZjQ1MjVhNjYwYyJ9.eyJyZWRpcmVjdF91cmlzIjpbImh0dHBzOi8vZGlyZWN0b3J5LXRlLnByZXRhLmV1L2RpcmVjdG9yeS90cHAvdHBwLWVkaXQvUFNER0ItT0ItVW5rbm93blRmRUNjNU9VbkVidVNEaTZUVXV2eloiXSwidG9rZW5fZW5kcG9pbnRfYXV0aF9tZXRob2QiOiJjbGllbnRfc2VjcmV0X2Jhc2ljIiwiZ3JhbnRfdHlwZXMiOlsiY2xpZW50X2NyZWRlbnRpYWxzIiwiYXV0aG9yaXphdGlvbl9jb2RlIl0sInJlc3BvbnNlX3R5cGVzIjpbImNvZGUiLCJjb2RlIGlkX3Rva2VuIiwicmVmcmVzaF90b2tlbiJdLCJjbGllbnRfbmFtZSI6InBzZDJwb2MxNzQiLCJjbGllbnRfdXJpIjoiUkVDT01NRU5ERURfZXhhbXBsZS5jb20iLCJsb2dvX3VyaSI6Ik9QVElPTkFMX3Nob3VsZHdvcmtvbnJlZ19leGFtcGxlLmNvbS9sb2dvIiwic2NvcGUiOiJvcGVuaWQgcGF5bWVudHMiLCJpc3MiOiJFVS1ETU8tNDI5NTE4Njk5MSIsImNvbnRhY3RzIjoiT1BUSU9OQUxfZW1haWxAZXhhbXBsZS5jb20iLCJ0b3NfdXJpIjoiT1BUSU9OQUxfZXhhbXBsZS5jb20vdG9zIiwicG9saWN5X3VyaSI6Ik9QVElPTkFMX2V4YW1wbGUuY29tL3BvbGljeSIsImp3a3MiOnsia2V5cyI6W3sia3R5IjoiUlNBIiwiZSI6IkFRQUIiLCJ1c2UiOiJzaWciLCJhbGciOiJyczI1NiIsIng1YyI6WyJNSUlEenpDQ0FyZWdBd0lCQWdJRVhOcXJ1VEFOQmdrcWhraUc5dzBCQVFzRkFEQU5NUXN3Q1FZRFZRUUREQUpqWVRBZUZ3MHhPVEExTVRReE1UVXhNakZhRncweU1EQTFNVE14TVRVeE1qRmFNSUdDTVFzd0NRWURWUVFHRXdKSFFqRWhNQjhHQTFVRUNnd1lUM0JsYmlCQ1lXNXJhVzVuSUV4cGJXbDBaV1FnS0VRcE1TOHdMUVlEVlFSaERDWlFVMFJIUWkxUFFpMVZibXR1YjNkdVZHWkZRMk0xVDFWdVJXSjFVMFJwTmxSVmRYWjZXakVmTUIwR0ExVUVBd3dXVkdaRlEyTTFUMVZ1UldKMVUwUnBObFJWZFhaNldqQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQU1jVlR5RzdGbzRGRUs4N0dPcVYvUTlhVXczcloxMEtQYkZ4SlZMREdxTitMMWFlR0Zjem9nZkpSbkVpb1FCUlNuODI4cng0ZG51NmNJcG1oRVRrcW9oajZobWY1UzBjTlNnUWJveDc4TDdrSkhvZm01RTMyU1lML3Q2b1VCME85NzhQaHdnRmpNQysrQWU3SG4rcjI1ZHg1Q3RoRmNaVUdDN0UraHI3QUJvVXJJL0twOUJocTMwY1l3V2t4MmdEUUZjeTg2VTh5R0trS3lvdWhVVG1lTzJ6QVVRclRiOXcrWjZVR1JaQlBMM0syaWRTMlluVE45Z1ZDTHVFb00xUTFnaDJmUmY1a2tyVlBPd3UzZlEycno5SGttZjM4SURmNnJpYjJ3SFZ4UW14SnhQdmw3Y0g5N21GaDh6RCt4WTEwWDdBNTFpMEhaS1F0cjA5eGxoTGpvVUNBd0VBQWFPQndEQ0J2VEFPQmdOVkhROEJBZjhFQkFNQ0JzQXdnWXNHQ0NzR0FRVUZCd0VEQkg4d2ZUQVRCZ1lFQUk1R0FRWXdDUVlIQkFDT1JnRUdBakJtQmdZRUFJR1lKd0l3WERBMU1ETUdCd1FBZ1pnbkFRSU1CbEJUVUY5UVNRWUhCQUNCbUNjQkF3d0dVRk5RWDBGSkJnY0VBSUdZSndFRURBWlFVMUJmU1VNTUcwWnBibUZ1WTJsaGJDQkRiMjVrZFdOMElFRjFkR2h2Y21sMGVRd0dSMEl0UmtOQk1CMEdBMVVkRGdRV0JCUmE2WEhucTl2Ui9DZE5La01Fd2ZLRjNBZXoxREFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBRUd1Z2RiQ29qSTdwUTY5MlJUdXROTUc5K2NLZXJVWEJXOU9BNGZtZmQ3ZTlsU2ZjSXA1WjlmeGZ1RFBJaFhubWtZSE5FYW5raVBvYjBkc1pEekdTbDBYWHQ2T09nNEt2czB5Rm1GcFptMlJReHhHQ2k4QXpQQXloU2R0OC84TXZyb1B5a0FPYmpIL3JHdjZKeTh3Mmt4T1BTUzFGYmpiek1TaXh4MmlBcWtJdHB5NGhIZFNlYTBHNnIxK0FRVE5zWWhTMmo5bFo2UWh3Y1pob3R1WHlKNlRuS1ZNSHl2OWhHUlVWN2FkdVhndWZVVG9iSmtuY2tsUGx3U1JQbE5ibGxGNERpbEFBQ3V1b0N6VzlBbTFNSnlHQTNNZXJlell1N0t6SFU3VFpYRkRTOFV2c1hIaGxlSjJtWVNHTXJqdDlFMks0SWhVUHp0ZGxoa3ZkVWpTS3lRPT0iXSwia2lkIjoiMzgyNzgxNmMtYmYwOS00Mjg0LTkyNjYtN2JmNDUyNWE2NjBjIiwibiI6Inh4VlBJYnNXamdVUXJ6c1k2cFg5RDFwVERldG5YUW85c1hFbFVzTWFvMzR2VnA0WVZ6T2lCOGxHY1NLaEFGRktmemJ5dkhoMmU3cHdpbWFFUk9TcWlHUHFHWl9sTFJ3MUtCQnVqSHZ3dnVRa2VoLWJrVGZaSmd2LTNxaFFIUTczdnctSENBV013TDc0QjdzZWY2dmJsM0hrSzJFVnhsUVlMc1Q2R3ZzQUdoU3NqOHFuMEdHcmZSeGpCYVRIYUFOQVZ6THpwVHpJWXFRcktpNkZST1o0N2JNQlJDdE52M0Q1bnBRWkZrRTh2Y3JhSjFMWmlkTTMyQlVJdTRTZ3pWRFdDSFo5Rl9tU1N0VTg3QzdkOURhdlAwZVNaX2Z3Z05fcXVKdmJBZFhGQ2JFbkUtLVh0d2YzdVlXSHpNUDdGalhSZnNEbldMUWRrcEMydlQzR1dFdU9oUSJ9XX0sInNvZnR3YXJlX2lkIjoiNmZjNTkzOGItNTgxMy0zZmMwIiwicm9sZXMiOlsiUElTUCIsIkFJU1AiXSwic29mdHdhcmVfdmVyc2lvbiI6IjEifQ.G36WWpY4A3lZJDMR8ZCB7SWlJ8EQfQrL54QjIzwqZsvs1I5PIh60BZ-mgph-b-VwPvpFFeFSpF_ZMpzaUDZ174u2WwtaiMVDQLyKNprA0t5TJnQndN2FFy5LGj4J_-XVX6dOgdtujoappdLwCyg5ftgjZ-awX8JIDF1LaYXol-PPh2-n_zIBkFSWIMS2vj_2sz6j1eo6nuLTX3JnLpMq54T1g0ldfaDUTYlcgu4Q1va979pV0oLEV91K2c5IDEeYDvvyhWMubfKPoWdeYUVAKJwN4sbjAI-ERVP2kGKKqh3D9w43wl6JZY7PWLRCGyvxx1yrqbUscPYzNxL0CAkMSw
+    DynamicClientRegistrationResponse:
+      required:
+      - client_id
+      - client_secret
+      - client_secret_expires_at
+      - redirect_uris
+      - response_types
+      - scope
+      - software_Id
+      - token_endpoint_auth_method
+      type: object
+      properties:
+        grant_type:
+          type: array
+          description: The grant type. Valid value is refresh_token
+          example: client_credentials
+          items:
+            type: string
+        client_id:
+          type: string
+          description: This refer to the unique client id after success ful registration
+          example: PSDGB-OB-UnknownTfECc5OUnEbuSDi6TUuvzZ--3094cf99-6ca1-4c54-829e-64bee156ebe0
+        client_secret:
+          type: string
+          description: This refer to the unique client Secret after success ful registration
+          example: Y6pY0jY8qV2pD0rM0mH7vB2nC3kF7xC7yD7rL8tI3eJ2mK0rP2
+        client_secret_expires_at:
+          type: string
+          description: This refer to the expiry time of the client and secret issued.
+          example: "0"
+        redirect_uris:
+          type: string
+          description: This refer to the redirect Uri for the client
+          example: https://directory-te.preta.eu/directory/tpp/tpp-edit/PSDGB-OB-UnknownTfECc5OUnEbuSDi6TUuvzZ
+        token_endpoint_auth_method:
+          type: string
+          description: This refer to the authentication method for token end point.
+          example: client_secret_basic
+        response_types:
+          type: array
+          description: This refer to the type of response
+          example: code
+          items:
+            type: string
+        scope:
+          type: array
+          description: This refer to the scope for the client
+          example: payments
+          items:
+            type: string
+        software_Id:
+          type: string
+          description: This refer to the unique id for the client.
+          example: 6fc5938b-5813-3fc0
+    DynamicClientRegistrationRetrievalResponse:
+      required:
+      - client_id
+      - client_secret
+      - client_secret_expires_at
+      - redirect_uris
+      - response_types
+      - scope
+      - software_Id
+      - token_endpoint_auth_method
+      type: object
+      properties:
+        grant_type:
+          type: array
+          description: The grant type. Valid value is refresh_token
+          example: client_credentials
+          items:
+            type: string
+        client_id:
+          type: array
+          description: This refer to the unique client id after success ful registration
+          example: PSDGB-OB-UnknownTfECc5OUnEbuSDi6TUuvzZ--3094cf99-6ca1-4c54-829e-64bee156ebe0
+          items:
+            type: string
+        client_secret:
+          type: string
+          description: This refer to the unique client Secret after success ful registration
+          example: Y6pY0jY8qV2pD0rM0mH7vB2nC3kF7xC7yD7rL8tI3eJ2mK0rP2
+        client_secret_expires_at:
+          type: string
+          description: This refer to the expiry time of the client and secret issued.
+          example: "0"
+        redirect_uris:
+          type: string
+          description: This refer to the redirect Uri for the client
+          example: https://directory-te.preta.eu/directory/tpp/tpp-edit/PSDGB-OB-UnknownTfECc5OUnEbuSDi6TUuvzZ
+        token_endpoint_auth_method:
+          type: string
+          description: This refer to the authentication method for token end point.
+          example: client_secret_basic
+        response_types:
+          type: array
+          description: This refer to the type of response
+          example: code
+          items:
+            type: string
+        scope:
+          type: array
+          description: This refer to the scope for the client
+          example: payments
+          items:
+            type: string
+        software_Id:
+          type: string
+          description: This refer to the unique id for the client.
+          example: 6fc5938b-5813-3fc0
+    DynamicClientRegistrationUpdateRequest:
+      required:
+      - software_statement
+      type: object
+      properties:
+        software_statement:
+          type: string
+          description: This refer to unique identifier for the customer session
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjM4Mjc4MTZjLWJmMDktNDI4NC05MjY2LTdiZjQ1MjVhNjYwYyJ9.eyJyZWRpcmVjdF91cmlzIjpbImh0dHBzOi8vZGlyZWN0b3J5LXRlLnByZXRhLmV1L2RpcmVjdG9yeS90cHAvdHBwLWVkaXQvUFNER0ItT0ItVW5rbm93blRmRUNjNU9VbkVidVNEaTZUVXV2eloiXSwidG9rZW5fZW5kcG9pbnRfYXV0aF9tZXRob2QiOiJjbGllbnRfc2VjcmV0X2Jhc2ljIiwiZ3JhbnRfdHlwZXMiOlsiY2xpZW50X2NyZWRlbnRpYWxzIiwiYXV0aG9yaXphdGlvbl9jb2RlIl0sInJlc3BvbnNlX3R5cGVzIjpbImNvZGUiLCJjb2RlIGlkX3Rva2VuIiwicmVmcmVzaF90b2tlbiJdLCJjbGllbnRfbmFtZSI6InBzZDJwb2MxNzQiLCJjbGllbnRfdXJpIjoiUkVDT01NRU5ERURfZXhhbXBsZS5jb20iLCJsb2dvX3VyaSI6Ik9QVElPTkFMX3Nob3VsZHdvcmtvbnJlZ19leGFtcGxlLmNvbS9sb2dvIiwic2NvcGUiOiJvcGVuaWQgcGF5bWVudHMiLCJpc3MiOiJFVS1ETU8tNDI5NTE4Njk5MSIsImNvbnRhY3RzIjoiT1BUSU9OQUxfZW1haWxAZXhhbXBsZS5jb20iLCJ0b3NfdXJpIjoiT1BUSU9OQUxfZXhhbXBsZS5jb20vdG9zIiwicG9saWN5X3VyaSI6Ik9QVElPTkFMX2V4YW1wbGUuY29tL3BvbGljeSIsImp3a3MiOnsia2V5cyI6W3sia3R5IjoiUlNBIiwiZSI6IkFRQUIiLCJ1c2UiOiJzaWciLCJhbGciOiJyczI1NiIsIng1YyI6WyJNSUlEenpDQ0FyZWdBd0lCQWdJRVhOcXJ1VEFOQmdrcWhraUc5dzBCQVFzRkFEQU5NUXN3Q1FZRFZRUUREQUpqWVRBZUZ3MHhPVEExTVRReE1UVXhNakZhRncweU1EQTFNVE14TVRVeE1qRmFNSUdDTVFzd0NRWURWUVFHRXdKSFFqRWhNQjhHQTFVRUNnd1lUM0JsYmlCQ1lXNXJhVzVuSUV4cGJXbDBaV1FnS0VRcE1TOHdMUVlEVlFSaERDWlFVMFJIUWkxUFFpMVZibXR1YjNkdVZHWkZRMk0xVDFWdVJXSjFVMFJwTmxSVmRYWjZXakVmTUIwR0ExVUVBd3dXVkdaRlEyTTFUMVZ1UldKMVUwUnBObFJWZFhaNldqQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQU1jVlR5RzdGbzRGRUs4N0dPcVYvUTlhVXczcloxMEtQYkZ4SlZMREdxTitMMWFlR0Zjem9nZkpSbkVpb1FCUlNuODI4cng0ZG51NmNJcG1oRVRrcW9oajZobWY1UzBjTlNnUWJveDc4TDdrSkhvZm01RTMyU1lML3Q2b1VCME85NzhQaHdnRmpNQysrQWU3SG4rcjI1ZHg1Q3RoRmNaVUdDN0UraHI3QUJvVXJJL0twOUJocTMwY1l3V2t4MmdEUUZjeTg2VTh5R0trS3lvdWhVVG1lTzJ6QVVRclRiOXcrWjZVR1JaQlBMM0syaWRTMlluVE45Z1ZDTHVFb00xUTFnaDJmUmY1a2tyVlBPd3UzZlEycno5SGttZjM4SURmNnJpYjJ3SFZ4UW14SnhQdmw3Y0g5N21GaDh6RCt4WTEwWDdBNTFpMEhaS1F0cjA5eGxoTGpvVUNBd0VBQWFPQndEQ0J2VEFPQmdOVkhROEJBZjhFQkFNQ0JzQXdnWXNHQ0NzR0FRVUZCd0VEQkg4d2ZUQVRCZ1lFQUk1R0FRWXdDUVlIQkFDT1JnRUdBakJtQmdZRUFJR1lKd0l3WERBMU1ETUdCd1FBZ1pnbkFRSU1CbEJUVUY5UVNRWUhCQUNCbUNjQkF3d0dVRk5RWDBGSkJnY0VBSUdZSndFRURBWlFVMUJmU1VNTUcwWnBibUZ1WTJsaGJDQkRiMjVrZFdOMElFRjFkR2h2Y21sMGVRd0dSMEl0UmtOQk1CMEdBMVVkRGdRV0JCUmE2WEhucTl2Ui9DZE5La01Fd2ZLRjNBZXoxREFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBRUd1Z2RiQ29qSTdwUTY5MlJUdXROTUc5K2NLZXJVWEJXOU9BNGZtZmQ3ZTlsU2ZjSXA1WjlmeGZ1RFBJaFhubWtZSE5FYW5raVBvYjBkc1pEekdTbDBYWHQ2T09nNEt2czB5Rm1GcFptMlJReHhHQ2k4QXpQQXloU2R0OC84TXZyb1B5a0FPYmpIL3JHdjZKeTh3Mmt4T1BTUzFGYmpiek1TaXh4MmlBcWtJdHB5NGhIZFNlYTBHNnIxK0FRVE5zWWhTMmo5bFo2UWh3Y1pob3R1WHlKNlRuS1ZNSHl2OWhHUlVWN2FkdVhndWZVVG9iSmtuY2tsUGx3U1JQbE5ibGxGNERpbEFBQ3V1b0N6VzlBbTFNSnlHQTNNZXJlell1N0t6SFU3VFpYRkRTOFV2c1hIaGxlSjJtWVNHTXJqdDlFMks0SWhVUHp0ZGxoa3ZkVWpTS3lRPT0iXSwia2lkIjoiMzgyNzgxNmMtYmYwOS00Mjg0LTkyNjYtN2JmNDUyNWE2NjBjIiwibiI6Inh4VlBJYnNXamdVUXJ6c1k2cFg5RDFwVERldG5YUW85c1hFbFVzTWFvMzR2VnA0WVZ6T2lCOGxHY1NLaEFGRktmemJ5dkhoMmU3cHdpbWFFUk9TcWlHUHFHWl9sTFJ3MUtCQnVqSHZ3dnVRa2VoLWJrVGZaSmd2LTNxaFFIUTczdnctSENBV013TDc0QjdzZWY2dmJsM0hrSzJFVnhsUVlMc1Q2R3ZzQUdoU3NqOHFuMEdHcmZSeGpCYVRIYUFOQVZ6THpwVHpJWXFRcktpNkZST1o0N2JNQlJDdE52M0Q1bnBRWkZrRTh2Y3JhSjFMWmlkTTMyQlVJdTRTZ3pWRFdDSFo5Rl9tU1N0VTg3QzdkOURhdlAwZVNaX2Z3Z05fcXVKdmJBZFhGQ2JFbkUtLVh0d2YzdVlXSHpNUDdGalhSZnNEbldMUWRrcEMydlQzR1dFdU9oUSJ9XX0sInNvZnR3YXJlX2lkIjoiNmZjNTkzOGItNTgxMy0zZmMwIiwicm9sZXMiOlsiUElTUCIsIkFJU1AiXSwic29mdHdhcmVfdmVyc2lvbiI6IjEifQ.G36WWpY4A3lZJDMR8ZCB7SWlJ8EQfQrL54QjIzwqZsvs1I5PIh60BZ-mgph-b-VwPvpFFeFSpF_ZMpzaUDZ174u2WwtaiMVDQLyKNprA0t5TJnQndN2FFy5LGj4J_-XVX6dOgdtujoappdLwCyg5ftgjZ-awX8JIDF1LaYXol-PPh2-n_zIBkFSWIMS2vj_2sz6j1eo6nuLTX3JnLpMq54T1g0ldfaDUTYlcgu4Q1va979pV0oLEV91K2c5IDEeYDvvyhWMubfKPoWdeYUVAKJwN4sbjAI-ERVP2kGKKqh3D9w43wl6JZY7PWLRCGyvxx1yrqbUscPYzNxL0CAkMSw
+    DynamicClientRegistrationUpdateResponse:
+      required:
+      - client_id
+      - client_secret
+      - client_secret_expires_at
+      - redirect_uris
+      - response_types
+      - scope
+      - software_Id
+      - token_endpoint_auth_method
+      type: object
+      properties:
+        grant_type:
+          type: array
+          description: The grant type. Valid value is refresh_token
+          example: client_credentials
+          items:
+            type: string
+        client_id:
+          type: string
+          description: This refer to the unique client id after success ful registration
+          example: PSDGB-OB-UnknownTfECc5OUnEbuSDi6TUuvzZ--3094cf99-6ca1-4c54-829e-64bee156ebe0
+        client_secret:
+          type: string
+          description: This refer to the unique client Secret after success ful registration
+          example: Y6pY0jY8qV2pD0rM0mH7vB2nC3kF7xC7yD7rL8tI3eJ2mK0rP2
+        client_secret_expires_at:
+          type: string
+          description: This refer to the expiry time of the client and secret issued.
+          example: "0"
+        redirect_uris:
+          type: string
+          description: This refer to the redirect Uri for the client
+          example: https://directory-te.preta.eu/directory/tpp/tpp-edit/PSDGB-OB-UnknownTfECc5OUnEbuSDi6TUuvzZ
+        token_endpoint_auth_method:
+          type: string
+          description: This refer to the authentication method for token end point.
+          example: client_secret_basic
+        response_types:
+          type: array
+          description: This refer to the type of response
+          example: code
+          items:
+            type: string
+        scope:
+          type: array
+          description: This refer to the scope for the client
+          example: payments
+          items:
+            type: string
+        software_Id:
+          type: string
+          description: This refer to the unique id for the client.
+          example: 6fc5938b-5813-3fc0
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: HTTP Basic authentication by passing base64 encoded value of the
+        access_token.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string

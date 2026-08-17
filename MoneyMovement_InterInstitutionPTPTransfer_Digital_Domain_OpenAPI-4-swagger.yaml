@@ -1,0 +1,744 @@
+openapi: 3.0.1
+info:
+  title: MoneyMovement_InterInstitutionPTPTransfer_Digital_Domain_OpenAPI
+  description: This API contains endpoints related to repeating payments.
+  version: 1.2.0
+  x-linked-api: "RetrievePaymentInitiationTransactionRepeatingPayments, UpdatePaymentInitiationTransactionRepeatingPayments,\
+    \ UpdatePaymentInitiationTransactionRepeatingPaymentsPreprocess"
+servers:
+- url: https://127.0.0.1/openapi/v1/paymentInitiation/repeatingPayments
+paths:
+  /:
+    get:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: Standing Instruction Inquiry for Specific Payment Type
+      description: This API makes an inquiry of Standing Instruction of specific payment
+        transfer type
+      operationId: RetrievePaymentInitiationTransactionRepeatingPayments
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: x-jws-signature
+        in: header
+        description: "Signature generated when partner signs API payload. This signature\
+          \ will be used to validate that the call is coming from a valid partner.\
+          \ This signature is a JWT token, which will be validated with partner’s\
+          \ JWK stored in DB"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: paymentType
+        in: query
+        description: "This defines the type of payment made by customer for which\
+          \ SI needs to be enabled.This is a reference data field. Please use /v1/utilities/referenceData/{paymentType}\
+          \ resource to get valid value of this field with description."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: nextStartIndex
+        in: query
+        description: In some cases there is more data than what can be returned in
+          a single response. If there is additional data available a nextStartIndex
+          will be returned. Pass the nextStartIndex in your next request to retrieve
+          the next set of data.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrievePaymentInitiationTransactionRepeatingPaymentsResponse"
+        "204":
+          description: No content
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: Update Standing Instruction for Specific Transfer Type
+      description: This API lets the customer update Standing instructions for a specific
+        transfer type/ payee type
+      operationId: UpdatePaymentInitiationTransactionRepeatingPayments
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: x-jws-signature
+        in: header
+        description: "Signature generated when partner signs API payload. This signature\
+          \ will be used to validate that the call is coming from a valid partner.\
+          \ This signature is a JWT token, which will be validated with partner’s\
+          \ JWK stored in DB"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: UpdatePaymentInitiationTransactionRepeatingPaymentsConfirmationRequest
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePaymentInitiationTransactionRepeatingPaymentsConfirmationRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td><tr><td>error</td><td>mfaRequired</td><td>
+            MFA is required</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /confirmation:
+    put:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: Update Standing Instruction Confirmation
+      description: This API confirms the updated Standing instructions for a specific
+        transfer type/ payee type
+      operationId: UpdatePaymentInitiationTransactionRepeatingPaymentsConfirmation
+      parameters:
+      - name: Authorization
+        in: header
+        description: "The most recent Authorization token. This will have the format\
+          \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: uuid
+        in: header
+        description: 128 bit random UUID generated uniquely for every request.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: Accept
+        in: header
+        description: Content-Type that are acceptable for the response.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: client_id
+        in: header
+        description: Client ID generated during application registration.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: Content-Type
+        in: header
+        description: application/json
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: clientDetails
+        in: header
+        description: "This field is used to capture device,browser and network information.\
+          \ Refer the developer portal for more information.These are the fields which\
+          \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: UpdatePaymentInitiationTransactionRepeatingPaymentsConfirmationRequest
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePaymentInitiationTransactionRepeatingPaymentsConfirmationRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdatePaymentInitiationTransactionRepeatingPaymentsConfirmationResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td><tr><td>invalid</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td><tr><td>invalid</td><td>invalidSourceAccount</td><td>Source
+            account is invalid</td><tr><tr><td>invalid</td><td>invalidAccountTransactionReferenceCombination</td><td>Invalid
+            Account and reference id combination</td><tr><tr><td>invalid</td><td>invalidDateRange</td><td>Date
+            range is invalid</td><tr></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td><tr><td>error</td><td>mfaRequired</td><td>
+            MFA is required</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td><tr><td>error</td><td>transactionPendingReview</td><td>Transaction
+            pending under review</td><tr><td>error</td><td>transactionDenied</td><td>Transaction
+            is denied</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: UpdatePaymentInitiationTransactionRepeatingPaymentsConfirmationRequest
+  /preprocess:
+    post:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: Pre Process for Standing Instruction Update
+      description: This API shows the pre process page for customer to update Standing
+        instructions for a specific transfer type/ payee type
+      operationId: UpdatePaymentInitiationTransactionRepeatingPaymentsPreprocess
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        description: UpdatePaymentInitiationTransactionRepeatingPaymentsPreprocessRequest
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePaymentInitiationTransactionRepeatingPaymentsPreprocessRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdatePaymentInitiationTransactionRepeatingPaymentsPreprocessResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr><td>invalid</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td></tr><tr><td>invalid</td><td>invalidSourceAccount</td><td>Source
+            account is invalid</td></tr><tr><td>invalid</td><td>invalidAccountTransactionReferenceCombination</td><td>Invalid
+            Account and reference id combination</td></tr><tr><td>invalid</td><td>invalidDateRange</td><td>Date
+            range is invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td><tr><td>error</td><td>mfaRequired</td><td>
+            MFA is required</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><td>error</td><td>buzinessValidationFailed</td><td>Buziness
+            Validation Failed</td><tr><td>error</td><td>transactionPendingReview</td><td>Transaction
+            pending under review</td></tr><tr><td>error</td><td>transactionDenied</td><td>Transaction
+            is denied</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: UpdatePaymentInitiationTransactionRepeatingPaymentsPreprocessRequest
+components:
+  schemas:
+    RetrievePaymentInitiationTransactionRepeatingPaymentsResponse:
+      type: object
+      properties:
+        nextStartIndex:
+          type: string
+          description: "The next start index that indicates the next set of records\
+            \ to be fetched, if there are available. Typically, this value should\
+            \ be populated if the first response has the value of nextStartIndex.It\
+            \ is not applicable for the first iteration"
+          example: "11"
+        standingInstruction:
+          type: array
+          items:
+            $ref: "#/components/schemas/StandingInstruction"
+    StandingInstruction:
+      required:
+      - accountId
+      - displayAccountNumber
+      - payee
+      - paymentFrequency
+      - paymentMethod
+      - standingInstructionStartDate
+      - transactionAmount
+      - transactionReferenceId
+      type: object
+      properties:
+        transactionReferenceId:
+          type: string
+          description: The unique SI reference Id used to identify the payee type/
+            transfer from all the other transfers
+          example: BIMI51807310002051
+        displayAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2391
+        accountId:
+          type: string
+          description: "The account identifier in encrypted format.Typically, this\
+            \ is not displayed to the customer."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+        paymentMethod:
+          type: string
+          description: "The acceptable forms of remittance for a given payments and\
+            \ transfer transaction.This is a reference data field. Please use /v1/utilities/referenceData/{paymentMethod}\
+            \ resource to get valid value of this field with description"
+          example: FasterPayments
+        bankSortCode:
+          type: string
+          description: This is specific to UK
+          example: 30-00-81
+        transactionAmount:
+          type: number
+          description: Transaction amount in local currency.
+          format: double
+          example: 4500.25
+        payee:
+          type: string
+          description: The payee name with which this transfer was made with
+          example: John Smith
+        futureDatedTransaction:
+          $ref: "#/components/schemas/FutureDatedTransaction"
+        standingInstructionStartDate:
+          type: string
+          description: Standing instruction start date in ISO 8601 format YYYY-MM-DD.
+          format: date
+        paymentFrequency:
+          type: string
+          description: "The frequency of payment. This is a reference data.Please\
+            \ use /v1/utilities/referenceData/{paymentFrequency} resource to get valid\
+            \ value of this field."
+          example: MONTHLY
+        nextPaymentDate:
+          type: string
+          description: Next Transfer transaction date in ISO 8601 date format YYYY-MM-DD.
+          format: date
+        perpetualFlag:
+          type: boolean
+          description: Flag to indicate if the standing instruction will be continued
+            until cancellation.
+          example: true
+        standingInstructionEndDate:
+          type: string
+          description: Standing instruction end date in ISO 8601 date format YYYY-MM-DD.
+          format: date
+        nextStartIndex:
+          type: string
+          description: In some cases there is more data than what can be returned
+            in a single response. If there is additional data available a nextStartIndex
+            will be returned. Pass the nextStartIndex in your next request to retrieve
+            the next set of data.
+          example: "11"
+        paymentType:
+          type: string
+          description: This defines the type of payment made by customer for which
+            SI needs to be enabled.
+          example: ALL
+        remarks:
+          type: string
+          description: Bill payment notes. Free text from screen.
+          example: Free Text
+    FutureDatedTransaction:
+      required:
+      - scheduleDate
+      type: object
+      properties:
+        scheduleDate:
+          type: string
+          description: Date on which the set amount will be transferred . Date in
+            ISO 8601 date format YYYY-MM-DD.
+          format: date
+    UpdatePaymentInitiationTransactionRepeatingPaymentsPreprocessRequest:
+      required:
+      - accountId
+      - paymentMethod
+      - transactionReferenceId
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: "The account identifier in encrypted format.Typically, this\
+            \ is not displayed to the customer."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+        paymentMethod:
+          type: string
+          description: "The acceptable forms of remittance for a given payments and\
+            \ transfer transaction.This is a reference data field. Please use    \
+            \ /v1/utilities/referenceData/{paymentMethod} resource to get valid value\
+            \ of this field with description"
+          example: FasterPayments
+        bankSortCode:
+          type: string
+          description: This is specific to UK
+          example: 30-00-81
+        transactionReferenceId:
+          type: string
+          description: The unique SI reference Id used to identify the payee type/
+            transfer from all the other transfers
+          example: BIMI51807310002051
+        transactionAmount:
+          type: number
+          description: Transaction amount in local currency.
+          format: double
+          example: 4500.25
+        futureDatedTransaction:
+          $ref: "#/components/schemas/FutureDatedTransaction"
+        standingInstruction:
+          $ref: "#/components/schemas/StandingInstructionPreprocess"
+        remarks:
+          type: string
+          description: Bill payment notes. Free text from screen.
+          example: Free text
+    StandingInstructionPreprocess:
+      type: object
+      properties:
+        standingInstructionStartDate:
+          type: string
+          description: Standing instruction start date in ISO 8601 format YYYY-MM-DD.
+          format: date
+          example: 2020-12-22
+        paymentFrequency:
+          type: string
+          description: "The frequency of payment. This is a reference data.Please\
+            \ use /v1/utilities/referenceData/{paymentFrequency} resource to get valid\
+            \ value of this field."
+          example: MONTHLY
+        perpetualFlag:
+          type: boolean
+          description: Flag to indicate if the standing instruction will be continued
+            until cancellation.
+          example: true
+        standingInstructionEndDate:
+          type: string
+          description: Standing instruction end date in ISO 8601 date format YYYY-MM-DD.
+          format: date
+          example: 2020-12-22
+    UpdatePaymentInitiationTransactionRepeatingPaymentsPreprocessResponse:
+      required:
+      - controlFlowId
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: This is control Flow id for next API
+        debitDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/DebitDetails"
+        creditDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditDetails"
+        foreignExchangeRate:
+          type: number
+          description: Exchange rate
+          format: double
+          example: 1.1021
+        transactionFee:
+          type: number
+          description: Transaction fee
+          format: double
+          example: 500.25
+        feeCurrencyCode:
+          type: string
+          description: This is fee currency code in ISO 4217 format.
+          example: USD
+    DebitDetails:
+      type: object
+      properties:
+        transactionDebitAmount:
+          type: number
+          description: The transaction debit amount.
+          format: double
+          example: 4500.25
+        currencyCode:
+          type: string
+          description: The currency code for the debit amount in ISO 4217
+          example: EUR
+    CreditDetails:
+      type: object
+      properties:
+        transactionCreditAmount:
+          type: number
+          description: The transaction credit amount
+          format: double
+          example: 19178.72
+        currencyCode:
+          type: string
+          description: The currency code for the credit amount in ISO 4217
+          example: PLN
+    UpdatePaymentInitiationTransactionRepeatingPaymentsConfirmationRequest:
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow id is used to control the flow for subsequent
+            requests in the session.
+          example: 6e3774334f724a2b7947663653712f52456f524c41797038516a59347a437549564a77755676376e616a733d
+    UpdatePaymentInitiationTransactionRepeatingPaymentsConfirmationResponse:
+      required:
+      - accountId
+      - transactionReferenceId
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: "The account identifier in encrypted format.Typically, this\
+            \ is not displayed to the customer."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+        transactionReferenceId:
+          type: string
+          description: The unique SI reference Id used to identify the payee type/
+            transfer from all the other transfers
+          example: BIMI51807310002051
+        transactionAmount:
+          type: number
+          description: Transaction amount in local currency.
+          format: double
+          example: 4500.25
+        futureDatedTransaction:
+          $ref: "#/components/schemas/FutureDatedTransaction"
+        standingInstruction:
+          $ref: "#/components/schemas/StandingInstruction"
+        remarks:
+          type: string
+          description: Bill payment notes. Free text from screen.
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the erro
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string

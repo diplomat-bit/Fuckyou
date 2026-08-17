@@ -1,0 +1,2718 @@
+openapi: 3.0.1
+info:
+  title: OnboardingApplicationMaintenance_EMEA_OpenAPI
+  description: This API is used to perform the maintenance of the onboarding application
+  version: 1.9.0
+  x-linked-api: "ApplicationAdd, ApplicationUpdate, FinalSubmit, ApplicationInquiry,\
+    \ ApplicationStatus"
+servers:
+- url: https://127.0.0.1/openapi/v1/emea/onboarding/applications
+paths:
+  /:
+    post:
+      tags:
+      - Acquisitions_Application Management_Application Submission and Tracking
+      summary: Create Unsecured Credit Application
+      description: This API pre-populates an application for card and banking products
+        with the applicant's details. The API will then return an application id that
+        can be used to perform actions on the application and check status.
+      parameters:
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/countryCode"
+      - $ref: "#/components/parameters/businessCode"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/Accept-Language"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        description: Input Data to submit the application.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationAddRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationAddResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>singleProductAllowed</td><td>Only
+            1 product allowed in the request</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr><tr><td>invalid</td><td>productAgreementExpired</td><td>Agreement
+            duration of this product is expired</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td><td>More
+            Info</td></tr><tr><td>invalid</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td><td>Channel/Country/Business
+            provided in the request is not supported currently</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+      x-codegen-request-body-name: ApplicationAddRequest
+  /{applicationId}:
+    get:
+      tags:
+      - Acquisitions_Application Management_Application Submission and Tracking
+      summary: Retrieve Application
+      description: This API is used to retrieve the existing application details
+      parameters:
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/countryCode"
+      - $ref: "#/components/parameters/businessCode"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/Accept-Language"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: applicationId
+        in: path
+        description: Unique ID created for an Application. This is retuned back in
+          ApplicationAdd response and the same should be passed here.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: withOfferFlag
+        in: query
+        description: 'Offer flag indicates whether you want to include the offer details
+          in the response.If true it will return the offer details in the response '
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: controlFlowId
+        in: query
+        description: Control flow id is used to control the flow for subsequent requests
+          in the session.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationInquiryResponse"
+        "400":
+          description: <table><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td><td>More
+            Info</td></tr><tr><td>invalid</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>invalidApplication</td><td>Application
+            not found or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+    put:
+      tags:
+      - Acquisitions_Application Management_Application Submission and Tracking
+      summary: Update Unsecured Credit Application
+      description: This API returns the application details and status for a specific
+        application id after a successful Multi Factor Authentication.
+      parameters:
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/countryCode"
+      - $ref: "#/components/parameters/businessCode"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/Accept-Language"
+      - $ref: "#/components/parameters/Content-Type"
+      - name: x-jws-signature
+        in: header
+        description: "This field is signature generated when partner sign API payload.This\
+          \ signature will be used to validate that the call is coming from a valid\
+          \ partner. This signature is a JWT token, which will be validated with partner’\
+          s JWK stored in DB"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - $ref: "#/components/parameters/clientDetails"
+      - name: applicationId
+        in: path
+        description: Unique ID created for an Application. This is retuned back in
+          ApplicationAdd response and the same should be passed here.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Input Data to submit the application.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationUpdateResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr><tr><td>invalid</td><td>productAgreementExpired</td><td>Agreement
+            duration of this product is expired</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td><td>More
+            Info</td></tr><tr><td>invalid</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>invalidApplication</td><td>Application
+            not found or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+      x-codegen-request-body-name: ApplicationUpdateRequest
+  /{applicationId}/submission:
+    post:
+      tags:
+      - Acquisitions_Application Management_Application Submission and Tracking
+      summary: Application Submission
+      description: This API submits the created application to host systems for a
+        particular application id.
+      parameters:
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/countryCode"
+      - $ref: "#/components/parameters/businessCode"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/Accept-Language"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: applicationId
+        in: path
+        description: Unique ID created for an Application. This is retuned back in
+          ApplicationAdd response and the same should be passed here.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: 'Final Submit Request '
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinalSubmitRequest"
+        required: true
+      responses:
+        "200":
+          description: The request has succeeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinalSubmitResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr><tr><td>error</td><td>applicationRejected</td><td>Application
+            not successful</td></tr><tr><td>invalid</td><td>productAgreementExpired</td><td>Agreement
+            duration of this product is expired</td></tr><tr><td>error</td><td>reAuthorizationRequired</td><td>Re
+            Authorization is required </td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td><td>More
+            Info</td></tr><tr><td>invalid</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>invalidApplication</td><td>Application
+            not found or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+      x-codegen-request-body-name: FinalSubmitRequest
+  /{applicationId}/status:
+    get:
+      tags:
+      - Acquisitions_Application Management_Application Submission and Tracking
+      summary: Retrieve Application Status
+      description: This API is used to retrieve the application status.
+      parameters:
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/countryCode"
+      - $ref: "#/components/parameters/businessCode"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/Accept-Language"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: applicationId
+        in: path
+        description: Unique identifier of an application
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: withOfferFlag
+        in: query
+        description: 'Offer flag indicates whether you want to include the offer details
+          in the response.If true it will return the offer details in the response '
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationStatusResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td><td>More
+            Info</td></tr><tr><td>invalid</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>invalidApplication</td><td>Application
+            not found or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorList"
+components:
+  schemas:
+    ApplicationAddRequest:
+      type: object
+      properties:
+        authenticationReferenceNumber:
+          type: string
+          description: Authentication reference number associated with the authentication
+            request.
+        productDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        auditDetails:
+          $ref: "#/components/schemas/AuditDetails"
+        referralTracking:
+          $ref: "#/components/schemas/ReferralTracking"
+        applicant:
+          $ref: "#/components/schemas/Applicant"
+    ReferralTracking:
+      type: object
+      properties:
+        referralOrganizationId:
+          type: string
+          description: "Unique identifier that refers to source of the Media organization\
+            \  from where the URL is redirected. Example can be  Facebook,Google,Yandex\
+            \ etc."
+          example: Google
+        trackingId:
+          type: string
+          description: "Unique tracking reference number for third party redirection/internal\
+            \ redirection.Example would be  ecid for UAE, yclid for Russia Yandex,\
+            \ icid for internal Citibank site."
+          example: icid
+        searchQuery:
+          type: string
+          description: The string with which the applicant searched for the information
+            in different search engines like Google/Yandex etc.
+        searchResultRanking:
+          type: string
+          description: Search result display position.
+    Product:
+      type: object
+      properties:
+        productCategory:
+          type: string
+          description: Product category of the product
+        productCode:
+          type: string
+          description: A unique code that identifies the product.
+        sourceCode:
+          type: string
+          description: A source code to identify the product
+        organization:
+          type: string
+          description: Card issuing organization name
+        logo:
+          type: string
+          description: Product logo to identify the product
+        marketingCampaignOfferDetails:
+          $ref: "#/components/schemas/MarketingCampaignOfferDetails"
+    MarketingCampaignOfferDetails:
+      type: object
+      properties:
+        campaignId:
+          type: string
+          description: Campaign Id of the marketing campaign
+        waveId:
+          type: string
+          description: Wave id  associated with the marketing wave
+        offerId:
+          type: string
+          description: Unique offer id associated with the offer
+    AuditDetails:
+      type: object
+      properties:
+        userIpAddress:
+          type: string
+          description: IP Address of the system from which applicant is opening an
+            account. If captured by Vendor then can be sent else can be ignored.
+    Applicant:
+      type: object
+      properties:
+        ocr:
+          $ref: "#/components/schemas/Ocr"
+        motherMaidenName:
+          type: string
+          description: Mothers maiden name
+        customerId:
+          type: string
+          description: Customer ID is a key associated with a specific entity or person
+            Citi does business or has a relationship
+        name:
+          $ref: "#/components/schemas/Name"
+        demographics:
+          $ref: "#/components/schemas/Demographics"
+        address:
+          type: array
+          items:
+            $ref: "#/components/schemas/Address"
+        email:
+          type: array
+          items:
+            $ref: "#/components/schemas/Email"
+        phone:
+          type: array
+          items:
+            $ref: "#/components/schemas/Phone"
+        contactPreference:
+          $ref: "#/components/schemas/ContactPreference"
+        contactConsent:
+          $ref: "#/components/schemas/ContactConsent"
+        financialInformation:
+          $ref: "#/components/schemas/FinancialInformation"
+        education:
+          $ref: "#/components/schemas/Education"
+        employmentInformation:
+          $ref: "#/components/schemas/EmploymentInformation"
+        identificationDocumentDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/IdentificationDocumentDetails"
+        additionalData:
+          $ref: "#/components/schemas/AdditionalData"
+        referencePerson:
+          $ref: "#/components/schemas/ReferencePerson"
+        consentDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConsentDetails"
+        selfDeclaration:
+          $ref: "#/components/schemas/SelfDeclaration"
+        kycInformation:
+          $ref: "#/components/schemas/KycInformation"
+        externalLoansAndLines:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExternalLoansAndLines"
+    Ocr:
+      type: object
+      properties:
+        ocrReferenceNumber:
+          type: string
+          description: OCR (Optical Character Recognition) Reference number
+    Name:
+      type: object
+      properties:
+        salutation:
+          type: string
+          description: "Salutation. This a reference data field. Please use /utilities/referenceData/{salutation}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        givenName:
+          type: string
+          description: Given/first name of the applicant
+        middleName:
+          type: string
+          description: Middle name of the applicant
+        surname:
+          type: string
+          description: Surname/last name of the applicant
+        previousGivenName:
+          type: string
+          description: Applicant's previous first name.
+        previousMiddleName:
+          type: string
+          description: Applicant's previous middle name.
+        previousSurname:
+          type: string
+          description: Applicant's previous Surname.
+        localEnglishGivenName:
+          type: string
+          description: Local Given Name in English
+        localEnglishSurname:
+          type: string
+          description: Local surname in English
+        aliasName:
+          type: string
+          description: Alias name of the applicant
+        suffix:
+          type: string
+          description: Generational qualifier that follow a person given name. It
+            is used to explicitly identify the named individual within the same family.
+        saluteBy:
+          type: string
+          description: "Contains value with which applicant like to be addressed.\
+            \ This a reference data field. Please use /utilities/referenceData/{saluteBy}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+    Demographics:
+      type: object
+      properties:
+        gender:
+          type: string
+          description: "Gender/sex. This a reference data field. Please use /utilities/referenceData/{gender}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        dateOfBirth:
+          type: string
+          description: Applicants date of birth in  ISO 8601 date format YYYY-MM-DD
+          format: date
+        placeOfBirth:
+          type: string
+          description: Applicants place of birth
+        countryOfBirth:
+          type: string
+          description: "Applicants Country of birth. This a reference data field.\
+            \ Please use /utilities/referenceData/{countryName} resource to get valid\
+            \ values of this field with descriptions. You can use the fieldname as\
+            \ the referenceCode parameter to retrieve the values."
+        religion:
+          type: string
+          description: Name of religion applicant belong to
+        nationality:
+          type: string
+          description: "Applicants nationality. This a reference data field. Please\
+            \ use /utilities/referenceData/{countryName} resource to get valid values\
+            \ of this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        domicileCountryCode:
+          type: string
+          description: "Domicile country code. This a reference data field. Please\
+            \ use /utilities/referenceData/{countryName} resource to get valid values\
+            \ of this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        permanentResidencyCountryCode:
+          type: string
+          description: "Permanent residency country code. This a reference data field.\
+            \ Please use /utilities/referenceData/{countryName} resource to get valid\
+            \ values of this field with descriptions. You can use the fieldname as\
+            \ the referenceCode parameter to retrieve the values."
+        maritalStatus:
+          type: string
+          description: "Marital status. This a reference data field. Please use /utilities/referenceData/{martialStatusCode}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        residencyStatus:
+          type: string
+          description: "Indicate status of residence. This a reference data field.\
+            \ Please use /utilities/referenceData/{residenceStatus} resource to get\
+            \ valid values of this field with descriptions. You can use the fieldname\
+            \ as the referenceCode parameter to retrieve the values."
+        residenceType:
+          type: string
+          description: "Type of Residence. This a reference data field. Please use\
+            \ /utilities/referenceData/{residenceType} resource to get valid values\
+            \ of this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        residenceIndicator:
+          type: string
+          description: "Applicants permanent residency status.Ex:NON-RESIDENT.This\
+            \ a reference data field. Please use /utilities/referenceData/{permenentIndicator}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        residenceDurationInYears:
+          type: number
+          description: Applicants Residence duration in the current address in years
+        residenceDurationInMonths:
+          type: number
+          description: Applicants Residence duration in the current address in months
+        taxDomicileCountryCode:
+          type: string
+          description: "Tax domicile country code. This a reference data field. Please\
+            \ use /utilities/referenceData/{countryName} resource to get valid values\
+            \ of this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        spokenLanguageCode:
+          type: string
+          description: "Code for spoken language of applicant. This a reference data\
+            \ field. Please use /utilities/referenceData/{spokenLanguageCode} resource\
+            \ to get valid values of this field with descriptions. You can use the\
+            \ fieldname as the referenceCode parameter to retrieve the values."
+        correspondenceLanguageCode:
+          type: string
+          description: "Code for correspondence language of applicant.This a reference\
+            \ data field. Please use /utilities/referenceData/{correspondenceLanguageCode}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        creditBureauHistoryCode:
+          type: string
+          description: Unique Customer identifier provided to the applicant by the
+            bureau. In case Russia it is issued by CKKI (Central Catalogue of Credit
+            Histories – division of Russia Central Bank).
+        otherTaxDomicileCountryCodes:
+          type: array
+          description: "Other tax domicile country codes.This field can store upto\
+            \ 5 country codes.This a reference data field. Please use /utilities/referenceData/{countryName}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+          items:
+            type: string
+        usCitizenshipFlag:
+          type: boolean
+          description: Flag to indicate if the applicant is an USA Citizen.Valid values
+            are true and false.
+          example: true
+        usTaxResidentFlag:
+          type: boolean
+          description: Flag to indicate if the applicant is a US Tax resident.Valid
+            values are true and false.
+          example: true
+    Address:
+      type: object
+      properties:
+        addressType:
+          type: string
+          description: "Type of address. This a reference data field. Please use /utilities/referenceData/{addressType}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        addressLine1:
+          type: string
+          description: Address line 1
+        addressLine2:
+          type: string
+          description: Address line 2
+        addressLine3:
+          type: string
+          description: Address line 3
+        addressLine4:
+          type: string
+          description: Address line 4
+        cityName:
+          type: string
+          description: City
+        state:
+          type: string
+          description: State.
+        postalCode:
+          type: string
+          description: Postal/ZIP code
+        provinceCode:
+          type: string
+          description: "Province code.This a reference data field. Please use /utilities/referenceData/{provinceCode}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        countryCode:
+          type: string
+          description: "ISO country code. This a reference data field. Please use\
+            \ /utilities/referenceData/{countryName} resource to get valid values\
+            \ of this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        okToMail:
+          type: string
+          description: "Applicants consent for receiving mail. Valid values: true\
+            \ and false"
+        coverageAreaCode:
+          type: string
+          description: Coverage area code.
+        kladrCode:
+          type: string
+          description: High level kladr code. KLADR refers to Russian postal address
+            database.
+        structuredAddress:
+          $ref: "#/components/schemas/StructuredAddress"
+    StructuredAddress:
+      type: object
+      properties:
+        unitNumber:
+          type: string
+          description: Unit Number
+        floorNumber:
+          type: string
+          description: Floor Number
+        blockNumber:
+          type: string
+          description: Block Number
+        buildingName:
+          type: string
+          description: Building Name
+        estateName:
+          type: string
+          description: Estate Name
+        streetNumber:
+          type: string
+          description: Street Number
+        streetName:
+          type: string
+          description: Street Name
+        streetType:
+          type: string
+          description: Street Type
+        town:
+          type: string
+          description: Town
+    Email:
+      type: object
+      properties:
+        emailType:
+          type: string
+          description: "The type of email.  This is a reference data field. Please\
+            \ use /v1/apac/utilities/referenceData/{emailType} resource to get valid\
+            \ value of this field with description. You can use emailType as the referenceCode\
+            \ parameter to retrieve the values "
+          example: PERSONAL
+        emailAddress:
+          type: string
+          description: Email Id of applicant
+        okToEmail:
+          type: boolean
+          description: "Applicants consent for receiving email. Valid values: true\
+            \ and false"
+        isPreferredEmailAddress:
+          type: boolean
+          description: "Flag to mark preferred email. Valid values: true and false"
+    Phone:
+      type: object
+      properties:
+        phoneType:
+          type: string
+          description: "The type of phone. Ex:OFFICE, HOME, MOBILE, PRIMARY_MOBILE,\
+            \ FAX. This a reference data field. Please use /utilities/referenceData/{phoneType}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        phoneCountryCode:
+          type: string
+          description: Country code of telephone number
+        areaCode:
+          type: string
+          description: The area code of telephone number
+        phoneNumber:
+          type: string
+          description: The phone number of applicant
+        extension:
+          type: string
+          description: Extension of telephone number
+        okToSms:
+          type: string
+          description: "Applicants consent for receiving sms. This is applicable only\
+            \ if phone type is MOBILE. Valid values: true and false"
+        okToCall:
+          type: string
+          description: "Applicants consent for receiving phone calls. Valid values:\
+            \ true and false"
+    ContactPreference:
+      type: object
+      properties:
+        sendSmsAdviceFlag:
+          type: boolean
+          description: "Applicants subscribtion for receiving advices through SMS.\
+            \ Valid values: true and false"
+        sendEmailAdviceFlag:
+          type: boolean
+          description: "Applicants subscribtion for receiving advices through email.\
+            \ Valid values: true and false"
+        preferredMailingAddress:
+          type: string
+          description: Preferred Mailing Address by applicant.
+        eStatementEnrollmentFlag:
+          type: boolean
+          description: "Applicants subscribtion for receiving statement over email.\
+            \ Valid values: true and false"
+    ContactConsent:
+      type: object
+      properties:
+        okToCall:
+          type: string
+          description: "Applicants consent for receiving phone calls. Valid values:\
+            \ true and false"
+        okToMail:
+          type: string
+          description: "Applicants consent for receiving mails. Valid values: true\
+            \ and false"
+        okToSms:
+          type: string
+          description: "Applicants consent for receiving sms. Valid values: true and\
+            \ false"
+    FinancialInformation:
+      type: object
+      properties:
+        externalBankAccountNumber:
+          type: string
+          description: It is the applicant declared existing account number with other
+            banks
+          example: AE07 0331 2345 6789 0123 456
+        expenseDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExpenseDetails"
+        incomeDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/IncomeDetails"
+        surrogateIncomeDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/SurrogateIncomeDetails"
+        incomeVerificationSourceDetail:
+          type: string
+          description: "Applicant's financial income source detail. Ex: Salary certificate,payroll\
+            \ transfer.This a reference data field. Please use /utilities/referenceData/{incomeVerificationSource}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+          example: SC
+    SurrogateIncomeDetails:
+      type: object
+      properties:
+        ownCarFlag:
+          type: boolean
+          description: "Flag indicating, If the applicant owns a car."
+        carBrandName:
+          type: string
+          description: "Brand name associated with the car.This is a reference data\
+            \ field. Please use /utilities/referenceData/{carBrandName} resource to\
+            \ get valid values of this field with descriptions. You can use the fieldname\
+            \ as the referenceCode parameter to retrieve the values."
+        carModelName:
+          type: string
+          description: Model Name of the car.
+        carManufactureYear:
+          type: number
+          description: The year in which the car was manufactured.Format is YYYY
+          example: 2016.0
+        recentAbroadTravelFlag:
+          type: boolean
+          description: "Flag indicating, If the customer has travelled abroad in recent\
+            \ past."
+        travelledCountryCodeDetails:
+          type: array
+          description: "Country code of the countries to which applicant travelled.This\
+            \ a reference data field. Please use /utilities/referenceData/{countryName}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+          items:
+            type: string
+    ExpenseDetails:
+      type: object
+      properties:
+        expenseType:
+          type: string
+          description: "Expense type. This a reference data field. Please use /utilities/referenceData/{expenseType}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        expenseAmount:
+          type: number
+          description: Expenditure amount for an applicant
+          format: double
+        shareExpenseIndicator:
+          type: string
+          description: Flag to identify expenditue if it is shared
+        frequency:
+          type: string
+          description: "Expense Frequency. This a reference data field. Please use\
+            \ /utilities/referenceData/{frequency} resource to get valid values of\
+            \ this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+    IncomeDetails:
+      type: object
+      properties:
+        incomeType:
+          type: string
+          description: "Income type. This a reference data field. Please use /utilities/referenceData/{incomeType}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        fixedAmount:
+          type: number
+          description: Fixed income amount of applicant
+          format: double
+        variableAmount:
+          type: number
+          description: Variable income amount of appliacnt
+          format: double
+        currencyCode:
+          type: string
+          description: "Currency Code in ISO 4217 format.This is a reference data\
+            \ field. Please use /utilities/referenceData/{currency} resource to get\
+            \ valid values of this field with descriptions. You can use the fieldname\
+            \ as the referenceCode parameter to retrieve the values."
+          example: SGD
+        frequency:
+          type: string
+          description: "Income Frequency. This a reference data field. Please use\
+            \ /utilities/referenceData/{frequency} resource to get valid values of\
+            \ this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        otherIncomeDescription:
+          type: string
+          description: Description of income from other sources
+    Education:
+      type: object
+      properties:
+        highestEducationLevel:
+          type: string
+          description: "Highest education level of the applicant. This a reference\
+            \ data field. Please use /utilities/referenceData/{highestEducationLevel}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        yearOfGraduation:
+          type: string
+          description: Year of completing graduation. This is required if applicant
+            is a student
+        studentId:
+          type: string
+          description: Unique ID of the student. This is required if applicant is
+            a student
+        university:
+          type: string
+          description: "University name. This a reference data field. Please use /utilities/referenceData/{university}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+    EmploymentInformation:
+      type: object
+      properties:
+        totalWorkExperienceInYears:
+          type: number
+          description: Total work experience of the applicant in years
+        totalWorkExperienceInMonths:
+          type: number
+          description: Total work experience of the applicant in months
+        employmentDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmploymentDetails"
+    EmploymentDetails:
+      type: object
+      properties:
+        employmentIndicator:
+          type: string
+          description: "Employment indicator of the employee to indicate if its current\
+            \ employment,previous employment etc"
+        employerName:
+          type: string
+          description: Name of the Employer.
+        employerFullName:
+          type: string
+          description: Full Name of the Employer.
+        employerRegistrationNumber:
+          type: string
+          description: Employer Registration number
+          example: "1027700035769"
+        employerTaxRegistrationNumber:
+          type: string
+          description: Employer tax registration number
+          example: "7708004767"
+        numberOfEmployees:
+          type: string
+          description: "Total number of associates employed by the employer.This is\
+            \ a reference data field. Please use /utilities/referenceData/{numberOfEmployees}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        employerWebSiteAddress:
+          type: string
+          description: Website Address/URL details of employer's website.
+        jobTitle:
+          type: string
+          description: "Job Title. This a reference data field. Please use /utilities/referenceData/{jobTitle}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        occupationCode:
+          type: string
+          description: "Occupation code. This a reference data field. Please use /utilities/referenceData/{occupationCode}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        industryCode:
+          type: string
+          description: "Code of the industry of employment. This a reference data\
+            \ field. Please use /utilities/referenceData/{industryCode} resource to\
+            \ get valid values of this field with descriptions. You can use the fieldname\
+            \ as the referenceCode parameter to retrieve the values."
+        selfEmploymentCode:
+          type: string
+          description: "Indicates whether applicant is self employed or not. This\
+            \ a reference data field. Please use /utilities/referenceData/{employmentStatus}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        employmentDurationInYears:
+          type: string
+          description: Employment duration in years
+        employmentDurationiInMonths:
+          type: string
+          description: Employment duration in months
+        employerStatus:
+          type: string
+          description: "Status of the employer. This a reference data field. Please\
+            \ use /utilities/referenceData/{emprStatus} resource to get valid values\
+            \ of this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        salaryPaymentDay:
+          type: number
+          description: Salary payment day is the day when the salary is credited to
+            the applicant
+    IdentificationDocumentDetails:
+      type: object
+      properties:
+        idType:
+          type: string
+          description: "Type of Identification document. This a reference data field.\
+            \ Please use /utilities/referenceData/{idType} resource to get valid values\
+            \ of this field with descriptions"
+        idNumber:
+          type: string
+          description: "Unique identifier of identificaiton document. Ex: Passport\
+            \ Number"
+        idExpiryDate:
+          type: string
+          description: Expiry date of identification document in ISO 8601 date format
+            YYYY-MM-DD
+          format: date
+        idIssueDate:
+          type: string
+          description: Issuance date of identification document in ISO 8601 date format
+            YYYY-MM-DD
+          format: date
+        idIssuePlace:
+          type: string
+          description: Identification document issuance place
+        idIssueState:
+          type: string
+          description: State from which identification document was issued
+        idIssueCountry:
+          type: string
+          description: "Country of issuance. This a reference data field. Please use\
+            \ /utilities/referenceData/{countryName} resource to get valid values\
+            \ of this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        idIssuingAuthority:
+          type: string
+          description: "Authority which issued the identification document. This a\
+            \ reference data field. Please use /utilities/referenceData/{idIssuingAuthority}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        isPrimaryId:
+          type: boolean
+          description: "Flag to mark primary identification document. Valid values:\
+            \ true and false"
+    AdditionalData:
+      type: object
+      properties:
+        numberOfChildren:
+          type: number
+          description: Number of children
+        numberOfDependents:
+          type: number
+          description: Number of dependents
+        staffIndicator:
+          type: boolean
+          description: "Flag to indicates if applicant is a Citi Staff. Valid values:\
+            \ true and false"
+        businessNature:
+          type: string
+          description: Business nature of the applicant
+        emergencyContactName:
+          type: string
+          description: Emergency Contact Name
+        emergencyContactPhoneNumber:
+          type: string
+          description: Emergency Contact Number.
+        overLimitConsentFlag:
+          type: boolean
+          description: "Customer Conset on spending more then the limit assigned to\
+            \ him. Valid values: true and false"
+        bumiputraIndicator:
+          type: boolean
+          description: "Bumiputra indicator. Valid values: true and false. Applicable\
+            \ to malaysia only"
+        ethnicGroup:
+          type: string
+          description: Ethnic group.
+        disabilityIndicator:
+          type: string
+          description: "The instruments issued to applicants are provided with special\
+            \ needs like brailed characters on statements. Valid values: true and\
+            \ false. Applicable to Singapore only"
+        unionPayCardNumber:
+          type: string
+          description: Applicants union pay card number to link the product and applicable
+            to China only
+        taxFileNumber:
+          type: string
+          description: Applicants tax file number to link the product and applicable
+            to Australia only
+        referralGivenName:
+          type: string
+          description: Referral First Name.
+        referralSurname:
+          type: string
+          description: Referral Surname/Last Name.
+        taxType:
+          type: string
+          description: "Tax Type of a country.This a reference data field. Please\
+            \ use /utilities/referenceData/{taxType} resource to get valid values\
+            \ of this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        numberOfPersonsInHousehold:
+          type: string
+          description: Number of persons staying in the house
+        numberOfEarningPersonsInHouseHold:
+          type: string
+          description: Number of earning members in the house.
+        spouseConsentLoanAmount:
+          type: number
+          description: Requested loan amount on which spouse consent was gathered
+            during the application processing. The value can be more or less than
+            the actual requested loan amount.
+          format: double
+          example: 10000.0
+        periodInCountryInYears:
+          type: string
+          description: "Period in country in years, this value may be different from\
+            \ number of years of residence in the country."
+        periodInCountryInMonths:
+          type: string
+          description: "Period in country in months, this value maybe different from\
+            \ number of months of residence in the country."
+    ReferencePerson:
+      type: object
+      properties:
+        referencePersonType:
+          type: string
+          description: "Reference person type would capture the type of reference\
+            \ whether it is local reference type or home country reference type.This\
+            \ a reference data field. Please use /utilities/referenceData/{referencePersonType}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        givenName:
+          type: string
+          description: Given/first name of the reference person.
+          example: Diana Hyden
+        surname:
+          type: string
+          description: Surname/last name of the reference person.
+          example: Charles
+    ConsentDetails:
+      type: object
+      properties:
+        consentType:
+          type: string
+          description: "Applicants consent types. This a reference data field. Please\
+            \ use /utilities/referenceData/{consentType} resource to get valid values\
+            \ of this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        isConsentGiven:
+          type: boolean
+          description: "Consent flag. Valid values: true and false"
+    SelfDeclaration:
+      type: object
+      properties:
+        totalActiveCreditCardLimitAmount:
+          type: number
+          description: Total active credit card amount
+          format: double
+        anticipatedIncomeDecreaseIndicator:
+          type: string
+          description: "Anticipated income decrease code. Valid values: Yes and No"
+        loanTakenIndicator:
+          type: boolean
+          description: "To indicate if a loan has been taken previously. Valid values:\
+            \ true and false"
+        bankruptcyDetails:
+          $ref: "#/components/schemas/BankruptcyDetails"
+        beneficiaryFlag:
+          type: boolean
+          description: "Flag indicating, If the applicant has any beneficiary."
+    BankruptcyDetails:
+      type: object
+      properties:
+        bankruptcyStatus:
+          type: string
+          description: "Bankrupcy status of the applicant if he has been bankrupt.This\
+            \ a reference data field. Please use /utilities/referenceData/{bankruptcyStatus}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values"
+        bankruptcyDeclaredYear:
+          type: string
+          description: Bankruptcy declaring of the applicant if he has been bankrupt
+        bankruptcyDeclaredEndYear:
+          type: string
+          description: Bankruptcy declaring end year of the applicant if he has been
+            bankrupt
+    KycInformation:
+      type: object
+      properties:
+        selfPublicFigureDeclarationFlag:
+          type: boolean
+          description: "Flag for self declaration if applicant is public figure. Valid\
+            \ values: true and false"
+        publicFigureOfficeStatus:
+          type: string
+          description: Flag for status of public office if applicant is public figure
+        publicFigureOfficeDetails:
+          type: string
+          description: Office details if applicant is public figure
+        publicFigureOfficeStartDate:
+          type: string
+          description: Public figure office start date in ISO 8601 date format YYYY-MM-DD
+          format: date
+        publicFigureOfficeEndDate:
+          type: string
+          description: Public figure office end date in ISO 8601 date format YYYY-MM-DD
+          format: date
+        isRelatedToSeniorPublicFigure:
+          type: boolean
+          description: "Self declaration if applicant has any relation with senior\
+            \ public figure. Valid values: true and false"
+        relatedSeniorPublicFigureName:
+          type: string
+          description: Senior Public Figure Name
+        relatedSpfCountryOfGovernment:
+          type: string
+          description: Senior Public Figure Country of Government
+        relatedSeniorPublicFigureDepartment:
+          type: string
+          description: Department Senior Public Figure belongs to
+        relationshipWithSeniorPublicFigure:
+          type: string
+          description: Senior Public Figure relationship with applicant
+        relatedSeniorPublicFigureLastName:
+          type: string
+          description: Senior Public Figure Last Name
+        usTaxStatus:
+          type: string
+          description: "US Tax status. This a reference data field. Please use /utilities/referenceData/{usTaxStatus}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        monthlyRepaymentForAllExtLoans:
+          type: number
+          description: Customer to declare the External Loan Monthly Payments and
+            applicable to Malaysia only
+          format: double
+        usTaxId:
+          type: string
+          description: US Tax ID
+        wealthSources:
+          type: array
+          description: Source of wealth
+          items:
+            $ref: "#/components/schemas/SourceOfWealth"
+        fundSources:
+          type: array
+          description: Source of funds
+          items:
+            $ref: "#/components/schemas/SourceOfFund"
+        accountPurposes:
+          type: array
+          description: Purposes of the account
+          items:
+            $ref: "#/components/schemas/AccountPurpose"
+    AccountPurpose:
+      type: object
+      properties:
+        accountPurpose:
+          type: string
+          description: "Account purpose declared by applicant.This is a reference\
+            \ data field. Please use /v1/utilities/referenceData/{purposeOfAccount}\
+            \ resource to get possible value of this field with description."
+          example: CASH
+    SourceOfWealth:
+      type: object
+      properties:
+        sourceOfWealth:
+          type: string
+          description: "Source of wealth declared by applicant.This is a reference\
+            \ data field. Please use /v1/apac/utilities/referenceData/{sourceOfWealth}\
+            \ resource to get possible value of this field"
+    SourceOfFund:
+      type: object
+      properties:
+        sourceOfFund:
+          type: string
+          description: "Fund source declared by applicant.This is a reference data\
+            \ field. Please use /v1/apac/utilities/referenceData/{sourceOfFund} resource\
+            \ to get possible value of this field with"
+    ExternalLoansAndLines:
+      type: object
+      properties:
+        debtType:
+          type: string
+          description: "Debt type of the financial instrument.Debt comprises financial\
+            \ obligations for which creditors do not have recourse to the assets of\
+            \ the borrower to satisfy their claims.Common types of debt owed by individuals\
+            \ and households include mortgage loans, car loans, and credit card debt.\
+            \ This a reference data field. Please use /utilities/referenceData/{manageTradelineCategory}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values."
+        considerForConsolidationFlag:
+          type: boolean
+          description: "This flag is set to true, If the applicant considers to take\
+            \ the new loan from CITI to close this loan"
+        debtPurpose:
+          type: string
+          description: "Purpose of the debt.This a reference data field. Please use\
+            \ /utilities/referenceData/{loanType} resource to get valid values of\
+            \ this field with descriptions. You can use the fieldname as the referenceCode\
+            \ parameter to retrieve the values."
+        outstandingAmount:
+          type: number
+          description: Outstanding loan amount in the trade line/loan
+          format: double
+        originalApprovedAmount:
+          type: number
+          description: Original loan/line amount available for the applicant to be
+            availed. In case of loan its the original loan amount and in case of credit
+            line its original credit line amount available for the applicant
+          format: double
+        instalmentAmount:
+          type: number
+          description: Instalment loan amount of the trade line/loan
+          format: double
+        accountNumber:
+          type: string
+          description: Loan Account Number availed by the applicant
+        tenor:
+          type: string
+          description: Tenor of the loan availed by the applicant
+        bankDetails:
+          $ref: "#/components/schemas/BankDetails"
+    BankDetails:
+      type: object
+      properties:
+        bankCode:
+          type: string
+          description: "Code assigned by a central bank, a bank supervisory body or\
+            \ a Bankers Association in a country to all its licensed member banks\
+            \ or financial institutions.This a reference data field. Please use /utilities/referenceData/{bankCode}\
+            \ resource to get valid values of this field with descriptions. You can\
+            \ use the fieldname as the referenceCode parameter to retrieve the values"
+        branchCode:
+          type: string
+          description: Branch Code of the branch which hold the account.
+        bankRoutingNumber:
+          type: string
+          description: Bank routing number is the number used to determine where to
+            route funds to or from.
+    ApplicationAddResponse:
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow id is used to control the flow for subsequent
+            requests in the session..
+          example: "2345"
+        applicationId:
+          type: string
+          description: Unique identifier for the application
+        applicantId:
+          type: string
+          description: Unique identifier for each applicant
+        applicationStage:
+          type: string
+          description: "Application Stage of an Application.This a reference data\
+            \ field. Please use /utilities/referenceData/{applicationStage} resource\
+            \ to get valid values of this field with descriptions. You can use the\
+            \ fieldname as the referenceCode parameter to retrieve the values"
+        existingApplicationFlag:
+          type: boolean
+          description: If Existing application flag is set to Y this indicates that
+            there is an existing application under the applicant
+        documentRepositoryReferenceNumber:
+          type: string
+          description: Barcode number which is linked to the loan contract and the
+            document repository.
+          example: RN6CU3322823
+    ErrorList:
+      type: object
+      properties:
+        errors:
+          type: array
+          description: List of one or more errors
+          items:
+            $ref: "#/components/schemas/ErrorResponse"
+    ApplicationUpdateRequest:
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow id is used to control the flow for subsequent
+            requests in the session..
+          example: "2345"
+        productDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        auditDetails:
+          $ref: "#/components/schemas/AuditDetails"
+        applicant:
+          $ref: "#/components/schemas/Applicant"
+    ApplicationUpdateResponse:
+      type: object
+      properties:
+        applicationId:
+          type: string
+          description: Unique identifier for the application
+        applicantId:
+          type: string
+          description: Unique identifier for each applicant
+        applicationStage:
+          type: string
+          description: "This a reference data field. Please use /v1/utilities/referenceData/{applicationStage}\
+            \ resource to get valid values of this field with descriptions."
+    ProviderInfo:
+      required:
+      - code
+      - detail
+      type: object
+      properties:
+        code:
+          type: string
+          description: "Codes for overridable host errors, warning messages, or additional\
+            \ info."
+        detail:
+          type: string
+          description: "Description for the host error, warning, or additional info."
+        fieldID:
+          type: string
+          description: "The ICR step which generated the host error, warning, or additional\
+            \ info."
+    RequestedProductDecision:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: A unique code that identifies the product
+          example: VC830
+        organisationCode:
+          type: string
+          description: Card issuing Organisation code
+          example: "888"
+        sourceCode:
+          type: string
+          description: A source code to identify the product
+          example: WW5ARCE1
+        creditDecision:
+          type: string
+          description: "Evaluated Applicant Credit Decision. Possible values: 000,002,003.\
+            \ 000 - APPROVED,003 - REJECTED,002 - REFERRED"
+          example: "000"
+        offerProductCategory:
+          type: string
+          description: "Product category associated with the offer.AM - Loan,PC -\
+            \ cards.This a reference data field. Please use /utilities/referenceData/{offerProductCategory}\
+            \ resource to get valid values of this field with descriptions."
+          example: AM
+        offerDocumentCriteria:
+          type: string
+          description: "Document category associated with the offer. Ex: WD(With Document),WO(Without\
+            \ Document).This a reference data field. Please use /utilities/referenceData/{documentCriteria}\
+            \ resource to get valid values of this field with descriptions."
+          example: WD
+        ipaRecommendation:
+          type: string
+          description: "IPA recommendation to the customer. Ex: 11 - PARTIAL,10 -\
+            \ FULL etc.Please use /utilities/referenceData/{ipaRecommendation} resource\
+            \ to get valid values of this field with descriptions."
+          example: "99"
+        offerSequenceId:
+          type: string
+          description: Unique offer sequence id to identify an offer
+          example: "99"
+        marketingOfferOriginatingBranchId:
+          type: string
+          description: Originating branch id of the citi bank branch where the marketing
+            offer was created.
+          example: "99"
+        marketingOfferCampaignId:
+          type: string
+          description: Campaign Id associated with the marketing offer.
+          example: CA13
+        marketingOfferWaveId:
+          type: string
+          description: Wave id associated with the marketing offer
+          example: IE12
+        creditSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditSpecificRecommendations"
+        loanSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanSpecificRecommendations"
+        requiredDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequiredDocuments"
+    CreditSpecificRecommendations:
+      type: object
+      properties:
+        recommendedCreditLimit:
+          type: number
+          description: Eligible Credit limit
+          format: double
+          example: 25000.0
+        btMaximumLoanPercentage:
+          type: number
+          description: Balance transfer maximum loan percentage. Applicable to Counter
+            and Cross-sell offers
+          format: double
+          example: 5.0
+        btMonthlyInterestRate:
+          type: number
+          description: Balance transfer monthly interest rate. Applicable to Counter
+            and Cross-sell offers
+          format: double
+          example: 500.0
+        eppMaximumLoanPercentage:
+          type: number
+          description: Equal payment plan max loan percentage. Applicable to Counter
+            and Cross-sell offers
+          format: double
+          example: 5.0
+        eppMonthlyInterestRate:
+          type: number
+          description: Equal payment plan monthly interest rate. Applicable to Counter
+            and Cross-sell offers
+          format: double
+          example: 5.0
+        btCampaignId:
+          type: string
+          description: Balance transfer CampaignId. Applicable to Counter and Cross-sell
+            offers.
+          example: "34543634"
+        eppPromoId:
+          type: string
+          description: "PromoId of equal payment plan. Applicable for ready credit,\
+            \ Counter and Cross-sell offers"
+          example: "34543634"
+        effectiveInterestRate:
+          type: number
+          description: The effective rate of interest applicable to product
+          format: double
+          example: 5.0
+        annualPercentageRate:
+          type: number
+          description: Applicable Annual Percentage Rate on the product
+          format: double
+          example: 5.0
+        totalRepaymentAmount:
+          type: number
+          description: Total repayment amount to be paid by the customer
+          format: double
+          example: 34543634
+        dailyInterestAmount:
+          type: number
+          description: Daily interest amount to be paid by the customer
+          format: double
+          example: 256.36
+        annualFeeAmount:
+          type: number
+          description: Annual fee amountis the amount paid by customer as the fixed
+            processing charges every year.
+          format: double
+          example: 256.36
+        creditApprovalExpiryDate:
+          type: string
+          description: Credit Approval Expiry Date by CDE for credit specific recommendation
+          format: date
+          example: 1972-09-15
+        creditApprovalExpiredFlag:
+          type: boolean
+          description: Flag to indicate if the Credit Approval is expired.Valid values
+            are true and false.
+          example: true
+        eligibleForEqualPaymentPlanFlag:
+          type: boolean
+          description: Flag to indicate if customer is eligible to avail of the Equal
+            Payment Plan (EPP) for the credit card.
+          example: true
+        equalPaymentPlanId:
+          type: string
+          description: Plan id for the Equal Payment Plan which will be used to retrieve
+            the promo id and applicable APR (annual percentage rate) for the EPP.
+          example: "10021"
+    LoanSpecificRecommendations:
+      type: object
+      properties:
+        loanAmount:
+          type: number
+          description: Eligible Loan amount.
+          format: double
+          example: 25000.0
+        tenor:
+          type: string
+          description: "Tenor for the loan repayment. This a reference data field.\
+            \ Please use /utilities/referenceData/{tenor} resource to get valid values\
+            \ of this field with descriptions."
+          example: "45"
+        interestRate:
+          type: number
+          description: Interest rate of the loan
+          format: double
+          example: 5.0
+        handlingFee:
+          type: number
+          description: Handling fee to be paid.
+          format: double
+          example: 5.0
+        installmentAmount:
+          type: number
+          description: Installment amount to be paid. This is calculated without the
+            insurance amount.Insurance option is applicable for EMEA countries
+          format: double
+          example: 500.0
+        installmentAmountWithInsurance:
+          type: number
+          description: Installment amount to be paid. This is calculated with the
+            insurance amount.Insurance option is applicable for EMEA countries
+          format: double
+          example: 500.0
+        annualPercentageRate:
+          type: number
+          description: Applicable Annual Percentage Rate
+          format: double
+          example: 5.0
+        totalPrincipalAmount:
+          type: number
+          description: Total principal to be paid by customer
+          format: double
+          example: 5000.0
+        totalInterestAmount:
+          type: number
+          description: Total interest to be paid by customer
+          format: double
+          example: 500.0
+        totalInstallmentAmount:
+          type: number
+          description: Total installment amount to be paid by customer
+          format: double
+          example: 500.0
+        monthlyFeeAmount:
+          type: number
+          description: Monthly fee amount is the amount paid by customer as the fixed
+            processing charges every month
+          format: double
+          example: 500.0
+        insurancePremiumAmount:
+          type: number
+          description: Insurance premium amount is the i insurance amount paid by
+            customer for availing the insurance product against the loan
+          format: double
+          example: 500.0
+        pricingPlanId:
+          type: string
+          description: Pricing plan id is the unique id of pricing plan which is selected
+            by customer
+          example: "12354"
+        totalRepaymentAmount:
+          type: number
+          description: "Total repayment amount to be paid by the customer. Formula\
+            \ for calculating the value: EMI + Monthly Fee"
+          format: double
+          example: 500.0
+        grossLoanAmount:
+          type: number
+          description: "Gross loan amount is the total loan amount including upfront\
+            \ fee and the insurance(if availed by customer). Formula for calculating\
+            \ the value: Loan Amount + Upfront Fee (handling Fee) + Insurance"
+          format: double
+          example: 500.0
+        totalCostOfCreditWithoutInsurance:
+          type: number
+          description: "Total Cost of credit without the insurance amount for the\
+            \ tenor selected. Formula for calculating the value: (InstallmtAmtWithoutIns\
+            \ + Monthly Fee) * Tenor - Loan Amount"
+          format: double
+          example: 500.0
+        totalCostOfCreditWithInsurance:
+          type: number
+          description: "Total Cost of credit with the insurance amount for the tenor\
+            \ selected. Formula for calculating the value: (InstallmtAmtWithIns +\
+            \ Monthly Fee) * Tenor - Loan Amount"
+          format: double
+          example: 500.0
+        aprRetentionFlag:
+          type: boolean
+          description: Indicates if the loan is allowed for APR retention
+          example: true
+        creditApprovalExpiryDate:
+          type: string
+          description: Credit Approval Expiry Date by CDE for loan specific recommendation
+          format: date
+          example: 1972-09-15
+        repaymentScheduleIssueDate:
+          type: string
+          description: Repayment schedule start date in ISO 8601 date format YYYY-MM-DD
+          format: date
+          example: 1972-09-15
+        repaymentSchedule:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepaymentSchedule"
+        handlingFeePercentage:
+          type: string
+          description: Handling fee percentage for the loan processing. Its represented
+            as the percentage of the loan amount
+          example: "1"
+        maximumInstallmentAmount:
+          type: number
+          description: Maximum installment amount which can be selected by the customer
+            to avail the loan
+          format: double
+          example: 500.0
+        maximumTenor:
+          type: string
+          description: Maximum tenor value which can be selected by the customer to
+            avail the loan
+          example: "10"
+        maximumLoanAmountWithDocument:
+          type: number
+          description: Maximum Loan amount which can be selected by the customer with
+            documents to avail the loan
+          format: double
+          example: 23654.0
+        maximumLoanAmountWithoutDocument:
+          type: number
+          description: Maximum Loan amount which can be selected by the customer without
+            documents to avail the loan
+          format: double
+          example: 21654.0
+        maximumLoanAmtWithoutSpouseConsent:
+          type: number
+          description: Maximum loan amount which can be selected by the customer without
+            his spouse consent to avail the loan
+          format: double
+          example: 21654.0
+        topupLoanFlag:
+          type: boolean
+          description: If existing CITI Customer would like to avail a top up to the
+            existing CITI Bank loan then this flag would be set to true
+          example: true
+        topupLoanExpiryDate:
+          type: string
+          description: Topup expiry date is the date at which the top up loan option
+            expires. After this date channel should reinitiate the IPA. Date is in
+            ISO 8601 date format YYYY-MM-DD
+          format: date
+        totalLoanAmountIncExistingLoanAmt:
+          type: number
+          description: Total loan disbursement amount including the existing loan
+            amount plus the new requested loan amount
+          format: double
+          example: 2400.0
+        offeredFutureAnnualPercentageRate:
+          type: number
+          description: Future Annual Percentage Rate offered in the case of an event
+            like the employee(applicant) exits.
+          format: double
+          example: 2.4
+        existingLoanDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExistingLoanDetail"
+        creditApprovalExpiredFlag:
+          type: boolean
+          description: Flag to indicate if the Credit Approval is expired.Valid values
+            are true and false.
+          example: true
+        topupLoanExpiredFlag:
+          type: boolean
+          description: Flag to indicate if the Top up loan is expired.Valid values
+            are true and false.
+          example: true
+    ExistingLoanDetail:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: A unique code that identifies the existing loan product
+          example: VC830
+        organisationCode:
+          type: string
+          description: Card issuing Organisation code associated with the existing
+            loan
+          example: "888"
+        sourceCode:
+          type: string
+          description: A source code to identify the product associated with the existing
+            loan
+          example: WW5ARCE1
+        requestedLoanAmount:
+          type: number
+          description: Requested Loan Amount of existing loan availed by the customer
+          format: double
+          example: 25000.0
+        outstandingLoanAmount:
+          type: number
+          description: 'Outstanding Loan Amount for the existing loan availed by the
+            customer '
+          format: double
+          example: 25000.0
+        loanPayoffAmount:
+          type: number
+          description: 'Loan payoff amount for the existing CITI bank loan availed
+            by the customer.It includes the overall prinicipal amount plus the interest
+            amount and all other charges '
+          format: double
+          example: 25000.0
+        installmentAmount:
+          type: number
+          description: Installment amount to be paid by customer for the existing
+            CITI bank loan
+          format: double
+          example: 500.0
+        annualPercentageRate:
+          type: number
+          description: Applicable Annual Percentage Rate on the existing loan product
+          format: double
+          example: 5.0
+        accountOpenedDate:
+          type: string
+          description: Loan account opened date of the existing CITI Bank loan
+          format: date
+          example: 0018-04-07
+        accountNumber:
+          type: string
+          description: Account number of the existing CITI Bank loan
+          example: "1234567890"
+    RepaymentSchedule:
+      type: object
+      properties:
+        tenorOccurence:
+          type: string
+          description: Different tenor applicable for repayment
+          example: "10"
+        paymentDueDate:
+          type: string
+          description: Payment due date for each installment in ISO 8601 date format
+            YYYY-MM-DD
+          format: date
+          example: 1972-09-15
+        monthlyInstallmentAmount:
+          type: number
+          description: Monthly installment amount for loan taken
+          format: double
+          example: 500.0
+        principalAmount:
+          type: number
+          description: Principal amount of installment
+          format: double
+          example: 500.0
+        interestAmount:
+          type: number
+          description: Interest amount of installment
+          format: double
+          example: 500.0
+        remainingPrincipalAmount:
+          type: number
+          description: Remaining Principal Amount after each installment has been
+            paid by customer
+          format: double
+          example: 500.0
+    RequiredDocuments:
+      type: object
+      properties:
+        documentId:
+          type: string
+          description: "Document ID for each proof. This a reference data field. Please\
+            \ use /utilities/referenceData/{documentId} resource to get valid values\
+            \ of this field with descriptions"
+          example: IC
+        documentStatus:
+          type: string
+          description: "Status of document proof.Possible values are 00001 PENDING,00002\
+            \ PRINTED,00003 SIGNED,00004 SUBMITTED,,00005 VERIFIED,000006 RECEIVED,00007\
+            \ WAIVED,00008 NOT APPLICABLE,00009 NOT REQUIRED,00010 RE-SUBMIT"
+          example: "00001"
+        documentType:
+          type: string
+          description: "Type of document. This a reference data field. Please use\
+            \ /utilities/referenceData/{proofType} resource to get possible values\
+            \ of this field with descriptions."
+          example: NRIC
+        applicantType:
+          type: string
+          description: "Applicant relationship with the Bank. Possible values are\
+            \ Primary - P.Credit Card - Co Applicant, S1 Supplementary 1,S2 Supplementary\
+            \ 2,Loan  Co Applicant,S Spouse (Poland specific).This a reference data\
+            \ field. Please use /utilities/referenceData/{applicantType} resource\
+            \ to get valid values of this field with descriptions."
+          example: P
+        documentInternalId:
+          type: string
+          description: "Document internal id is the id which is used as an identifier\
+            \ to link two document proofs. Ex: NRIC can be used for both address and\
+            \ id proof"
+          example: "123"
+    CounterOffer:
+      type: object
+      properties:
+        offerProductCode:
+          type: string
+          description: A unique code that identifies the offered product to applicant
+          example: VC830
+        offerProductOrganisationCode:
+          type: string
+          description: offered card issuing organization name
+          example: "888"
+        offerSourceCode:
+          type: string
+          description: A source code to identify the product
+          example: WW5ARCE1
+        offerProductCategory:
+          type: string
+          description: "Product category associated with the offer.AM - Loan,PC -\
+            \ cards.This a reference data field. Please use /utilities/referenceData/{offerProductCategory}\
+            \ resource to get valid values of this field with descriptions. "
+          example: MF
+        offerDocumentCriteria:
+          type: string
+          description: "Document category associated with the offer. Ex: WD(With Document),WO(Without\
+            \ Document).This a reference data field. Please use /utilities/referenceData/{documentCriteria}\
+            \ resource to get valid values of this field with descriptions. "
+          example: WD
+        ipaRecommendation:
+          type: string
+          description: "IPA recommendation to the customer. Ex: 11 - PARTIAL,10 -\
+            \ FULL etc.Please use /utilities/referenceData/{ipaRecommendation} resource\
+            \ to get valid values of this field with descriptions."
+          example: "99"
+        offerSequenceId:
+          type: string
+          description: Unique offer sequence id to identify an offer
+          example: "99"
+        marketingOfferOriginatingBranchId:
+          type: string
+          description: Originating branch id of the citi bank branch where the marketing
+            offer was created.
+          example: "99"
+        marketingOfferCampaignId:
+          type: string
+          description: Campaign Id of the marketing offer.
+          example: CA13
+        marketingOfferWaveId:
+          type: string
+          description: Wave id associated with the marketing offer
+          example: IE12
+        creditSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditSpecificRecommendations"
+        loanSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanSpecificRecommendations"
+        requiredDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequiredDocuments"
+    CrossSellOffer:
+      type: object
+      properties:
+        offerProductCode:
+          type: string
+          description: A unique code that identifies the offered product to applicant
+          example: VC830
+        offerProductOrganisationCode:
+          type: string
+          description: offered card issuing organization name
+          example: "888"
+        offerSourceCode:
+          type: string
+          description: A source code to identify the product
+          example: WW5ARCE1
+        offerProductCategory:
+          type: string
+          description: "Product category associated with the offer.AM - Loan,PC -\
+            \ cards.This a reference data field. Please use /utilities/referenceData/{offerProductCategory}\
+            \ resource to get valid values of this field with descriptions. "
+          example: MF
+        offerDocumentCriteria:
+          type: string
+          description: "Document category associated with the offer. Ex: WD(With Document),WO(Without\
+            \ Document).This a reference data field. Please use /utilities/referenceData/{documentCriteria}\
+            \ resource to get valid values of this field with descriptions. "
+          example: WD
+        ipaRecommendation:
+          type: string
+          description: "IPA recommendation to the customer. Ex: 11 - PARTIAL,10 -\
+            \ FULL etc.Please use /utilities/referenceData/{ipaRecommendation} resource\
+            \ to get valid values of this field with descriptions."
+          example: "99"
+        offerSequenceId:
+          type: string
+          description: Unique offer sequence id to identify an offer
+          example: "99"
+        marketingOfferOriginatingBranchId:
+          type: string
+          description: Originating branch id of the citi bank branch where the marketing
+            offer was created.
+          example: "99"
+        marketingOfferCampaignId:
+          type: string
+          description: Campaign Id of the marketing offer.
+          example: CA13
+        marketingOfferWaveId:
+          type: string
+          description: Wave id associated with the marketing offer
+          example: IE12
+        creditSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditSpecificRecommendations"
+        loanSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanSpecificRecommendations"
+        requiredDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequiredDocuments"
+    SuggestedOffer:
+      type: object
+      properties:
+        offerProductCode:
+          type: string
+          description: A unique code that identifies the offered product to applicant
+          example: VC830
+        offerProductOrganisationCode:
+          type: string
+          description: offered card issuing organization code
+          example: "888"
+        offerSourceCode:
+          type: string
+          description: A source code to identify the product
+          example: WW5ARCE1
+        offerProductCategory:
+          type: string
+          description: "Product category associated with the offer.AM - Loan,PC -\
+            \ cards.This a reference data field. Please use /utilities/referenceData/{offerProductCategory}\
+            \ resource to get valid values of this field with descriptions. "
+          example: MF
+        offerDocumentCriteria:
+          type: string
+          description: "Document category associated with the offer. Ex: WD(With Document),WO(Without\
+            \ Document).This a reference data field. Please use /utilities/referenceData/{documentCriteria}\
+            \ resource to get valid values of this field with descriptions. "
+          example: WD
+        ipaRecommendation:
+          type: string
+          description: "IPA recommendation to the customer. Ex: 11 - PARTIAL,10 -\
+            \ FULL etc.Please use /utilities/referenceData/{ipaRecommendation} resource\
+            \ to get valid values of this field with descriptions."
+          example: "99"
+        offerSequenceId:
+          type: string
+          description: Unique offer sequence id to identify an offer
+          example: "99"
+        marketingOfferOriginatingBranchId:
+          type: string
+          description: Originating branch id of the citi bank branch where the marketing
+            offer was created.
+          example: "99"
+        marketingOfferCampaignId:
+          type: string
+          description: Campaign Id of the marketing offer.
+          example: CA13
+        marketingOfferWaveId:
+          type: string
+          description: Wave id associated with the marketing offer
+          example: IE12
+        creditSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CreditSpecificRecommendations"
+        loanSpecificRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanSpecificRecommendations"
+        requiredDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequiredDocuments"
+    KbaQuestionnaire:
+      type: object
+      properties:
+        vedaQuestionnaire:
+          type: array
+          description: Applicable for Australia
+          items:
+            $ref: "#/components/schemas/VedaQuestionnaire"
+        tuQuestionnaire:
+          type: array
+          description: Applicable for Hong Kong
+          items:
+            $ref: "#/components/schemas/TuQuestionnaire"
+        bureauRecommendedQuestionnaire:
+          type: array
+          description: KBA Questionnaire
+          items:
+            $ref: "#/components/schemas/BureauRecommendedQuestionnaire"
+    BureauRecommendedQuestionnaire:
+      type: object
+      properties:
+        questionId:
+          type: string
+          description: Identifier of the question from the question pool
+          example: "1"
+        sequenceNumber:
+          type: string
+          description: Bureau recommended question sequence number which is used in
+            request to map a question to a given enquiry
+          example: "1"
+        questionTextDetails:
+          $ref: "#/components/schemas/QuestionTextDetails"
+        questionType:
+          type: string
+          description: "Bureau recommended question type. Possible values are TEXT,NUMBER,AMOUNT,CHOICE\
+            \ and LIST.Both Choice and list will have options choice will have Y/N\
+            \ as options."
+          example: OPTIONS
+        dependentQuestionDetails:
+          $ref: "#/components/schemas/DependentQuestionDetails"
+        bureauRecommendedResponseOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/BureauRecommendedResponseOption"
+    QuestionTextDetails:
+      type: object
+      properties:
+        englishQuestionText:
+          type: string
+          description: Question text to be displayed to the applicant in English
+          example: Question?
+        localLanguageQuestionText:
+          type: string
+          description: Question text to be displayed to the applicant in local Language
+          example: Question?
+    DependentQuestionDetails:
+      type: object
+      properties:
+        isDependentQuestion:
+          type: boolean
+          description: Indicates if this question is a dependent question and is associated
+            with any primary question
+          example: true
+        primaryQuestionId:
+          type: string
+          description: Primary question id to which the dependent question is tagged
+            to. This is only applicable for dependent questions.
+          example: "1234"
+    BureauRecommendedResponseOption:
+      type: object
+      properties:
+        optionKey:
+          type: string
+          description: The key of Bureau recommended question
+          example: "1"
+        optionText:
+          type: string
+          description: The text associated with the Bureau recommended question
+          example: Answer.
+    VedaQuestionnaire:
+      type: object
+      properties:
+        kbaInquiryId:
+          type: string
+          description: Unique inquiry ID to validate the answers submitted
+          example: "1234"
+        multipleChoiceQuestionnaire:
+          type: array
+          items:
+            $ref: "#/components/schemas/MultipleChoiceQuestionnaire"
+        trueOrFalseQuestionnaire:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrueOrFalseQuestionnaire"
+        freeTextQuestionnaire:
+          type: array
+          items:
+            $ref: "#/components/schemas/FreeTextQuestionnaire"
+    MultipleChoiceQuestionnaire:
+      type: object
+      properties:
+        questionText:
+          type: string
+          description: Question text to be displayed to the applicant
+          example: Question?
+        sequenceNumber:
+          type: string
+          description: Identifer used in request to map a question to a given enquiry
+          example: "1"
+        responseOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResponseOptions"
+    ResponseOptions:
+      type: object
+      properties:
+        optionText:
+          type: string
+          description: Response for each questionnaire
+          example: Answer.
+        sequenceNumber:
+          type: string
+          description: Identifer used in request to map a response to a given enquiry
+          example: "1"
+    TrueOrFalseQuestionnaire:
+      type: object
+      properties:
+        questionText:
+          type: string
+          description: Question text to be displayed to the end user
+          example: Question?
+        sequenceNumber:
+          type: string
+          description: Identifer used in request to map a question to a given enquiry
+          example: "1"
+        responseOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResponseOptions"
+    FreeTextQuestionnaire:
+      type: object
+      properties:
+        questionText:
+          type: string
+          description: Question text to be displayed to the end user
+          example: Question?
+        sequenceNumber:
+          type: string
+          description: Identifer used in request to map a question to a given enquiry
+          example: "1"
+        responseOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResponseOptions"
+    TuQuestionnaire:
+      type: object
+      properties:
+        authenticationToken:
+          type: string
+          description: token to authenticate the answer submitted
+          example: wer523twed235
+        tuApplicationId:
+          type: string
+          description: Appliation ID from TU system
+          example: "23453265376"
+        queue:
+          type: string
+          description: queue
+          example: "2"
+        examDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExamDetails"
+    ExamDetails:
+      type: object
+      properties:
+        key:
+          type: string
+          description: 'Key attribute of the TU questionnaire '
+          example: "2"
+        title:
+          type: string
+          description: Exam Title of the TU questionnaire
+          example: KBA
+        languageCode:
+          type: string
+          description: "Language code attribute of the TU questionnaire.This a reference\
+            \ data field. Please use /utilities/referenceData/{languageCode} resource\
+            \ to get valid values of this field with descriptions."
+          example: EN
+        matchKeyId:
+          type: string
+          description: Language code attribute of the TU questionnaire
+          example: "2"
+        errorGeneratingQa:
+          type: string
+          description: Error generating Question and answers attribute of the TU Questionnaire
+          example: "2"
+        timeTakenToAnswer:
+          type: string
+          description: Time taken to answer for the TU questionnaire
+          example: "2"
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Questions"
+    Questions:
+      type: object
+      properties:
+        tuQuestionId:
+          type: string
+          description: Unique Identifier for the question instance
+          example: "1"
+        questionId:
+          type: string
+          description: Identifier of the question from the question pool
+          example: "1"
+        questionText:
+          type: string
+          description: TU question text
+          example: Question?
+        questionType:
+          type: string
+          description: TU question type
+          example: Choice
+        dummyQuestionFlag:
+          type: boolean
+          description: Flag to identify question if it based on existing applicant
+            information
+          example: true
+        multipleChoiceQuestionFlag:
+          type: boolean
+          description: Flag to mark if question has multiple choice for answer
+          example: true
+        listAnswerIndex:
+          type: string
+          description: Index for the list answer type question
+          example: "1"
+        expirationTime:
+          type: string
+          description: Expiration time of the TU question
+          format: date-time
+        timeTakenToAnswer:
+          type: string
+          description: Time taken to answer this question by customer
+          example: "2"
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Answers"
+    Answers:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Attributes of the TU KBA request
+          example: "2"
+        answerSelected:
+          type: string
+          description: Answer selected by the customer
+          example: "2"
+    FinalSubmitRequest:
+      type: object
+      properties:
+        productDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product1"
+        controlFlowId:
+          type: string
+          description: Control flow id is used to control the flow for subsequent
+            requests in the session..
+          example: "2345"
+    Product1:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: A unique code that identifies the product.
+    FinalSubmitResponse:
+      type: object
+      properties:
+        applicationId:
+          type: string
+          description: Unique identifier for the application
+        productSubmissionStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductSubmissionStatus"
+    ProductSubmissionStatus:
+      type: object
+      properties:
+        productCode:
+          type: string
+          description: A unique code that identifies the product.
+        productSubmissionStatus:
+          type: string
+          description: Product submission status
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: "<br>invalid - Request did not confirm to the specification\
+            \ and was unprocessed & rejected. Please fix the value and try again</br>\
+            \                         <br>warn - Request was partially processed.\
+            \  E.g. some of the fields are missing in response to the system issues,\
+            \  request was accepted successfully but will be processed asynchronously</br>\
+            \                                                           <br>error\
+            \ - The request was accepted but could not be processed successfully</br>\
+            \            <br>fatal - There was an internal system error while processing\
+            \ the request. These are technical errors and will be resolved by Citi,\
+            \ and the consumer should retry after some time. Business errors will\
+            \ not be categorized as fatal </br>"
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+    ApplicationInquiryResponse:
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow id is used to control the flow for subsequent
+            requests in the session..
+          example: "2345"
+        applicationCreationDate:
+          type: string
+          description: Application creation date. ISO 8601 date format YYYY-MM-DD
+          format: date
+        applicationStage:
+          type: string
+          description: "Application Stage of an Application.This a reference data\
+            \ field. Please use /utilities/referenceData/{applicationStage} resource\
+            \ to get valid values of this field with descriptions. You can use the\
+            \ fieldname as the referenceCode parameter to retrieve the values."
+        ipaExpiryDate:
+          type: string
+          description: In principle approval expiration date in  ISO 8601 date format
+            YYYY-MM-DD
+          format: date
+        kbaRequiredFlag:
+          type: boolean
+          description: Flag to mark if KBA (Knowledge Base Assesment) is required.Possible
+            values are true or false
+          example: true
+        bureauPullExpiredFlag:
+          type: boolean
+          description: Flag to indicate if the bureau pull data is expired or not.Possible
+            values are true or false
+          example: true
+        documentRepositoryReferenceNumber:
+          type: string
+          description: Barcode number which is linked to the loan contract and the
+            document repository.
+          example: RN6CU3322823
+        processingSalesAgentId:
+          type: string
+          description: Sales agent SOE ID who is processing the application.
+          example: VI01923
+        auditDetails:
+          $ref: "#/components/schemas/AuditDetails"
+        applicantDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/Applicant"
+        productDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        requestedProductDecision:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestedProductDecision"
+        counterOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CounterOffer"
+        crossSellOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CrossSellOffer"
+        suggestedOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SuggestedOffer"
+        kbaQuestionnaire:
+          $ref: "#/components/schemas/KbaQuestionnaire"
+        inquiryReferenceId:
+          type: string
+          description: Unique request ID generated by SAO system for retrieval of  formatted
+            customer personal information from local government.
+          example: 6e3774334-f724a2b794766-3653712f52456f-524c41797038516
+        ekycRecommendedFlag:
+          type: boolean
+          description: Flag to indicate if the E KYC is recommended or not
+          example: true
+        creditBureauAddressAvailableFlag:
+          type: boolean
+          description: "Flag to indicate if valid address is available from bureau\
+            \ or not. Possible values:  TRUE, FALSE"
+          example: true
+    ApplicationStatusResponse:
+      type: object
+      properties:
+        applicationCreationDate:
+          type: string
+          description: Application creation date
+          format: date
+        applicationStage:
+          type: string
+          description: Application Stage of an applicant.
+        ipaExpiryDate:
+          type: string
+          description: In principle approval expiration date in  ISO 8601 date format
+            YYYY-MM-DD
+          format: date
+        bureauPullExpiredFlag:
+          type: boolean
+          description: Flag to indicate if the bureau pull data is expired or not.Possible
+            values are true or false
+          example: true
+        requestedProductDecision:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestedProductDecision"
+        counterOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CounterOffer"
+        crossSellOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CrossSellOffer"
+        suggestedOffers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SuggestedOffer"
+  parameters:
+    client_id:
+      name: client_id
+      in: header
+      description: The client ID you received while Onboarding with Citi to use these
+        API's. This will be generated and shared while registring in the developer
+        portal.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Authorization:
+      name: Authorization
+      in: header
+      description: The Authorization Token
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    countryCode:
+      name: countryCode
+      in: header
+      description: Country code in 2 character ISO 3166 format.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    businessCode:
+      name: businessCode
+      in: header
+      description: The 3 character business code. Use GCB for consumer banking.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit UUID that you generate for every request
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Types that are acceptable for the response. Currently we
+        support application/json.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      description: List of acceptable human languages for response
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: The media type of the body of the request (used with POST and PUT
+        requests). Currently we support application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: Device and browser information. Refer the developer portal for
+        more information. Please ensure the header is base64 encoded
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    x-jws-signature:
+      name: x-jws-signature
+      in: header
+      description: "Signature generated when partner sign API payload.This signature\
+        \ will be used to validate that the call is coming from a valid partner. This\
+        \ signature is a JWT token, which will be validated with partnerâ€™s JWK stored\
+        \ in DB"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string

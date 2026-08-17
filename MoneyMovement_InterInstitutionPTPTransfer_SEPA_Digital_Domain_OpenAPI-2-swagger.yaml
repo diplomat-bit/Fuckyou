@@ -1,0 +1,211 @@
+openapi: 3.0.1
+info:
+  title: MoneyMovement_InterInstitutionPTPTransfer_SEPA_Digital_Domain_OpenAPI
+  description: This API confirms the SEPA transaction.
+  version: 1.0.0
+  x-linked-api: PaymentOrder_Execution_SEPATransfers_Digital_Domain
+  x-deployment-reference: PYMT-D-PaymentOrder-EXEC-SEPA-DGL-EM
+servers:
+- url: https://127.0.0.1/openapi/v1/moneyMovement/sepaTransfers
+paths:
+  /:
+    post:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: Confirms SEPA Transfer.
+      description: This API confirms a new SEPA transfer transaction.
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SepaTransferRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SepaTransferResponse"
+        "202":
+          description: "Accepted –The request has been accepted for processing , but\
+            \ has not been completed."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SepaTransferResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr><tr><td>error</td><td>invalidControlFlowId</td><td>Control
+            Flow Id is invalid</td></tr><tr><td>error</td><td>preprocessFxRateExpired</td><td>Pre-process
+            forex rate is expired</td></tr><tr><tr><td>error</td><td>transactionAmountBelowLimit</td><td>Transaction
+            amount below minimum amount</td></tr><tr><td>error</td><td>transactionAmountLimitExceeded</td><td>Allowed
+            transaction amount limit for this transaction exceeded</td></tr><tr><td>error</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td></tr><tr><td>error</td><td>insufficientFund</td><td>Insufficient
+            fund</td></tr><tr><td>error</td><td>dailyTransactionAmountLimitReached</td><td>Maximum
+            daily transaction amount limit reached</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credential is missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr><tr><td>error</td><td>mfaRequired</td><td>MFA
+            is required</td></tr><tr><td>error</td><td>transactionDenied</td><td>Transaction
+            Denied</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: SepaTransferRequest
+components:
+  schemas:
+    SepaTransferRequest:
+      required:
+      - controlFlowId
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow Id
+          example: 6e3774334f724a2b7947663653712f52456f524c41797038516a59347a437549564a77755676376e616a733d
+    SepaTransferResponse:
+      required:
+      - sourceAccountDetails
+      - transactionReferenceId
+      type: object
+      properties:
+        transactionReferenceId:
+          type: string
+          description: The unique transaction reference Id used to identify this transaction
+            from all the other transactions
+          example: HBKFT160129X001373
+        sourceAccountDetails:
+          $ref: "#/components/schemas/SourceAccountDetails"
+    SourceAccountDetails:
+      required:
+      - displaySourceAccountNumber
+      type: object
+      properties:
+        displaySourceAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2364
+        sourceAccountCurrencyCode:
+          type: string
+          description: The currency code of the source account in ISO 4217 format
+          example: PLN
+        sourceAccountAvailableBalance:
+          type: number
+          description: The available balance including any pending or in progress
+            deposits and withdrawals.
+          format: double
+          example: 50000.25
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ=="
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string

@@ -1,0 +1,225 @@
+openapi: 3.0.1
+info:
+  title: Accounts_AccountFeatureEligibility_BalanceCheck_Digital_Domain_OpenAPI
+  description: This API is used to check whether sufficient fund is available to do
+    a transaction.
+  version: 1.0.0
+  x-linked-api: ProductCombination_Digital_Domain
+  x-deployment-reference: SAVE-D-ProdCombination-DGL-EA
+servers:
+- url: "https://127.0.0.1/openapi/v1/accounts/{accountId}/funds/sufficiencyCheck"
+security:
+- Client_id: []
+- Client_id_Query: []
+paths:
+  /:
+    get:
+      tags:
+      - Accounts_Account Eligibility and Enrollment_Account Feature Eligibility
+      summary: This API is used to know if there is specific amount of funds is available
+        in the account
+      description: This API is used to know if there is specific amount of funds is
+        available in the account
+      operationId: SufficiencyOfFunds
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: x-jws-signature
+        in: header
+        description: "Signature generated when partner signs API payload. This signature\
+          \ will be used to validate that the call is coming from a valid partner.\
+          \ This signature is a JWT token, which will be validated with partner’s\
+          \ JWK stored in DB"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: sufficiencyCheckAmount
+        in: query
+        description: Specifies amount to check account for sufficiency.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: number
+          format: double
+      - name: currencyCode
+        in: query
+        description: Currency Code in ISO 4217 format
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SufficiencyOfFundsResponse"
+        "204":
+          description: No content
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr><tr><td>error</td><td>invalidAccount</td><td>Account
+            is invalid</td></tr><tr><td>error</td><td>invalidAmount</td><td>Amount
+            is invalid</td></tr></tr><tr><td>error</td><td>invalidCurrency</td><td>Currency
+            is invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    SufficiencyOfFundsResponse:
+      type: object
+      properties:
+        sufficientFundsFlag:
+          type: boolean
+          description: Indicator to indicate if sufficient funds are present in the
+            account for deduction.
+          example: true
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    x-jws-signature:
+      name: x-jws-signature
+      in: header
+      description: "Signature generated when partner signs API payload. This signature\
+        \ will be used to validate that the call is coming from a valid partner. This\
+        \ signature is a JWT token, which will be validated with partner’s JWK stored\
+        \ in DB"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    accountId:
+      name: accountId
+      in: path
+      description: IBAN number of the customer.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+  securitySchemes:
+    Client_id:
+      type: apiKey
+      description: pv52735
+      name: X-IBM-Client-Id
+      in: header
+    Client_id_Query:
+      type: apiKey
+      description: ""
+      name: client_id
+      in: query

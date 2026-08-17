@@ -1,0 +1,574 @@
+openapi: 3.0.1
+info:
+  title: Customers_CustomerDemographics_Digital_Domain_OpenAPI
+  description: This service is used to perform the operations on customer information.
+    <table><th>Change-History</th><tr><td>Date(MM/DD/YYYY)</td><td>Owning CSI</t><td>PIID</td><td>Version</td><td>SRT-Number</td><td>OPPM
+    ID</td><td>UserStory</td><td>Description</td></tr><tr><td>01-03-2025</td><td>172229</td><td>71672</td><td>1.0.0</td><td>SRT-4146</td><td>WR202401195</td><td>AD-66372</td><td>New
+    API</td></tr></table>
+  version: 1.0.0
+  x-deployment-reference: CSTF-D-CustInfo-DGL-EA-EM
+servers:
+- url: https://127.0.0.1/openapi/customers/customerDemographics/digital/v1
+paths:
+  /customerNames/details:
+    get:
+      tags:
+      - Customers_Customer Master_Customer Demographics
+      summary: This API is used to retrieve customer particulars
+      description: Retrieve customer particulars
+      operationId: GetCustomerNameDetails
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - $ref: "#/components/parameters/x-jws-signature"
+      - $ref: "#/components/parameters/marketingRegion"
+      - $ref: "#/components/parameters/clientModule"
+      - $ref: "#/components/parameters/clientPage"
+      - $ref: "#/components/parameters/clientUniqueId"
+      responses:
+        "200":
+          description: Successful operation.
+          headers:
+            citiUUID:
+              $ref: "#/components/headers/citiUUID"
+            uuid:
+              $ref: "#/components/headers/uuid"
+            Content-type:
+              $ref: "#/components/headers/Content-type"
+            responseTimestamp:
+              $ref: "#/components/headers/responseTimestamp"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/X-Content-Type-Options"
+            eventID:
+              $ref: "#/components/headers/eventID"
+            eventIDExpiryTime:
+              $ref: "#/components/headers/eventIDExpiryTime"
+            content-disposition:
+              $ref: "#/components/headers/content-disposition"
+            cache-control:
+              $ref: "#/components/headers/cache-control"
+            x-idle-time:
+              $ref: "#/components/headers/x-idle-time"
+            Content-Length:
+              $ref: "#/components/headers/Content-Length"
+            Last-Modified:
+              $ref: "#/components/headers/Last-Modified"
+            etag:
+              $ref: "#/components/headers/etag"
+            expires:
+              $ref: "#/components/headers/expires"
+            date:
+              $ref: "#/components/headers/date"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetCustomerNameDetailsResponse"
+        "204":
+          description: No content
+          headers:
+            citiUUID:
+              $ref: "#/components/headers/citiUUID"
+            uuid:
+              $ref: "#/components/headers/uuid"
+            Content-type:
+              $ref: "#/components/headers/Content-type"
+            responseTimestamp:
+              $ref: "#/components/headers/responseTimestamp"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/X-Content-Type-Options"
+            eventID:
+              $ref: "#/components/headers/eventID"
+            eventIDExpiryTime:
+              $ref: "#/components/headers/eventIDExpiryTime"
+            content-disposition:
+              $ref: "#/components/headers/content-disposition"
+            cache-control:
+              $ref: "#/components/headers/cache-control"
+            x-idle-time:
+              $ref: "#/components/headers/x-idle-time"
+            Content-Length:
+              $ref: "#/components/headers/Content-Length"
+            Last-Modified:
+              $ref: "#/components/headers/Last-Modified"
+            etag:
+              $ref: "#/components/headers/etag"
+            expires:
+              $ref: "#/components/headers/expires"
+            date:
+              $ref: "#/components/headers/date"
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          headers:
+            citiUUID:
+              $ref: "#/components/headers/citiUUID"
+            uuid:
+              $ref: "#/components/headers/uuid"
+            Content-type:
+              $ref: "#/components/headers/Content-type"
+            responseTimestamp:
+              $ref: "#/components/headers/responseTimestamp"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/X-Content-Type-Options"
+            eventID:
+              $ref: "#/components/headers/eventID"
+            eventIDExpiryTime:
+              $ref: "#/components/headers/eventIDExpiryTime"
+            content-disposition:
+              $ref: "#/components/headers/content-disposition"
+            cache-control:
+              $ref: "#/components/headers/cache-control"
+            x-idle-time:
+              $ref: "#/components/headers/x-idle-time"
+            Content-Length:
+              $ref: "#/components/headers/Content-Length"
+            Last-Modified:
+              $ref: "#/components/headers/Last-Modified"
+            etag:
+              $ref: "#/components/headers/etag"
+            expires:
+              $ref: "#/components/headers/expires"
+            date:
+              $ref: "#/components/headers/date"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          headers:
+            citiUUID:
+              $ref: "#/components/headers/citiUUID"
+            uuid:
+              $ref: "#/components/headers/uuid"
+            Content-type:
+              $ref: "#/components/headers/Content-type"
+            responseTimestamp:
+              $ref: "#/components/headers/responseTimestamp"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/X-Content-Type-Options"
+            eventID:
+              $ref: "#/components/headers/eventID"
+            eventIDExpiryTime:
+              $ref: "#/components/headers/eventIDExpiryTime"
+            content-disposition:
+              $ref: "#/components/headers/content-disposition"
+            cache-control:
+              $ref: "#/components/headers/cache-control"
+            x-idle-time:
+              $ref: "#/components/headers/x-idle-time"
+            Content-Length:
+              $ref: "#/components/headers/Content-Length"
+            Last-Modified:
+              $ref: "#/components/headers/Last-Modified"
+            etag:
+              $ref: "#/components/headers/etag"
+            expires:
+              $ref: "#/components/headers/expires"
+            date:
+              $ref: "#/components/headers/date"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          headers:
+            citiUUID:
+              $ref: "#/components/headers/citiUUID"
+            uuid:
+              $ref: "#/components/headers/uuid"
+            Content-type:
+              $ref: "#/components/headers/Content-type"
+            responseTimestamp:
+              $ref: "#/components/headers/responseTimestamp"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/X-Content-Type-Options"
+            eventID:
+              $ref: "#/components/headers/eventID"
+            eventIDExpiryTime:
+              $ref: "#/components/headers/eventIDExpiryTime"
+            content-disposition:
+              $ref: "#/components/headers/content-disposition"
+            cache-control:
+              $ref: "#/components/headers/cache-control"
+            x-idle-time:
+              $ref: "#/components/headers/x-idle-time"
+            Content-Length:
+              $ref: "#/components/headers/Content-Length"
+            Last-Modified:
+              $ref: "#/components/headers/Last-Modified"
+            etag:
+              $ref: "#/components/headers/etag"
+            expires:
+              $ref: "#/components/headers/expires"
+            date:
+              $ref: "#/components/headers/date"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          headers:
+            citiUUID:
+              $ref: "#/components/headers/citiUUID"
+            uuid:
+              $ref: "#/components/headers/uuid"
+            Content-type:
+              $ref: "#/components/headers/Content-type"
+            responseTimestamp:
+              $ref: "#/components/headers/responseTimestamp"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/X-Content-Type-Options"
+            eventID:
+              $ref: "#/components/headers/eventID"
+            eventIDExpiryTime:
+              $ref: "#/components/headers/eventIDExpiryTime"
+            content-disposition:
+              $ref: "#/components/headers/content-disposition"
+            cache-control:
+              $ref: "#/components/headers/cache-control"
+            x-idle-time:
+              $ref: "#/components/headers/x-idle-time"
+            Content-Length:
+              $ref: "#/components/headers/Content-Length"
+            Last-Modified:
+              $ref: "#/components/headers/Last-Modified"
+            etag:
+              $ref: "#/components/headers/etag"
+            expires:
+              $ref: "#/components/headers/expires"
+            date:
+              $ref: "#/components/headers/date"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          headers:
+            citiUUID:
+              $ref: "#/components/headers/citiUUID"
+            uuid:
+              $ref: "#/components/headers/uuid"
+            Content-type:
+              $ref: "#/components/headers/Content-type"
+            responseTimestamp:
+              $ref: "#/components/headers/responseTimestamp"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/X-Content-Type-Options"
+            eventID:
+              $ref: "#/components/headers/eventID"
+            eventIDExpiryTime:
+              $ref: "#/components/headers/eventIDExpiryTime"
+            content-disposition:
+              $ref: "#/components/headers/content-disposition"
+            cache-control:
+              $ref: "#/components/headers/cache-control"
+            x-idle-time:
+              $ref: "#/components/headers/x-idle-time"
+            Content-Length:
+              $ref: "#/components/headers/Content-Length"
+            Last-Modified:
+              $ref: "#/components/headers/Last-Modified"
+            etag:
+              $ref: "#/components/headers/etag"
+            expires:
+              $ref: "#/components/headers/expires"
+            date:
+              $ref: "#/components/headers/date"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    GetCustomerNameDetailsResponse:
+      type: object
+      properties:
+        customerParticulars:
+          $ref: "#/components/schemas/CustomerParticulars"
+    CustomerParticulars:
+      type: object
+      properties:
+        names:
+          type: array
+          items:
+            $ref: "#/components/schemas/Names"
+    Names:
+      required:
+      - firstName
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: The first name of the customer. Also known as first name
+          example: Javier
+        lastName:
+          type: string
+          description: The last name of the customer. Also known as last name
+          example: de Cuellar
+        nameType:
+          type: string
+          description: "Type of the name. This is a reference data field. Please use\
+            \ /v1/utilities/referenceData/{nameType} resource to get valid value of\
+            \ this field with description."
+          example: LOCAL_NAME
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit UUID that you generate for every request
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    x-jws-signature:
+      name: x-jws-signature
+      in: header
+      description: "Signature generated when partner signs API payload. This signature\
+        \ will be used to validate that the call is coming from a valid partner. This\
+        \ signature is a JWT token, which will be validated with partner's JWK stored\
+        \ in DB."
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    marketingRegion:
+      name: marketingRegion
+      in: header
+      description: The region where the account is first set up for the user.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientModule:
+      name: clientModule
+      in: header
+      description: The domain/sub-domain/feature name at Consumer side. Mandatory
+        for CGW.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientPage:
+      name: clientPage
+      in: header
+      description: The screen identifier on a particular Module (1 module can have
+        more than 1 page). Mandatory for CGW.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientUniqueId:
+      name: clientUniqueId
+      in: header
+      description: System generated unique Id for every customer at consumer end.
+        Mandatory for CGW.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+  headers:
+    citiUUID:
+      description: Unique 128 bit random UUID generated uniquely in the response for
+        every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      description: Echo back of the Client UUID received in the request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-type:
+      description: application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    responseTimestamp:
+      description: Response timestamp
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: dateTime
+    X-Content-Type-Options:
+      description: nosniff
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    eventID:
+      description: Server nonce value
+      style: simple
+      explode: false
+      schema:
+        type: string
+    eventIDExpiryTime:
+      description: Expiry time of nonce.
+      style: simple
+      explode: false
+      schema:
+        type: integer
+    content-disposition:
+      description: "This refers if the content is expected to be displayed inline\
+        \ in the browser, that is, as a Web page or as part of a Web page, or as an\
+        \ attachment, that is downloaded and saved locally."
+      style: simple
+      explode: false
+      schema:
+        type: string
+    cache-control:
+      description: Indicates whether response can be cached by the calling Application.
+      style: simple
+      explode: false
+      schema:
+        type: string
+    x-idle-time:
+      description: "This tells us about the time in milliseconds, for which a customer\
+        \ is allowed to stay idle/in-active after login. Beyond this time user session\
+        \ will be expired."
+      style: simple
+      explode: false
+      schema:
+        type: integer
+    Content-Length:
+      description: "Indicates the size of the message body, in bytes, sent to the\
+        \ recipient."
+      style: simple
+      explode: false
+      schema:
+        type: integer
+    Last-Modified:
+      description: "Contains a date and time when the origin server believes the resource\
+        \ was last modified. It is used as a validator to determine if the resource\
+        \ is the same as the previously stored one. Less accurate than an ETag header,\
+        \ it is a fallback mechanism."
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: dateTime
+    etag:
+      description: "An identifier for a specific version of a resource. It lets caches\
+        \ be more efficient and save bandwidth, as a web server does not need to resend\
+        \ a full response if the content was not changed."
+      style: simple
+      explode: false
+      schema:
+        type: string
+    expires:
+      description: Contains the date/time after which the response is considered expired.
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: dateTime
+    date:
+      description: Contains the date and time at which the message originated.
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: dateTime

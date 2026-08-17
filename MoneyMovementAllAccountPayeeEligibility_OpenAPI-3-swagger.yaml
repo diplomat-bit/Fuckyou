@@ -1,0 +1,476 @@
+openapi: 3.0.1
+info:
+  title: MoneyMovementAllAccountPayeeEligibility_OpenAPI
+  description: This API is used to retrieve the combination of valid destination and
+    source accounts of all payment types for an authenticated Citi customer.
+  version: 1.16.0
+  x-deployment-reference: "PYMT-D-PaymentInit-DGL-EA,PYMT-D-PaymentInit-DGL-EA-TW,PYMT-D-PaymentInit-DGL-EA"
+  x-linked-api: PaymentInitiation_Digital_Domain
+servers:
+- url: https://127.0.0.1/openapi/v1/moneyMovement/payees/sourceAccounts
+paths:
+  /:
+    get:
+      tags:
+      - Money Movement_Counterparty Management_Funding Account Management
+      summary: Valid destination-source account combinations for the payment type.
+      description: This API returns the combination of valid destination and source
+        accounts of all payment types for an authenticated Citi customer. This information
+        may be used to prepare valid source list for a selected destination or vice
+        versa.
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: paymentType
+        in: query
+        description: "Payment Type. This is a reference data field. Please use /v1/utilities/referenceData/{paymentType}\
+          \ resource to get valid value of this field with description."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: nextStartIndex
+        in: query
+        description: In some cases there is more data than what can be returned in
+          a single response. If there is additional data available a nextStartIndex
+          will be returned. Pass the nextStartIndex in your next request to retrieve
+          the next set of data.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidSourceDestinationAccountsResponse"
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credential is missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    ValidSourceDestinationAccountsResponse:
+      type: object
+      properties:
+        sourceAccounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceAccounts"
+        draweeSourceAccounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/DraweeSourceAccount"
+        payeeSourceAccountCombinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PayeeSourceAccountCombinations"
+        destinationSourceAcctCombinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationSourceAcctCombinations"
+        nextStartIndex:
+          type: string
+          description: In some cases there is more data than what can be returned
+            in a single response. If there is additional data available a nextStartIndex
+            will be returned. Pass the nextStartIndex in your next request to retrieve
+            the next set of data.
+          example: "11"
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+    SourceAccounts:
+      required:
+      - accountGroup
+      - displaySourceAccountNumber
+      - sourceAccountCurrencyCode
+      - sourceAccountId
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: "The primary identifier for ownership of an account.The source\
+            \ account identifier in encrypted format.Typically, this is not displayed\
+            \ to the customer,use displayAccountNumber instead."
+          example: 724f5141524b4d58576853766c786a45376e7637576e6d35695378515a726f494c36367763776775432f453d
+        displaySourceAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2364
+        sourceAccountCurrencyCode:
+          type: string
+          description: The currency code of the source account in ISO 4217 format
+          example: SGD
+        accountGroup:
+          type: string
+          description: "Account Group associated with the source Account.This is a\
+            \ reference data field. Please use /v1/utilities/referenceData/{accountGroup}\
+            \ resource to get valid value of this field with description."
+          example: SAVINGS_AND_INVESTMENTS
+        subAccountGroup:
+          type: string
+          description: "This is sub account group associated with source account.\
+            \ Please use /v1/utilities/referenceData/{subAccountGroup} resource to\
+            \ get valid value of this field with description."
+          example: MUTUAL_FUNDS
+        availableBalance:
+          type: number
+          description: The available balance including any pending or in progress
+            deposits and withdrawals
+          format: double
+          example: 50000.25
+        currentBalance:
+          type: number
+          description: This is the current balance including any pending or in progress
+            deposits.
+          format: double
+          example: 10000.25
+        availableCredit:
+          type: number
+          description: "The available credit for credit products like credit card\
+            \ , ready credit. "
+          format: double
+          example: 3750.25
+        nextPaymentAmount:
+          type: number
+          description: The next payment amount due.
+          format: double
+          example: 4500.25
+        productName:
+          type: string
+          description: The name of the product
+          example: Personal Checking Account
+        accountNickName:
+          type: string
+          description: The nick name of the account assigned by the customer
+          example: James
+        localCurrencyAvailableBalance:
+          type: number
+          description: Available balance in local currency. Applicable only if the
+            source account is in foreign currency.
+          format: double
+          example: 49775.25
+        localCurrencyCode:
+          type: string
+          description: The currency code for local country in ISO 4217 format. Applicable
+            only if the source account is in foreign currency.
+          example: PLN
+        residencyStatus:
+          type: string
+          description: "Payer's residency status.CVT field. Please use /v1/utilities/referenceData/{residencyStatus}\
+            \ resource to get valid value of this field with description."
+          example: RESIDENT
+        accountStatus:
+          type: string
+          description: "This shows status of customer's account. Please use /v1/utilities/referenceData/{accountStatus}\
+            \ resource to get valid value of this field with description."
+          example: ACTIVE
+        paymentType:
+          type: string
+          description: "The payment type.This is a reference data field. Please use\
+            \ /v1/utilities/referenceData/{paymentType} resource to get valid value\
+            \ of this field with description."
+          example: SWIFT_TRANSFER
+        relationshipType:
+          type: string
+          description: Relationship type.
+          example: Primary
+    DraweeSourceAccount:
+      required:
+      - currencyCode
+      - displayAccountNumber
+      - draweeId
+      type: object
+      properties:
+        draweeId:
+          type: string
+          description: Unique identifier associated with the drawee.
+          example: 824f5141524b4d58576853766c786a45376e7637576e6d35695378515a726f494c36367763776775432f453d
+        displayAccountNumber:
+          type: string
+          description: A masked account number of the drawee account that can be displayed
+            to the customer
+          example: XXXXXX2364
+        currencyCode:
+          type: string
+          description: The currency code of the drawee account in ISO 4217 format
+          example: SGD
+        accountNickName:
+          type: string
+          description: Drawee account nick name
+          example: James
+        bankDetails:
+          $ref: "#/components/schemas/BankDetails"
+    PayeeSourceAccountCombinations:
+      required:
+      - payeeAccountCurrencyCode
+      - payeeId
+      - payeeNickName
+      - paymentMethods
+      - sourceAccountIds
+      type: object
+      properties:
+        payeeId:
+          type: string
+          description: "Unique identifier associated with the payee.Typically, this\
+            \ is not displayed to the customer."
+          example: C$0003019202$AU$XX$01000540000001
+        displayPayeeAccountNumber:
+          type: string
+          description: The display account number of the destination account
+          example: XXXXXX4085
+        payeeAccountCurrencyCode:
+          type: string
+          description: The currency code of the payee account in ISO 4217 format
+          example: SGD
+        payeeNickName:
+          type: string
+          description: Payee account nick name
+          example: James
+        bankDetails:
+          $ref: "#/components/schemas/BankDetails"
+        paymentType:
+          type: string
+          description: "The payment type.This is a reference data field. Please use\
+            \ /v1/utilities/referenceData/{paymentType} resource to get valid value\
+            \ of this field with description."
+          example: GIRO
+        paymentMethods:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentMethod"
+        merchantNumber:
+          type: string
+          description: Unique identifier associated with the merchant. Applicable
+            only for Australia.
+          example: "10000025142"
+        payeeName:
+          type: string
+          description: Name of the payee.Applicable only for Australia.
+          example: Singtel
+        sourceAccountIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceAccountIds"
+    DestinationSourceAcctCombinations:
+      required:
+      - destinationAccountCurrencyCode
+      - destinationAccountId
+      - displayDestinationAccountNumber
+      - sourceAccountIds
+      type: object
+      properties:
+        destinationAccountId:
+          type: string
+          description: "The destination account identifier in encrypted format.Typically,\
+            \ this is not displayed to the customer."
+          example: 824f5141524b4d58576853766c786a45376e7637576e6d35695378515a726f494c36367763776775432f453d
+        displayDestinationAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2364
+        destinationAccountCurrencyCode:
+          type: string
+          description: The currency code of the payee account in ISO 4217 format
+          example: SGD
+        productName:
+          type: string
+          description: The name of the product
+          example: Personal Checking Account
+        availableBalance:
+          type: number
+          description: The amount available  to withdraw or transfer immediately.
+          format: double
+          example: 50000.25
+        nextPaymentAmount:
+          type: number
+          description: The next payment amount due.
+          format: double
+          example: 4500.25
+        outstandingBalance:
+          type: number
+          description: Previous balance amount.
+          format: double
+          example: 4500.25
+        minimumDueAmount:
+          type: number
+          description: Minimum due amount for a payment cycle.
+          format: double
+          example: 500.25
+        installmentAmount:
+          type: number
+          description: Installment loan payment amount
+          format: double
+          example: 1200.25
+        lastStatementDate:
+          type: string
+          description: The date of the last statement in ISO 8601 date format YYYY-MM-DD.
+          format: date
+          example: 2016-10-03
+        paymentDueDate:
+          type: string
+          description: The payment due date in ISO 8601 date format YYYY-MM-DD.
+          format: date
+          example: 2016-10-05
+        sourceAccountIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceAccountIds"
+        draweeAccountIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/DraweeAccountIds"
+        accountNickName:
+          type: string
+          description: The nick name of the account assigned by the customer
+          example: James
+    BankDetails:
+      type: object
+      properties:
+        bankCode:
+          type: string
+          description: "Payee account bank code. Code assigned by a central bank,\
+            \ a bank supervisory body or a Bankers Association in a country to all\
+            \ its licensed member banks or financial institutions code"
+          example: "101"
+        bankName:
+          type: string
+          description: Payee account bank name
+          example: HSBC Bank
+    PaymentMethod:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          description: "The acceptable forms of remittance for a given payments and\
+            \ transfer transaction.This is a reference data field. Please use /v1/utilities/referenceData/{paymentMethod}\
+            \ resource to get valid value of this field with description."
+          example: GIRO
+    SourceAccountIds:
+      required:
+      - sourceAccountId
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: "The source account identifier in encrypted format.Typically,\
+            \ this is not displayed to the customer."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+    DraweeAccountIds:
+      required:
+      - draweeId
+      type: object
+      properties:
+        draweeId:
+          type: string
+          description: Unique identifier associated with the drawee.
+          example: 824f5141524b4d58576853766c786a45376e7637576e6d35695378515a726f494c36367763776775432f453d
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ=="
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string

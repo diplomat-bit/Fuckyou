@@ -1,0 +1,1356 @@
+openapi: 3.0.1
+info:
+  title: AccountTransactionListingAndDetails_OpenAPI
+  description: This API is used to retrieve transactions details and history for all
+    accounts product.This API is also used to download the transaction details of
+    an account in different file formats.
+  version: 1.35.0
+  x-deployment-reference: "XP-O-CrossProdSvcs-DGL-EA,XP-O-CrossProdSvcs-DGL-EA-TW,XP-O-CrossProdSvcs-DGL-EA-EM"
+  x-linked-api: "CrossProductServices_Digital_Orchestration, TransactionDetailedView"
+servers:
+- url: "https://127.0.0.1/openapi/v1/accounts/{accountId}/transactions"
+paths:
+  /:
+    get:
+      tags:
+      - Accounts_Account Financials_Account Transactions
+      summary: Retrieve Transactions for Specific Account
+      description: "This API returns an array of transactions for the specified account.\
+        \ For investment transactions such as buying or selling a stock, they will\
+        \ be returned in the array investment Transaction. Important! For PSD2, only\
+        \ Credit card, Checking and Saving account are returned in the response."
+      operationId: TransactionDetails
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: x-jws-signature
+        in: header
+        description: "This field is signature generated when partner sign API payload.This\
+          \ signature will be used to validate that the call is coming from a valid\
+          \ partner. This signature is a JWT token, which will be validated with partner’\
+          s JWK stored in DB"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: transactionStatus
+        in: query
+        description: "Applicable for credit cards only. This is a reference data field.\
+          \ Please use /v1/utilities/referenceData/{transactionStatus} resource to\
+          \ get possible value of this field with description."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: nextStartIndex
+        in: query
+        description: In some cases there is more data than what can be returned in
+          a single response. If there is additional data available a nextStartIndex
+          will be returned. Pass the nextStartIndex in your next request to retrieve
+          the next set of data.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: requestSize
+        in: query
+        description: "Requested number of transactions.The maximum we can provide\
+          \ in one response is 50. If nothing is specified, we will return 20. Currently\
+          \ this field is not supported."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: pendingSdnScreeningFlag
+        in: query
+        description: This flag will be required to trigger FG/FT flow to retrieve
+          transactions pending SDN screening.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: transactionFromDate
+        in: query
+        description: "Starting range for transaction date in ISO 8601 date format\
+          \ 'YYYY-MM-DD'. Date Range: Upto last 12 months for CASA and last 3 Billing\
+          \ Cycle for credit card and ready credit accounts. Note :Applicable for\
+          \ advance search for  CASA / Ready Credt / Credit Card account products"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: transactionToDate
+        in: query
+        description: "End range for transaction date in ISO 8601 date format 'YYYY-MM-DD'.\
+          \ Date Range: Upto last 12 months for CASA and last 3 Billing Cycle for\
+          \ credit card and ready credit accounts. Note :Applicable for advance search\
+          \ for  CASA / Ready Credt / Credit Card account products"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: amountFrom
+        in: query
+        description: "Starting range of transaction amount. Note: Applicable for Investment\
+          \ accounts"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: amountTo
+        in: query
+        description: "End range of transaction amount. Note: Applicable for Investment\
+          \ accounts"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: transactionDescription
+        in: query
+        description: "Description given to any kind of transaction made by the customer.\
+          \ PII data or sensitive information pertaining to account numbers, card\
+          \ numbers are not allowed to be sent here."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDetailsResponse"
+        "206":
+          description: "Partial success response. This is applicable for scenarios\
+            \ where both pending and normal transactions are requested, but with which\
+            \ any one of them failed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDetailsResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr>                        <tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr><tr><td>error</td><td>invalidSearch</td><td>This
+            Search criteria is not supported for this Product.</td></tr></tr><tr><td>error</td><td>invalidDateRange</td><td>Date
+            range is invalid</td></tr><tr><td>error</td><td>invalidAmountRange</td><td>Amount
+            range is invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /documents:
+    get:
+      tags:
+      - Accounts_Account Financials_Account Transactions
+      summary: Download Transaction Details
+      description: "This API is used to download the transaction on the account in\
+        \ different formats like pdf, Excel etc."
+      operationId: ViewTransactionDetailsDocument
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: downloadFormat
+        in: query
+        description: |-
+          This field refer to the fomat in which transaction detials is require to be downloaded.
+          This is a reference data field. Please use /v1/utilities/referenceData/{downloadFormat} resource to get valid value of this field with description.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: transactionStartDate
+        in: query
+        description: Starting range for transaction date in ISO 8601 date format 'YYYY-MM-DD'.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+      - name: transactionEndDate
+        in: query
+        description: End range for transaction date in ISO 8601 date format 'YYYY-MM-DD'.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+      - name: nextStartIndex
+        in: query
+        description: In some cases there is more data than what can be returned in
+          a single response. If there is additional data available a nextStartIndex
+          will be returned. Pass the nextStartIndex in your next request to retrieve
+          the next set of data.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewTransactionDetailsDocumentResponse"
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>invalidSearch</td><td>This
+            Search criteria is not supported for this Product.</td></tr><tr><td>error</td><td>invalidDateRange</td><td>Date
+            range is invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /limited/dayRange:
+    get:
+      tags:
+      - Accounts_Account Financials_Account Transactions
+      summary: Retrieve Transaction Details for Limited Period
+      description: "This API is used to retrieve transactions for the specified account\
+        \ with maximum allowable period of 90 days. Important! For PSD2, only Credit\
+        \ card, Checking and Saving account are returned in the response."
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: transactionStatus
+        in: query
+        description: "Applicable for credit cards only. This is a reference data field.\
+          \ Please use /v1/utilities/referenceData/{transactionStatus} resource to\
+          \ get possible value of this field with description."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: nextStartIndex
+        in: query
+        description: In some cases there is more data than what can be returned in
+          a single response. If there is additional data available a nextStartIndex
+          will be returned. Pass the nextStartIndex in your next request to retrieve
+          the next set of data.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: requestSize
+        in: query
+        description: "Requested number of transactions.The maximum we can provide\
+          \ in one response is 50. If nothing is specified, we will return 20. Currently\
+          \ this field is not supported."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: number
+      - name: transactionFromDate
+        in: query
+        description: "Starting range for transaction date in ISO 8601 date format\
+          \ 'YYYY-MM-DD'. Date Range: Upto last 12 months for CASA and last 3 Billing\
+          \ Cycle for credit card and ready credit accounts. Note :Applicable for\
+          \ advance search for  CASA / Ready Credt / Credit Card account products"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: transactionToDate
+        in: query
+        description: "End range for transaction date in ISO 8601 date format 'YYYY-MM-DD'.\
+          \ Date Range: Upto last 12 months for CASA and last 3 Billing Cycle for\
+          \ credit card and ready credit accounts. Note :Applicable for advance search\
+          \ for  CASA / Ready Credt / Credit Card account products"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: amountFrom
+        in: query
+        description: "Starting range of transaction amount. Note: Applicable for Investment\
+          \ accounts"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: amountTo
+        in: query
+        description: "End range of transaction amount. Note: Applicable for Investment\
+          \ accounts"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDetailsResponse"
+        "206":
+          description: "Partial success response. This is applicable for scenarios\
+            \ where both pending and normal transactions are requested, but with which\
+            \ any one of them failed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDetailsResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr>                        <tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr><tr><td>error</td><td>invalidSearch</td><td>This
+            Search criteria is not supported for this Product.</td></tr></tr><tr><td>error</td><td>invalidDateRange</td><td>Date
+            range is invalid</td></tr><tr><td>error</td><td>invalidAmountRange</td><td>Amount
+            range is invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /{transactionReferenceId}/details:
+    get:
+      tags:
+      - Accounts_Account Financials_Account Transactions
+      summary: Retrieve Additional Transaction Details By Transaction Reference Id
+      description: This API is used to retrieve additional transaction details data
+        associated with a transaction reference id.
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: transactionReferenceId
+        in: path
+        description: Reference Id to uniquely identify the transaction.This is applicable
+          for successful transactions.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: transactionCode
+        in: query
+        description: Transaction Code specific to the transaction
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionDetailedViewResponse"
+        "204":
+          description: No Content
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credential is missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+    ViewTransactionDetailsDocumentResponse:
+      required:
+      - binaryData
+      type: object
+      properties:
+        binaryData:
+          type: string
+          description: This field contains binary data of the Transaction detials.
+          example: "0101010001101000011010010111001100100000011001100110100101100101011011000110010000100000011000110110"
+        nextStartIndex:
+          type: string
+          description: In some cases there is more data than what can be returned
+            in a single response. If there is additional data available a nextStartIndex
+            will be returned. Pass the nextStartIndex in your next request to retrieve
+            the next set of data.
+          example: "11"
+    TransactionDocumentList:
+      type: object
+      properties:
+        transactionDocument:
+          type: string
+          description: "This is the pdf document displayed/generated against a transaction.\
+            \ This is a reference data field. Please use /v1/utilities/referenceData/{transactionDocument}\
+            \ resource to get valid value of this field with description."
+          example: PAYMENT_ORDER
+    AdditionalInformations:
+      type: object
+      properties:
+        remarks1:
+          type: string
+          description: Remarks.
+          example: Free text
+        remarks2:
+          type: string
+          description: Remarks.
+          example: Free text
+        remarks3:
+          type: string
+          description: Remarks.
+          example: Free text
+        remarks4:
+          type: string
+          description: Remarks.
+          example: Free text
+        remarks5:
+          type: string
+          description: Remarks.
+          example: Free text
+    TransactionDetailsResponse:
+      type: object
+      properties:
+        transactions:
+          type: array
+          description: Transactions list
+          items:
+            $ref: "#/components/schemas/Transaction"
+        investmentTransaction:
+          type: array
+          description: Investment Transactions list
+          items:
+            $ref: "#/components/schemas/InvestmentTransaction"
+        nextStartIndex:
+          type: string
+          description: In some cases there is more data than what can be returned
+            in a single response. If there is additional data available a nextStartIndex
+            will be returned. Pass the nextStartIndex in your next request to retrieve
+            the next set of data.
+          example: "11"
+    Transaction:
+      type: object
+      properties:
+        displayAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2391
+        transactionDate:
+          type: string
+          description: "Transaction date in YYYY-MM-DD format value conforming to\
+            \ ISO 8601. This needs to be formatted in front-end for country/locale\
+            \ specific display purposes. This is the field used for default sorting,"
+          format: date
+          example: 2015-06-21
+        transactionTime:
+          type: string
+          description: Transaction time in HH-MM format value conforming to ISO. This
+            needs to be formatted in front-end for country/locale/ partner specific
+            display purposes. This is the field used for default sorting.
+          example: 10:30:00 PM
+        statementDate:
+          type: string
+          description: Date on which the account statement has been generated in ISO
+            8601 date format YYYY-MM-DD. Applicable only for credit cards.
+          format: date
+          example: 2017-07-21
+        transactionDescription:
+          type: string
+          description: "Transaction description from the merchant, POS or bank. If\
+            \ there are foreign currency transactions on checking /saving account(s)\
+            \ then description includes exchange rate, city and country."
+          example: INTEREST PAYMENT
+        transactionReferenceId:
+          type: string
+          description: 'Reference Id to uniquely identify the transaction.This is
+            applicable for successful transactions. '
+          example: BIMI51807310002051
+        transactionDetailViewFlag:
+          type: boolean
+          description: Flag to indicate if this transaction is eligible for more detailed/L3
+            view.
+          example: true
+        checkSerialNumber:
+          type: string
+          description: The check serial number. Applicable for checking accounts only
+          example: "89000125"
+        transactionAmount:
+          type: number
+          description: Transaction amount in local currency.
+          format: double
+          example: 50.55
+        accountCurrencyTransactionAmount:
+          type: number
+          description: This is transaction amount in source account currency.
+          format: double
+          example: 50.55
+        sourceAccountCurrencyCode:
+          type: string
+          description: The currency code of the source account in ISO 4217 format
+          example: SGD
+        currencyCode:
+          type: string
+          description: This is the local currency code of transaction in ISO 4217
+            format
+          example: EUR
+        foreignTransactionAmount:
+          type: number
+          description: The transaction amount in the foreign currency
+          example: 50.55
+        foreignCurrencyCode:
+          type: string
+          description: The foreign currency code of the transaction in ISO 4217 format
+          example: USD
+        foreignExchangeRate:
+          type: number
+          description: The exchange rate at the time the foreign transaction was done
+          example: 1.55
+        transactionType:
+          type: string
+          description: "The type of transaction. This is a reference data field. Please\
+            \ use /v1/utilities/referenceData/{transactionType} resource to get possible\
+            \ values of this field with descriptions."
+          example: DEBIT
+        transactionStatus:
+          type: string
+          description: "The status of the transaction.  Applicable for credit cards\
+            \ only.. This is a reference data field. Please use /v1/utilities/referenceData/{transactionStatus}\
+            \ resource to get possible values of this field with descriptions."
+          example: BILLED
+        runningBalance:
+          type: number
+          description: The amount available to transact immediately
+          format: double
+          example: 1485.8
+        transactionPostingDate:
+          type: string
+          description: Transaction posting date in YYYY-MM-DD format value conforming
+            to ISO 8601. This needs to be formatted in front-end for country/locale
+            specific display purposes. This is the field used for default sorting
+          format: date
+          example: 2016-12-02
+        transactionCode:
+          type: string
+          description: The transaction code
+          example: "260"
+        merchantName:
+          type: string
+          description: The merchant name with which this transaction was made with
+          example: "Alcott EU, Via Alberto Lionello, Roma"
+        eligibleForEqualPaymentPlan:
+          type: string
+          description: "The EPP allowed indicator.This is a reference data field.\
+            \ Please use /v1/utilities/referenceData/{eligibleForEqualPaymentPlan}\
+            \ resource to get possible value of This field with description."
+          example: ELIGIBLE
+        transactionAuthorizationCode:
+          type: string
+          description: Transaction authorization code is a unique to a sales credit
+            card transaction to indicate that the sale has been authorized. This is
+            applicable only for pending transactions.
+          example: "987012"
+        merchantCategoryCode:
+          type: string
+          description: Merchant Category Code is a classification code that is a four-digit
+            number listed in ISO 18245
+          example: "5137"
+        transactionDocumentList:
+          type: array
+          description: TransactionDocumentList
+          items:
+            $ref: "#/components/schemas/TransactionDocumentList"
+        additionalInformations:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdditionalInformations"
+    InvestmentTransaction:
+      type: object
+      properties:
+        orderDate:
+          type: string
+          description: Order date in YYYY-MM-DD format value conforming to ISO 8601.
+            This needs to be formatted in front-end for country/locale specific display
+            purposes. This is the field used for default sorting
+          format: date
+          example: 2016-09-05
+        orderReferenceId:
+          type: string
+          description: Reference Id to uniquely identify the investment transaction
+          example: "100234568743532"
+        orderType:
+          type: string
+          description: "This is a reference data field. Please use /v1/utilities/referenceData/{orderType}\
+            \ resource to get possible value of this field with description. You can\
+            \ use the field name as the referenceCode parameter to retrieve the values."
+          example: BUY
+        code:
+          type: string
+          description: "Order code to uniquely identify the transaction,"
+          example: BCF0001BB
+        name:
+          type: string
+          description: Unique name  for fund/stock
+          example: BIMI51807310002051
+        securityType:
+          type: string
+          description: "Type of the security.This is a reference data field. Please\
+            \ use /v1/apac/utilities/referenceData/{securityType} resource to get\
+            \ valid value of this field with description."
+          example: BONDS
+        currencyCode:
+          type: string
+          description: "The currency code of the transaction in ISO 4217 format,"
+          example: EUR
+        transactionAmount:
+          type: number
+          description: Transaction amount in local currency.
+          format: double
+          example: 12500.12
+        price:
+          type: number
+          description: Order price of  trade
+          format: double
+          example: 21.32
+        orderStatus:
+          type: string
+          description: "This is a reference data field. Please use /v1/utilities/referenceData/{orderStatus}\
+            \ resource to get possible value of This field with description."
+          example: SETTLED
+        grossAmount:
+          type: number
+          description: The total amount of the transaction
+          format: double
+          example: 5000.25
+        orderQuantity:
+          type: number
+          description: Total number of units ordered
+          format: double
+          example: 1100.0
+        orderMedium:
+          type: string
+          description: "The medium used by customer to place order.This is a reference\
+            \ data field. Please use /v1/utilities/referenceData/{orderMedium} resource\
+            \ to get possible values of This field with descriptions."
+          example: INTERNET
+        filledQuantity:
+          type: number
+          description: Number of units received
+          format: double
+          example: 1100.0
+        balanceQuantity:
+          type: number
+          description: Number of units not received
+          format: double
+          example: 1255.0
+        stockMarketCode:
+          type: string
+          description: Trading market code for securities
+          example: NYSE
+        limitPrice:
+          type: number
+          description: minimum price for securities bond
+          format: double
+          example: 27.12
+        weightedTradePrice:
+          type: number
+          description: mean price of the securities bond
+          format: double
+          example: 27.12
+        isinCode:
+          type: string
+          description: ISIN stands for International Securities Identification Number.
+            These numbers are unique codes used to identify and track securities worldwide
+          example: US5949181045
+        referenceCurrencyCode:
+          type: string
+          description: The currency used for reference in bonds
+          example: EUR
+        investmentAmountInLocalCurrency:
+          type: number
+          description: InvestmentAmount In local currency
+          format: double
+          example: 5000.25
+        settlementAmountInSecurityCurrency:
+          type: number
+          description: The settlement amount for securities
+          format: double
+          example: 5000.25
+        settlementAmountInReferenceCurrency:
+          type: number
+          description: The settlement amount for securities for referency currency
+          format: double
+          example: 5000.25
+        investmentAmountInSecurityCurrency:
+          type: number
+          description: The investment amount for securities
+          format: double
+          example: 5000.25
+        settlementDate:
+          type: string
+          description: Date Of Settlement for Securities Bond
+          format: date
+          example: 2021-12-01
+        tradePrice:
+          type: number
+          description: price of  the trade prior to the current date
+          format: double
+          example: 20.32
+    TransactionDetailedViewResponse:
+      required:
+      - paymentType
+      - transactionAmount
+      - transactionCurrencyCode
+      - transactionDate
+      type: object
+      properties:
+        displaySourceAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2364
+        paymentType:
+          type: string
+          description: "The payment type.This is a reference data field. Please use\
+            \ /v1/utilities/referenceData/{paymentType} resource to get valid value\
+            \ of this field with description."
+          example: SWIFT_TRANSFER
+        transactionDescription:
+          type: string
+          description: "Transaction description from the merchant, POS or bank. If\
+            \ there are foreign currency transactions on checking /saving account(s)\
+            \ then description includes exchange rate, city and country."
+          example: INTEREST PAYMENT
+        transactionAmount:
+          type: number
+          description: Transaction amount in account currency.
+          format: double
+          example: 50.55
+        transactionCurrencyCode:
+          type: string
+          description: The currency code for the transaction amount in ISO 4217 format.
+          example: PLN
+        transactionDate:
+          type: string
+          description: "Transaction date in YYYY-MM-DD format value conforming to\
+            \ ISO 8601. This needs to be formatted in front-end for country/locale\
+            \ specific display purposes. This is the field used for default sorting,"
+          format: date
+          example: 2017-12-21
+        foreignTransactionAmount:
+          type: number
+          description: The transaction amount in the foreign account current
+          example: 50.55
+        foreignCurrencyCode:
+          type: string
+          description: The currency code for the foreign transaction amount in ISO
+            4217 format.
+          example: GBP
+        foreignExchangeRate:
+          type: number
+          description: The exchange rate at the time the foreign transaction was done
+          example: 0.2011
+        transactionStatus:
+          type: string
+          description: "The status of the transaction.  Applicable for credit cards\
+            \ only.. This is a reference data field. Please use /v1/utilities/referenceData/{transactionStatus}\
+            \ resource to get possible values of this field with descriptions."
+          example: NEW
+        transactionPostingDate:
+          type: string
+          description: Transaction posting date in YYYY-MM-DD format value conforming
+            to ISO 8601.
+          format: date
+          example: 2019-02-12
+        customerName:
+          $ref: "#/components/schemas/CustomerName"
+        customerAddress:
+          $ref: "#/components/schemas/CustomerAddress"
+        beneficiaryBankDetails:
+          $ref: "#/components/schemas/BeneficiaryBankDetails"
+        customerMerchantReferenceDetails:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerMerchantReferenceDetails"
+        remarks:
+          type: string
+          description: Payment notes. Free text from screen
+          example: Family expenses
+        paymentPriorityCode:
+          type: string
+          description: This code is used to indicate the priority payments
+          example: "5"
+        merchantCode:
+          type: string
+          description: The code to identify merchant
+          example: "300021"
+        merchantName:
+          type: string
+          description: The name of the merchant
+          example: КВАРТПЛАТА МОСКВА
+        transactionReversalDescription:
+          type: string
+          description: Transaction reversal description as provided by the returnee
+          example: Transaction Reversed with wrong Payee
+        originalTransactionDetails:
+          $ref: "#/components/schemas/OriginalTransactionDetails"
+        endToEndIdentification:
+          type: string
+          description: End to End Identification status
+          example: Pending
+        creditorDetails:
+          $ref: "#/components/schemas/CreditorDetails"
+        debtorDetails:
+          $ref: "#/components/schemas/DebtorDetails"
+        sourceBankName:
+          type: string
+          description: Name of the bank.
+          example: HSBC Bank
+        sourceBankCode:
+          type: string
+          description: The bank code of the payer account
+          example: "44525101"
+        clearingTimeStamp:
+          type: string
+          description: Clearing Date time as reported by the central bank in ISO 8601
+            date format YYYY-MM-DDTHH:MM:SS
+          format: dateTime
+          example: 2020-10-14T12:45:11
+        settlementTimeStamp:
+          type: string
+          description: Settlement Date time as reported by the central bank in ISO
+            8601 date format YYYY-MM-DDTHH:MM:SS
+          format: dateTime
+          example: 2020-10-15T13:45:30
+        centralBankTransactionReferenceId:
+          type: string
+          description: Transaction ID identifying the transaction across banks
+          example: A908808150725100F9wfDh4CFADBC375
+        originalCreditorDetails:
+          $ref: "#/components/schemas/OriginalCreditorDetails"
+        originalCreditAccountDetails:
+          $ref: "#/components/schemas/OriginalCreditAccountDetails"
+        originalDebtorName:
+          type: string
+          description: Original Debtor Name
+          example: John Smith
+        originalDebitAccountDetails:
+          $ref: "#/components/schemas/OriginalDebitAccountDetails"
+        transactionDebitFeeAmount:
+          type: number
+          description: Fees charged for the debit.
+          format: double
+          example: 15.15
+        bankMemberId:
+          type: string
+          description: Bank Member ID
+          example: "78346"
+        beneficiaryLegalName:
+          type: string
+          description: Legal Name of the Beneficiary
+          example: John Adam Smith
+        beneficiaryAddress:
+          type: array
+          items:
+            $ref: "#/components/schemas/BeneficiaryAddress"
+        beneficiaryTaxId:
+          type: string
+          description: Beneficiary Tax ID
+          example: 2302sda
+        creditorReferenceNo:
+          type: string
+          description: Creditor Reference No
+          example: Employee 254856
+        creditorIdentification:
+          type: string
+          description: Creditor  Identification
+          example: P2303030
+        creditorIdentificationType:
+          type: string
+          description: Creditor Identification Type
+          example: SupperAnnual
+        categoryPurposeCode:
+          type: string
+          description: Category Purpose Code
+          example: SALARY
+        correspondentAccountNumber:
+          type: string
+          description: Correspondent Account Number
+          example: "534646"
+        incomeCode:
+          type: string
+          description: Income Code
+          example: SALARY
+        sourceAccountNumber:
+          type: string
+          description: Source Account Number
+          example: "435454"
+        remitterName:
+          type: string
+          description: Remitter Name
+          example: Summer
+        remitterLegalName:
+          type: string
+          description: Remitter Legal Name
+          example: ООО Ромашка
+        remitterTaxId:
+          type: string
+          description: Remitter Tax Id
+          example: "7728240240"
+        beneficiaryTaxRegistrationCode:
+          type: string
+          description: Beneficiary Tax Registration Code
+          example: "454354"
+        creationDate:
+          type: string
+          description: calendar date when transaction entry was created or transaction
+            was initiated in YYYY-MM-DD format value conforming to ISO 8601.
+          format: date
+          example: 2022-01-17
+        effectiveTransferDate:
+          type: string
+          description: calendar date when transaction was completed in YYYY-MM-DD
+            format value conforming to ISO 8601.
+          format: date
+          example: 2022-01-18
+    CustomerName:
+      required:
+      - fullName
+      type: object
+      properties:
+        fullName:
+          type: string
+          description: Full name of the customer.
+          example: John Smith
+    CustomerAddress:
+      type: object
+      properties:
+        addressLine1:
+          type: string
+          description: Address line 1
+          example: "12"
+        addressLine2:
+          type: string
+          description: Address line 2
+          example: "24"
+        addressLine3:
+          type: string
+          description: Address line 3
+          example: "209"
+        addressLine4:
+          type: string
+          description: Address line 4
+          example: Warsaw
+        cityName:
+          type: string
+          description: City
+          example: Warsaw
+        state:
+          type: string
+          description: "State.This is a reference data field. Please use /v1/utilities/referenceData/{addressState}\
+            \ resource to get valid value of this field with description."
+          example: Mazowieckie
+        postalCode:
+          type: string
+          description: Postal/ZIP code
+          example: "345346"
+        provinceCode:
+          type: string
+          description: Province code
+          example: Mazowieckie
+        countryCode:
+          type: string
+          description: "ISO country code. This is a reference data field. Please use\
+            \ /v1/utilities/referenceData/{country} resource to get valid value of\
+            \ this field with description. You can use countryCode field name as the\
+            \ referenceCode parameter to retrieve the values."
+          example: PL
+    BeneficiaryBankDetails:
+      required:
+      - bankCode
+      - bankName
+      - displayAccountNumber
+      - fullName
+      type: object
+      properties:
+        fullName:
+          type: string
+          description: Name of the Beneficiary.
+          example: Albert Neigh
+        displayAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2391
+        bankName:
+          type: string
+          description: Name of the bank.
+          example: HSBC Bank
+        bankCode:
+          type: string
+          description: The bank code of the external payee account.
+          example: "44525101"
+        accountNumber:
+          type: string
+          description: Account number of the beneficiary.
+          example: "09125812364"
+    CustomerMerchantReferenceDetails:
+      required:
+      - customerMerchantReferenceCode
+      - customerMerchantReferenceDescription
+      type: object
+      properties:
+        customerMerchantReferenceCode:
+          type: string
+          description: Additional bill reference code.
+          example: EAMA
+        customerMerchantReferenceDescription:
+          type: string
+          description: The value associated with the corresponding additional Bill
+            Reference Code.
+          example: "1234123412345"
+    OriginalTransactionDetails:
+      type: object
+      properties:
+        paymentType:
+          type: string
+          description: "The payment type.This is a reference data field. Please use\
+            \ /v1/utilities/referenceData/{paymentType} resource to get valid value\
+            \ of this field with description."
+          example: SWIFT_TRANSFER
+        transactionDate:
+          type: string
+          description: "Transaction date in YYYY-MM-DD format value conforming to\
+            \ ISO 8601. This needs to be formatted in front-end for country/locale\
+            \ specific display purposes. This is the field used for default sorting,"
+          format: date
+        transactionAmount:
+          type: number
+          description: Transaction amount in account currency.
+          format: double
+          example: 50.55
+        transactionCurrencyCode:
+          type: string
+          description: The currency code for the foreign transaction amount in ISO
+            4217 format.
+          example: HKD
+        transactionStatus:
+          type: string
+          description: Transaction Status of the original transaction
+          example: Authorized
+        transactionReferenceNumber:
+          type: string
+          description: Transaction reference number of the original transaction
+          example: Pending
+        transactionRemarks:
+          type: string
+          description: Transaction Remarks of the original transaction
+          example: Money gone is gone
+        endToEndIdentification:
+          type: string
+          description: End to End Identification reference of the original transaction
+    CreditorDetails:
+      type: object
+      properties:
+        creditorProxyIdType:
+          type: string
+          description: Proxy ID Type used for the payee account identification
+          example: Mobile
+        creditorProxyIdValue:
+          type: string
+          description: Proxy ID value used for the payee account identification
+          example: +61-12385645
+    DebtorDetails:
+      type: object
+      properties:
+        debtorProxyIdType:
+          type: string
+          description: Proxy ID Type used for the payer account identification
+          example: Mobile
+        debtorProxyIdValue:
+          type: string
+          description: Proxy ID value used for the payer account identification
+          example: +61-7853123
+    OriginalCreditorDetails:
+      type: object
+      properties:
+        originalCreditorName:
+          type: string
+          description: Original Creditor Name
+          example: John Smith
+        originalCreditorProxyIdType:
+          type: string
+          description: Proxy ID Type used for the payee account identification
+          example: Mobile
+        originalCreditorProxyIdValue:
+          type: string
+          description: Proxy ID value used for the payee account identification
+          example: +61-12385645'
+    OriginalCreditAccountDetails:
+      type: object
+      properties:
+        displayAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2391
+        bankName:
+          type: string
+          description: Name of the bank.
+          example: HSBC Bank
+        bankCode:
+          type: string
+          description: The bank code of the payee account
+          example: "44525101"
+    OriginalDebitAccountDetails:
+      type: object
+      properties:
+        displayAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2391
+        bankName:
+          type: string
+          description: Name of the bank.
+          example: HSBC Bank
+        bankCode:
+          type: string
+          description: The bank code of the payee account
+          example: "44525101"
+    BeneficiaryAddress:
+      type: object
+      properties:
+        addressLine:
+          type: string
+          description: Address of the Beneficiary
+          example: Russia
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: client_id generated during consumer onboarding
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    x-jws-signature:
+      name: x-jws-signature
+      in: header
+      description: "signature generated when partner sign API payload.This signature\
+        \ will be used to validate that the call is coming from a valid partner. This\
+        \ signature is a JWT token, which will be validated with partner's JWK stored\
+        \ in DB."
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    accountId:
+      name: accountId
+      in: path
+      description: "The account identifier in encrypted format.Typically, this is\
+        \ not displayed to the customer."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string

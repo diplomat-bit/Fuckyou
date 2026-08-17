@@ -1,0 +1,1293 @@
+openapi: 3.0.1
+info:
+  title: MoneyMovementInternalDomesticTransfers_OpenAPI
+  description: This API is used to perform the operations for associated with internal
+    domestic transfer.
+  version: 1.26.0
+  x-deployment-reference: "PYMT-D-PaymentInit-PERD-DGL-EA,PYMT-D-PaymentInit-PERD-DGL-EA-TW"
+  x-linked-api: PaymentInitiation_PersonalDomesticTransfers_Digital_Domain
+servers:
+- url: https://127.0.0.1/openapi/v1/moneyMovement/internalDomesticTransfers
+paths:
+  /payees/sourceAccounts:
+    get:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: Retrieve Destination Source Account - Internal Transfers
+      description: "This API is used to Return the valid combinations of the internal\
+        \ domestic transfer destination and source accounts. This information may\
+        \ be used to prepare a valid source list for a selected destination, or vice\
+        \ versa."
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: paymentType
+        in: query
+        description: "The payment type.This is a reference data field. Please use\
+          \ /v1/utilities/referenceData/{paymentType} resource to get valid value\
+          \ of this field with description."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: nextStartIndex
+        in: query
+        description: In some cases there is more data than what can be returned in
+          a single response. If there is additional data available a nextStartIndex
+          will be returned. Pass the nextStartIndex in your next request to retrieve
+          the next set of data.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalDomesticValidSourceDestinationAcccountsResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credential is missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><td>error</td><td>resourceNotFound</td><td>Empty resource/resource
+            not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr></tr><table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /preprocess:
+    post:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: Create Internal Transfer
+      description: This API is used to create a new Internal domestic transfer and
+        verify that there are no errors. The response from this resource should be
+        used to construct a pre-confirmation page so the customer can review the transaction
+        before confirming.
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PreprocessInternalFundTransferRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreprocessForInternalFundTransferResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr><tr><td>error</td><td>invalidPayee</td><td>Payee
+            is invalid</td></tr><tr><td>error</td><td>invalidSourceAccount</td><td>Source
+            account is invalid</td></tr><tr><td>error</td><td>invalidAccountCombination</td><td>Invalid
+            source and destination account combination</td></tr><tr><td>error</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td></tr><tr><td>error</td><td>invalidFxDealReferenceNumber</td><td>Forex
+            deal reference is invalid</td></tr><tr><td>error</td><td>transactionAmountBelowMinimum</td><td>Transaction
+            amount below minimum amount</td></tr><tr><td>error</td><td>transactionAmountExceedsMaximum</td><td>Allowed
+            transaction amount limit for this transaction exceeded</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credential is missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr><tr><td>error</td><td>invalidPayee</td><td>Payee
+            is invalid</td></tr><tr><td>error</td><td>invalidSourceAccount</td><td>Source
+            account is invalid</td></tr><tr><td>error</td><td>invalidAccountCombination</td><td>Invalid
+            source and destination account combination</td></tr><tr><td>error</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td></tr><tr><td>error</td><td>invalidFxDealReferenceNumber</td><td>Forex
+            deal reference is invalid</td></tr><tr><td>error</td><td>transactionAmountBelowMinimum</td><td>Transaction
+            amount below minimum amount</td></tr><tr><td>error</td><td>customerIsLockedForVda</td><td>Customer
+            is locked due to invalid attempts</td></tr><tr><td>error</td><td>transactionAmountExceedsMaximum</td><td>Allowed
+            transaction amount limit for this transaction exceeded</td></tr><tr><td>error</td><td>invalidCurrencyCode</td><td>Invalid
+            CCY for call deposit Payee</td></tr><table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: PreprocessFundTransferRequest
+  /:
+    post:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: Confirm Internal Transfer
+      description: "This API is used to confirm the internal domestic transfer. It\
+        \ should be called after successfully creating the internal transfer. If successful,\
+        \ it will return a confirmation number that should be displayed and stored."
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InternalDomesticTransferRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalDomesticTransferResponse"
+        "202":
+          description: "Accepted –The request has been accepted for processing , but\
+            \ has not been completed."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalDomesticTransferResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr><tr><td>error</td><td>preprocessFxRateExpired</td><td>Pre-process
+            forex rate is expired</td></tr><tr><td>error</td><td>transactionAmountBelowLimit</td><td>Transaction
+            amount below minimum amount</td></tr><tr><td>error</td><td>invalidControlFlowId</td><td>Control
+            flow ID is invalid</td></tr><tr><td>error</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td></tr><tr><td>error</td><td>insufficientFund</td><td>Insufficient
+            fund</td></tr><tr><td>error</td><td>tempServiceSuspensionDueToNaturalCalamity</td><td>Temporary
+            service suspension due to natural calamities</td></tr><tr><td>error</td><td>transactionPendingReview</td><td>Transaction
+            pending under review</td></tr><tr><td>error</td><td>dailyTransactionAmountLimitReached</td><td>Maximum
+            daily transaction amount limit reached</td></tr><tr><td>error</td><td>transactionAmountLimitExceeded</td><td>Allowed
+            transaction amount limit for this transaction exceeded</td></tr><tr><td>error</td><td>invalidAccountStatus</td><td>Account
+            status is invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credential is missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr><tr><td>error</td><td>mfaRequired</td><td>MFA
+            is required</td></tr><tr><td>error</td><td>transactionDenied</td><td>Transaction
+            Denied</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>overLocalCustomerSpecifiedDailyLimitReached</td><td>The
+            overall local daily transaction amount limit for customer specific reached</td></tr><tr><td>error</td><td>overLocalDailyTransactionAmountLimitReached</td><td>The
+            overall local daily transaction amount limit reached</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr><tr><td>error</td><td>MonthlyTransactionAmountLimitReached</td><td>Exceed
+            monthly non-designated transfer limit</td></tr><tr><td>error</td><td>OverdraftAmountExceeds</td><td>OD
+            amount is greater than book balance</td></tr><tr><td>error</td><td>TerminalNotRegistered</td><td>Terminal
+            is not registered</td></tr><tr><td>error</td><td>preprocessFxRateExpired</td><td>Pre-process
+            forex rate is expired</td></tr><tr><td>error</td><td>transactionAmountBelowLimit</td><td>Transaction
+            amount below minimum amount</td></tr><tr><td>error</td><td>invalidControlFlowId</td><td>Control
+            flow ID is invalid</td></tr><tr><td>error</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td></tr><tr><td>error</td><td>insufficientFund</td><td>Insufficient
+            fund</td></tr><tr><td>error</td><td>tempServiceSuspensionDueToNaturalCalamity</td><td>Temporary
+            service suspension due to natural calamities</td></tr><tr><td>error</td><td>transactionPendingReview</td><td>Transaction
+            pending under review</td></tr><tr><td>error</td><td>dailyTransactionAmountLimitReached</td><td>Maximum
+            daily transaction amount limit reached</td></tr><tr><td>error</td><td>transactionAmountLimitExceeded</td><td>Allowed
+            transaction amount limit for this transaction exceeded</td></tr><tr><td>error</td><td>invalidAccountStatus</td><td>Account
+            status is invalid</td></tr><tr><td>error</td><td>invalidDateRange</td><td>Date
+            range is invalid</td></tr><tr><td>error</td><td>duplicatetransaction</td><td>Transaction
+            is duplicate within the period</td></tr><tr><td>error</td><td>transactionMissedCutoffTime</td><td>The
+            transaction has missed cutoff time</td></tr><tr><td>error</td><td>transactionRejectedDueToSdnHit</td><td>Transaction
+            is rejected due to SDN hit</td></tr><tr><td>error</td><td>customerSpecifiedDailyLimitReached</td><td>Maximum
+            customer specific daily transaction amount limit reached</td></tr><tr><td>error</td><td>invalidBeneficiaryName</td><td>Beneficiary
+            name is invalid</td></tr><tr><td>error</td><td>fXTransactionsNotAllowedForMinors</td><td>FX
+            Transactions Not Allowed For Minors</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: InternalDomesticTransferRequest
+  /preprocess/adhocWithPayeeCreation:
+    post:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: "This API allows customer to make adhoc transfers within CITIBANK for\
+        \ a same country.This handle the exchange rate, fees and charges. This API\
+        \ also allows to send request to enroll the payee in registered list of payees,\
+        \ however  registration of payee in  payee list takes place in  subsequent\
+        \ confirmation APIs."
+      description: "This API allows customer to make adhoc transfers within CITIBANK\
+        \ for a same country.This handle the exchange rate, fees and charges. This\
+        \ API also allows to send request to enroll the payee in registered list of\
+        \ payees, however  registration of payee in  payee list takes place in  subsequent\
+        \ confirmation APIs. "
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdhocInternalDmstcTransferPreprocessWithAddPayeeRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdhocInternalDmstcTransferPreprocessWithAddPayeeResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credential is missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr><tr><td>error</td><td>invalidAccount</td><td>Account
+            is invalid</td></tr><tr><td>error</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td></tr><tr><td>error</td><td>invalidPayee</td><td>Payee
+            is invalid</td></tr><tr><td>error</td><td>invalidSourceAccount</td><td>Source
+            account is invalid</td></tr><tr><td>error</td><td>transactionAmountBelowMinimum</td><td>Transaction
+            amount below minimum amount</td></tr><tr><td>error</td><td>transactionAmountExceedsMaximum</td><td>Allowed
+            transaction amount limit for this transaction exceeded</td></tr><tr><td>error</td><td>invalidDestinationAccount</td><td>Destination
+            account is invalid</td></tr><tr><td>error</td><td>paymentScheduleNotAllowed</td><td>Selected
+            Payment Schedule cannot be supported for this payment</td></tr><tr><td>error</td><td>futureDatedTransferRestricted</td><td>Future
+            Date transfers are not allowed for selected source account</td></tr><tr><td>error</td><td>sourceAccountOrCardInactiveOrNotFound</td><td>Source
+            account is inactive or not found in records</td></tr><tr><td>error</td><td>customerIsLockedForVda</td><td>Customer
+            is locked due to invalid attempts</td></tr><tr><td>error</td><td>failedToGetFXRate</td><td>Unable
+            to fetch FX Rate</td></tr><tr><td>error</td><td>crossCurrencySpotLimitExceeded</td><td>The
+            transaction amount is higher than allowed spot limit for cross currency
+            transfers</td></tr><tr><td>error</td><td>transactionFeeHigherThanTransactionAmount</td><td>The
+            transaction fee is higher than transaction amount</td></tr><tr><td>error</td><td>invalidAccountCombination</td><td>Invalid
+            source and destination account combination</td></tr><tr><td>error</td><td>failedToGetFXRate</td><td>Unable
+            to fetch FX Rate</td></tr><tr><td>error</td><td>invalidPaymentDate</td><td>Payment
+            date entered is invalid</td></tr><tr><td>error</td><td>pastDatedTransactionNotAllowed</td><td>Past
+            dated transaction are not allowed</td></tr><tr><td>error</td><td>invalidTransactionCurrency</td><td>Transaction
+            currency is invalid</td></tr><table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: AdhocInternalDmstcTransferPreprocessWithAddPayeeRequest
+  /preprocess/adhoc:
+    post:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: Create Adhoc Internal Transfer
+      description: This API is used to create a new Internal Domestic transfer to
+        an adhoc destination and verifies there are no errors. The destination does
+        not need to be in a payee list. The response from this resource should be
+        used to construct a pre-confirmation page so the customer can review the transaction
+        before confirming.
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdhocInternalDmstcTransferPreprocessRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdhocInternalDmstcTransferPreprocessResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credential is missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr></tr><tr><td>error</td><td>invalidAccount</td><td>Account
+            is invalid</td></tr><tr><td>error</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td></tr><tr><td>error</td><td>invalidPayee</td><td>Payee
+            is invalid</td></tr><tr><td>error</td><td>invalidSourceAccount</td><td>Source
+            account is invalid</td></tr><tr><td>error</td><td>invalidAccountCombination</td><td>Invalid
+            source and destination account combination</td></tr><tr><td>error</td><td>transactionAmountBelowMinimum</td><td>Transaction
+            amount below minimum amount</td></tr><tr><td>error</td><td>transactionAmountExceedsMaximum</td><td>Allowed
+            transaction amount limit for this transaction exceeded</td></tr><table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: AdhocInternalDmstcTransferPreprocessRequest
+  /confirmation:
+    post:
+      tags:
+      - Money Movement_Transfers_Inter Institution PTP Transfer
+      summary: This API is to confirm internal domestic transfers post Multi Factor
+        Authentication.
+      description: This API is to confirm internal domestic transfers post Multi Factor
+        Authentication.
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InternalDomesticTransferConfirmationRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalDomesticTransferConfirmationResponse"
+        "202":
+          description: "Accepted –The request has been accepted for processing , but\
+            \ has not been completed."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalDomesticTransferConfirmationResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credential is missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>Access
+            is not configured for this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>overLocalCustomerSpecifiedDailyLimitReached</td><td>The
+            overall local daily transaction amount limit for customer specific reached</td></tr><tr><td>error</td><td>overLocalDailyTransactionAmountLimitReached</td><td>The
+            overall local daily transaction amount limit reached</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr><tr><td>error</td><td>MonthlyTransactionAmountLimitReached</td><td>Exceed
+            monthly non-designated transfer limit</td></tr><tr><td>error</td><td>OverdraftAmountExceeds</td><td>OD
+            amount is greater than book balance</td></tr><tr><td>error</td><td>TerminalNotRegistered</td><td>Terminal
+            is not registered</td></tr><tr><td>error</td><td>preprocessFxRateExpired</td><td>Pre-process
+            forex rate is expired</td></tr><tr><td>error</td><td>transactionAmountBelowLimit</td><td>Transaction
+            amount below minimum amount</td></tr><tr><td>error</td><td>invalidControlFlowId</td><td>Control
+            flow ID is invalid</td></tr><tr><td>error</td><td>invalidTransactionAmount</td><td>Transaction
+            amount is invalid</td></tr><tr><td>error</td><td>insufficientFund</td><td>Insufficient
+            fund</td></tr><tr><td>error</td><td>tempServiceSuspensionDueToNaturalCalamity</td><td>Temporary
+            service suspension due to natural calamities</td></tr><tr><td>error</td><td>transactionPendingReview</td><td>Transaction
+            pending under review</td></tr><tr><td>error</td><td>dailyTransactionAmountLimitReached</td><td>Maximum
+            daily transaction amount limit reached</td></tr><tr><td>error</td><td>transactionAmountLimitExceeded</td><td>Allowed
+            transaction amount limit for this transaction exceeded</td></tr><tr><td>error</td><td>invalidAccountStatus</td><td>Account
+            status is invalid</td></tr><tr><td>error</td><td>invalidDateRange</td><td>Date
+            range is invalid</td></tr><tr><td>error</td><td>invalidPaymentDate</td><td>Invalid
+            payment date</td></tr><tr><td>error</td><td>duplicatetransaction</td><td>Transaction
+            is duplicate within the period</td></tr><tr><td>error</td><td>transactionMissedCutoffTime</td><td>The
+            transaction has missed cutoff time</td></tr><tr><td>error</td><td>transactionRejectedDueToSdnHit</td><td>Transaction
+            is rejected due to SDN hit</td></tr><tr><td>error</td><td>customerSpecifiedDailyLimitReached</td><td>Maximum
+            customer specific daily transaction amount limit reached</td></tr><tr><td>error</td><td>invalidBeneficiaryName</td><td>Beneficiary
+            name is invalid</td></tr><tr><td>error</td><td>fXTransactionsNotAllowedForMinors</td><td>FX
+            Transactions Not Allowed For Minors</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      x-codegen-request-body-name: InternalDomesticTransferConfirmationRequest
+components:
+  schemas:
+    InternalDomesticValidSourceDestinationAcccountsResponse:
+      required:
+      - payeeSourceAccountCombinations
+      - sourceAccounts
+      type: object
+      properties:
+        sourceAccounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceAccount"
+        payeeSourceAccountCombinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PayeeSourceAccountCombinations"
+        nextStartIndex:
+          type: string
+          description: In some cases there is more data than what can be returned
+            in a single response. If there is additional data available a nextStartIndex
+            will be returned. Pass the nextStartIndex in your next request to retrieve
+            the next set of data.
+          example: "11"
+    SourceAccount:
+      required:
+      - accountGroup
+      - displaySourceAccountNumber
+      - sourceAccountCurrencyCode
+      - sourceAccountId
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: "The source account identifier in encrypted format.Typically,\
+            \ this is not displayed to the customer,use displayAccountNumber instead."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+        displaySourceAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2364
+        sourceAccountCurrencyCode:
+          type: string
+          description: The currency code of the source account in ISO 4217 format
+          example: SGD
+        accountGroup:
+          type: string
+          description: "Account Group associated with the source Account.This is a\
+            \ reference data field. Please use /v1/apac/utilities/referenceData/{accountGroup}\
+            \ resource to get valid value of this field with description. You can\
+            \ use accountGroup as the referenceCode parameter to retrieve the values."
+          example: SAVINGS_AND_INVESTMENTS
+        availableBalance:
+          type: number
+          description: The available balance including any pending or in progress
+            deposits and withdrawals
+          format: double
+          example: 50000.25
+        nextPaymentAmount:
+          type: number
+          description: The next payment amount due.
+          format: double
+          example: 4500.25
+        accountNickName:
+          type: string
+          description: Nick name of the source account.
+          example: James
+        productName:
+          type: string
+          description: The name of the product
+          example: Personal Checking Account
+    PreprocessInternalFundTransferRequest:
+      required:
+      - sourceAccountId
+      - transferCurrencyIndicator
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: "The source account identifier in encrypted format.Typically,\
+            \ this is not displayed to the customer."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+        transactionAmount:
+          type: number
+          description: The transaction amount.
+          format: double
+          example: 4500.25
+        transferCurrencyIndicator:
+          type: string
+          description: "Indicator to specify whether the transfer is in source or\
+            \ destination account currency.The acceptable forms of remittance for\
+            \ a given payments and transfer transaction.This is a reference data field.\
+            \ Please use /v1/apac/utilities/referenceData/{transferCurrencyIndicator}\
+            \ resource to get valid value of this field with description. You can\
+            \ use transferCurrencyIndicator as the referenceCode parameter to retrieve\
+            \ the values"
+          example: SOURCE_ACCOUNT_CURRENCY
+        payeeId:
+          type: string
+          description: "The payee identifier in encrypted format.Typically, this is\
+            \ not displayed to the customer."
+          example: C$0003019202$AU$XX$01000540000001
+        chargeBearer:
+          type: string
+          description: "Field to identify charge bearer.The acceptable forms of remittance\
+            \ for a given payments and transfer transaction.This is a reference data\
+            \ field. Please use /v1/apac/utilities/referenceData/{chargeBearer} resource\
+            \ to get valid value of this field with description. You can use chargeBearer\
+            \ as the referenceCode parameter to retrieve the values"
+          example: BENEFICIARY
+        destinationAccountId:
+          type: string
+          description: This is destination account ID.
+          example: 724f5141524b4d58576853766c786a45376e7637576e6d35695378515a726f494c36367763776775432f453d
+        depositPayeeCurrencyCode:
+          type: string
+          description: "This is specific field, if payee is selected as RC+ payee,\
+            \ then user can change on the CCY while doing transfer."
+          example: HKD
+        fxDealReferenceNumber:
+          type: string
+          description: Fx deal reference number
+          example: "12345678"
+        remarks:
+          type: string
+          description: Payment notes. Free text from screen
+        transferPurpose:
+          type: string
+          description: "Purpose of transfer. Applicable if paymentMethod is GIRO,\
+            \ FAST. This is a reference data field.This is a reference data field.\
+            \ Please use /v1/apac/utilities/referenceData/{transferPurpose} resource\
+            \ to get valid value of this field with description. You can use transferPurpose\
+            \ as the referenceCode parameter to retrieve the values."
+          example: CASH_DISBURSEMENT
+        transferSubPurpose:
+          type: string
+          description: This is to indicate the sub-purpose of transfer.
+          example: REFERENCE
+        paymentScheduleType:
+          type: string
+          description: "The payment schedule type. This is a reference data. Please\
+            \ use /v1/apac/utilities/referenceData/{paymentScheduleType} resource\
+            \ to get valid value of this field."
+          example: IMMEDIATE
+        beneficiaryResidencyStatus:
+          type: string
+          description: "The Payee's residency status. This is a reference data. Please\
+            \ use /v1/apac/utilities/referenceData/{beneficiaryResidencyStatus} resource\
+            \ to get valid value of this field."
+          example: RESIDENT
+        additionalInformationText:
+          type: string
+          description: This is free text that customer can send to populate values.
+          example: GIFT
+        futureDatedTransaction:
+          $ref: "#/components/schemas/FutureDatedTransaction"
+        standingInstruction:
+          $ref: "#/components/schemas/StandingInstruction"
+        anticipatoryPaymentFlag:
+          type: boolean
+          description: This indicator will be sent by channel and help differentiate
+            if payment is normal or anticipatory
+          example: true
+    PreprocessForInternalFundTransferResponse:
+      required:
+      - controlFlowId
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow Id
+          example: 6e3774334f724a2b7947663653712f52456f524c41797038516a59347a437549564a77755676376e616a733d
+        debitDetails:
+          $ref: "#/components/schemas/DebitDtls"
+        creditDetails:
+          $ref: "#/components/schemas/CreditDtls"
+        foreignExchangeRate:
+          type: number
+          description: Exchange rate
+          format: double
+          example: 1.1021
+        forexType:
+          type: string
+          description: "This is an indicator if exchange rate received from host is\
+            \ Counter or Live. This is a reference data field. Please use /v1/apac/utilities/referenceData/{forexType}\
+            \ resource to get valid value of this field with description."
+          example: LIVE
+        forexConversionIndicator:
+          type: string
+          description: "This is the indicator if FX rate sent in response is computed\
+            \ on one Unit of Source Currency to Destination currency or one Unit of\
+            \ Destination Currency to Source Currency.This is a reference data field.\
+            \ Please use /v1/apac/utilities/referenceData/{forexConversionIndicator}\
+            \ resource to get valid value of this field with description."
+          example: SOURCE_TO_DESTINATION
+        transactionFee:
+          type: number
+          description: Transaction fee
+          format: double
+          example: 500.25
+        feeCurrencyCode:
+          type: string
+          description: Fee currency code in  ISO 4217 format.
+          example: USD
+        localCurrencyTransactionFee:
+          type: number
+          description: This is the transactionFee in local currency
+          format: double
+          example: 10.11
+        localCurrencyCode:
+          type: string
+          description: Local currency code in ISO 4217 Format.
+          example: SGD
+    InternalDomesticTransferRequest:
+      required:
+      - controlFlowId
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow Id
+          example: 6e3774334f724a2b7947663653712f52456f524c41797038516a59347a437549564a77755676376e616a733d
+    InternalDomesticTransferResponse:
+      required:
+      - sourceAccount
+      - transactionReferenceId
+      type: object
+      properties:
+        sourceAccount:
+          $ref: "#/components/schemas/SourceAccount"
+        transactionReferenceId:
+          type: string
+          description: The unique transaction reference Id used to identify this transaction
+            from all the other transactions
+          example: HBKFT160129X001373
+        payeeEnrollmentStatus:
+          type: string
+          description: "Status to indicate if the payee is added or not to customers\
+            \ registered list of billers. This is a reference data. Please use /v1/utilities/referenceData/{payeeEnrollmentStatus}\
+            \ resource to get valid value of this field."
+          example: SUCCESS
+    AdhocInternalDmstcTransferPreprocessWithAddPayeeRequest:
+      required:
+      - payeeAccountDetails
+      - sourceAccountId
+      - transactionAmount
+      - transferCurrencyIndicator
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: "The source account identifier in encrypted format.Typically,\
+            \ this is not displayed to the customer."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+        transactionCurrencyCode:
+          type: string
+          description: The currency code for the transaction amount in ISO 4217 format.
+          example: HKD
+        payeeAccountDetails:
+          $ref: "#/components/schemas/PayeeAccountDetails"
+        transactionAmount:
+          type: number
+          description: The transaction amount
+          format: double
+          example: 4500.25
+        transferCurrencyIndicator:
+          type: string
+          description: "Indicator to specify whether the transfer is in source account\
+            \ currency.The acceptable forms of remittance for a given payments and\
+            \ transfer transaction.This is a reference data field. Please use /v1/utilities/referenceData/{transferCurrencyIndicator}\
+            \ resource to get valid value of this field with description."
+          example: SOURCE_ACCOUNT_CURRENCY
+        chargeBearer:
+          type: string
+          description: "Field to identify charge bearer.The acceptable forms of remittance\
+            \ for a given payments and transfer transaction.This is a reference data\
+            \ field. Please use /v1/utilities/referenceData/{chargeBearer} resource\
+            \ to get valid value of this field with description."
+          example: BENEFICIARY
+        paymentScheduleType:
+          type: string
+          description: "The payment schedule type. This is a reference data. Please\
+            \ use /v1/utilities/referenceData/{paymentScheduleType} resource to get\
+            \ valid value of this field."
+          example: IMMEDIATE
+        beneficiaryResidencyStatus:
+          type: string
+          description: "The Payee's residency status. This is a reference data. Please\
+            \ use /v1/apac/utilities/referenceData/{beneficiaryResidencyStatus} resource\
+            \ to get valid value of this field."
+          example: RESIDENT
+        additionalInformationText:
+          type: string
+          description: This is free text that customer can send to populate values.
+          example: GIFT
+        futureDatedTransaction:
+          $ref: "#/components/schemas/FutureDatedTransaction"
+        standingInstruction:
+          $ref: "#/components/schemas/StandingInstruction"
+        transferPurpose:
+          type: string
+          description: "This is to indicate the purpose of transfer. This is a reference\
+            \ data field.This is a reference data field. Please use /v1/utilities/referenceData/{transferPurpose}\
+            \ resource to get valid value of this field with description."
+          example: CASH_DISBURSEMENT
+        transferSubPurpose:
+          type: string
+          description: Sub-purpose of transfer.
+          example: REFERENCE
+        remarks:
+          type: string
+          description: Free text that usually describes purpose of payment.
+          example: Personal
+        paymentPriority:
+          type: string
+          description: "Priority to the payment used to identify urgency. This is\
+            \ a reference data field. Please use /v1/utilities/referenceData/{paymentPriority}\
+            \ resource to get valid value of this field with description."
+          example: EXECUTIVE_PAYMENTS
+    AdhocInternalDmstcTransferPreprocessWithAddPayeeResponse:
+      required:
+      - controlFlowId
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow Id
+          example: "12345678"
+        debitDetails:
+          $ref: "#/components/schemas/DebitDtls"
+        creditDetails:
+          $ref: "#/components/schemas/CreditDtls"
+        foreignExchangeRate:
+          type: number
+          description: Exchange rate
+          format: double
+          example: 1.1021
+        forexType:
+          type: string
+          description: "This is an indicator if exchange rate received from host is\
+            \ Counter or Live. This is a reference data field. Please use /v1/apac/utilities/referenceData/{forexType}\
+            \ resource to get valid value of this field with description."
+          example: LIVE
+        forexConversionIndicator:
+          type: string
+          description: "This is the indicator if FX rate sent in response is computed\
+            \ on one Unit of Source Currency to Destination currency or one Unit of\
+            \ Destination Currency to Source Currency.This is a reference data field.\
+            \ Please use /v1/apac/utilities/referenceData/{forexConversionIndicator}\
+            \ resource to get valid value of this field with description."
+          example: SOURCE_TO_DESTINATION
+        transactionFee:
+          type: number
+          description: Transaction fee
+          format: double
+          example: 500.25
+        feeCurrencyCode:
+          type: string
+          description: Fee currency code in  ISO 4217 format.
+          example: USD
+        localCurrencyTransactionFee:
+          type: number
+          description: This is the transactionFee in local currency
+          format: double
+          example: 10.11
+        localCurrencyCode:
+          type: string
+          description: Local currency code in ISO 4217 Format.
+          example: SGD
+    AdhocInternalDmstcTransferPreprocessRequest:
+      required:
+      - payeeAccountDetails
+      - sourceAccountId
+      - transactionAmount
+      - transferCurrencyIndicator
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: "The source account identifier in encrypted format.Typically,\
+            \ this is not displayed to the customer."
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+        payeeAccountDetails:
+          $ref: "#/components/schemas/PayeeAccountDetail"
+        transactionAmount:
+          type: number
+          description: The transaction amount
+          format: double
+          example: 4500.25
+        transferCurrencyIndicator:
+          type: string
+          description: "Indicator to specify whether the transfer is in source account\
+            \ currency.The acceptable forms of remittance for a given payments and\
+            \ transfer transaction.This is a reference data field. Please use /v1/utilities/referenceData/{transferCurrencyIndicator}\
+            \ resource to get valid value of this field with description."
+          example: SOURCE_ACCOUNT_CURRENCY
+        paymentScheduleType:
+          type: string
+          description: "The payment schedule type. This is a reference data. Please\
+            \ use /v1/utilities/referenceData/{paymentScheduleType} resource to get\
+            \ valid value of this field."
+          example: IMMEDIATE
+        futureDatedTransaction:
+          $ref: "#/components/schemas/FutureDatedTransaction"
+        standingInstruction:
+          $ref: "#/components/schemas/StandingInstruction"
+        remarks:
+          type: string
+          description: Free text that usually describes purpose of payment.
+          example: Personal
+    AdhocInternalDmstcTransferPreprocessResponse:
+      required:
+      - controlFlowId
+      - foreignExchangeRate
+      - transactionFee
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: Control flow Id
+          example: "12345678"
+        debitDetails:
+          $ref: "#/components/schemas/DebitDetail"
+        creditDetails:
+          $ref: "#/components/schemas/CreditDetail"
+        foreignExchangeRate:
+          type: number
+          description: 'The exchange rate that is applicable for the particular transfer. '
+          format: double
+          example: 1.8001
+        transactionFee:
+          type: number
+          description: The charges that is being charged by the source bank for doing
+            the transfer.
+          format: double
+          example: 25.25
+    InternalDomesticTransferConfirmationRequest:
+      required:
+      - controlFlowId
+      type: object
+      properties:
+        controlFlowId:
+          type: string
+          description: The control flow Id
+          example: 6e3774334f724a2b7947663653712f52456f524c41797038516a59347a437549564a77755676376e616a733d
+    InternalDomesticTransferConfirmationResponse:
+      required:
+      - transactionReferenceId
+      type: object
+      properties:
+        sourceAccount:
+          $ref: "#/components/schemas/SourceAccount"
+        payeeEnrollmentStatus:
+          type: string
+          description: "Status to indicate if the payee is added or not to customers\
+            \ registered list of billers. This is a reference data. Please use /v1/utilities/referenceData/{payeeEnrollmentStatus}\
+            \ resource to get valid value of this field."
+          example: SUCCESS
+        transactionReferenceId:
+          type: string
+          description: The unique transaction reference Id used to identify this transaction
+            from all the other transactions
+          example: HBKFT160129X001373
+    PayeeSourceAccountCombinations:
+      required:
+      - displayPayeeAccountNumber
+      - payeeAccountCurrencyCode
+      - payeeId
+      - payeeNickName
+      - sourceAccountIds
+      type: object
+      properties:
+        payeeId:
+          type: string
+          description: "Unique identifier associated with the payee.Typically, this\
+            \ is not displayed to the customer."
+          example: C$0003019202$AU$XX$01000540000001
+        displayPayeeAccountNumber:
+          type: string
+          description: A masked account number of the payee that can be displayed
+            to the customer.
+          example: XXXXXX2364
+        payeeAccountCurrencyCode:
+          type: string
+          description: The currency code of the payee account in ISO 4217 format
+          example: SGD
+        payeeNickName:
+          type: string
+          description: Payee account nick name
+          example: James
+        sourceAccountIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceAccountIds"
+    FutureDatedTransaction:
+      required:
+      - scheduleDate
+      type: object
+      properties:
+        scheduleDate:
+          type: string
+          description: Date on which the future transaction is scheduled in ISO 8601
+            format YYYY-MM-DD.
+          format: date
+          example: 2017-12-15
+    StandingInstruction:
+      required:
+      - paymentFrequency
+      - standingInstructionStartDate
+      type: object
+      properties:
+        standingInstructionStartDate:
+          type: string
+          description: Standing instruction start date in ISO 8601 format YYYY-MM-DD.
+          format: date
+          example: 2017-12-12
+        paymentFrequency:
+          type: string
+          description: "The frequency of payment. This is a reference data. Please\
+            \ use /v1/utilities/referenceData/{paymentFrequency} resource to get valid\
+            \ value of this field."
+          example: MONTHLY
+        perpetualFlag:
+          type: boolean
+          description: Flag to indicate if the standing instruction will be continued
+            until cancellation.
+          example: true
+        standingInstructionEndDate:
+          type: string
+          description: Standing instruction end date in ISO 8601 date format YYYY-MM-DD.
+          format: date
+          example: 2018-10-15
+        standingInstructionCount:
+          type: number
+          description: 'Numeric value to know how many payments to be made for recurring
+            transfers. '
+          format: integer
+          example: 12.0
+    DebitDtls:
+      required:
+      - currencyCode
+      - transactionDebitAmount
+      type: object
+      properties:
+        transactionDebitAmount:
+          type: number
+          description: The transaction debit amount.
+          format: double
+          example: 4500.25
+        localCurrencyTransactionDebitAmount:
+          type: number
+          description: This is the debit transaction Amount in local Currency.
+          format: double
+          example: 10050.25
+        currencyCode:
+          type: string
+          description: The currency code for the debit amount in ISO 4217 format
+          example: SGD
+    CreditDtls:
+      required:
+      - currencyCode
+      - transactionCreditAmount
+      type: object
+      properties:
+        transactionCreditAmount:
+          type: number
+          description: The transaction credit amount.
+          format: double
+          example: 7000.25
+        localCurrencyTransactionCreditAmount:
+          type: number
+          description: This is the credit transaction Amount in local Currency.
+          format: double
+          example: 7050.25
+        currencyCode:
+          type: string
+          description: The currency code for the credit amount in ISO 4217 format
+          example: USD
+    PayeeAccountDetails:
+      type: object
+      properties:
+        payeeAccountNumber:
+          type: string
+          description: The account number of the destination account
+          example: "251212582364"
+        frequentPayeeId:
+          type: string
+          description: The frequent account identifier in encrypted format.
+          example: 724f5141586a45376e7637576e6d35695378515a726f494c36367763776775432f453d
+        anticipatoryPayeeId:
+          type: string
+          description: Unique identifier associated with the anticipatory payee.
+          example: C$00030199384785748975947$111540000001
+        payeeName:
+          type: string
+          description: Name of the payee.
+          example: Mark Jacobs
+        payeeNickName:
+          type: string
+          description: The nick name of the payee assigned by the customer.
+          example: MarkJ
+        payeeEnrollmentFlag:
+          type: boolean
+          description: Flag to indicate the payee must be added to customers registered
+            list of billers.
+          example: true
+        accountIbanFlag:
+          type: boolean
+          description: This field is to indicate whether the account number is IBAN
+            or not
+          example: true
+    PayeeAccountDetail:
+      required:
+      - payeeAccountNumber
+      type: object
+      properties:
+        payeeAccountNumber:
+          type: string
+          description: The account number of the destination account
+          example: "251212582364"
+        payeeName:
+          type: string
+          description: Name of the payee.
+          example: Mark Jacobs
+        payeeNickName:
+          type: string
+          description: The nick name of the payee assigned by the customer.
+          example: MarkJ
+    DebitDetail:
+      required:
+      - currencyCode
+      - transactionDebitAmount
+      type: object
+      properties:
+        transactionDebitAmount:
+          type: number
+          description: The transaction debit amount.
+          format: double
+          example: 10000.25
+        currencyCode:
+          type: string
+          description: The currency code for the debit amount in ISO 4217 format
+          example: GBP
+    CreditDetail:
+      required:
+      - currencyCode
+      - transactionCreditAmount
+      type: object
+      properties:
+        transactionCreditAmount:
+          type: number
+          description: The transaction credit amount.
+          format: double
+          example: 18050.45
+        currencyCode:
+          type: string
+          description: The currency code for the credit amount in ISO 4217 format
+          example: SGD
+    SourceAccountIds:
+      required:
+      - sourceAccountId
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: The primary identifier for ownership of an account.The source
+            account identifier in encrypted format
+          example: 3255613852316f2b4d4d796c344e38756339654972776f663745446e6d4c32486f455a4165374a476858343d
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the erro
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ=="
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string

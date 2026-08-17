@@ -1,0 +1,279 @@
+openapi: 3.0.1
+info:
+  title: MoneyMovementBulkSourceAccountPayeeEligibility_OpenAPI
+  description: "This API is used to inquire the eligibility source accounts for specific\
+    \ payment types for an authenticated Citi Customer. This information can be used\
+    \ to prepare a valid source list for a selected destination, or vice versa."
+  version: 1.0.0
+  x-deployment-reference: ""
+  x-linked-api: RetrievePaymentInitiationTransactionBulkSourceAccountAndPayeeEligibility
+servers:
+- url: https://127.0.0.1/openapi/v1/paymentInitiation/bulk/sourceAccountAndPayees/eligibility
+paths:
+  /:
+    get:
+      tags:
+      - Money Movement_Counterparty Management_Funding Account Management
+      summary: Retrieve Bulk Source Account Payee Eligibility
+      description: "This API is used to inquire the eligibility source accounts for\
+        \ specific payment types for an authenticated Citi Customer. This information\
+        \ can be used to prepare a valid source list for a selected destination, or\
+        \ vice versa."
+      operationId: RetrievePaymentInitiationTransactionBulkSourceAccountAndPayeeEligibility
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/clientDetails"
+      - name: nextStartIndex
+        in: query
+        description: In some cases there is more data than what can be returned in
+          a single response. If there is additional data available a nextStartIndex
+          will be returned. Pass the nextStartIndex in your next request to retrieve
+          the next set of data.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetrievePaymentInitiationTransactionBulkSourceAccountAndPayeeEligibilityResponse"
+        "204":
+          description: No content
+          content: {}
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>accessNotConfigured</td><td>The
+            request operation is not configured to access this resource</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>resourceNotFound</td><td>Empty
+            resource/resource not found</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>businessValidationsFailed</td><td>Business
+            validations failed</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    RetrievePaymentInitiationTransactionBulkSourceAccountAndPayeeEligibilityResponse:
+      type: object
+      properties:
+        sourceAccountAndPayee:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceAccountAndPayee"
+        nextStartIndex:
+          type: string
+          description: In some cases there is more data than what can be returned
+            in a single response. If there is additional data available a nextStartIndex
+            will be returned. Pass the nextStartIndex in your next request to retrieve
+            the next set of data.$$O
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+    SourceAccountAndPayee:
+      type: object
+      properties:
+        paymentMethod:
+          type: string
+          description: "The acceptable forms of remittance for a given payments and\
+            \ transfer transaction.This is a reference data field. Please use /v1/utilities/referenceData/{paymentMethod}\
+            \ resource to get valid value of this field with description."
+          example: "1234"
+        sourceAccounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceAccounts"
+        payeeSourceAccountCombinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PayeeSourceAccountCombinations"
+    SourceAccounts:
+      required:
+      - accountGroup
+      - displaySourceAccountNumber
+      - sourceAccountCurrencyCode
+      - sourceAccountId
+      type: object
+      properties:
+        sourceAccountId:
+          type: string
+          description: "The primary identifier for ownership of an account.The source\
+            \ account identifier in encrypted format.Typically, this is not displayed\
+            \ to the customer,use displayAccountNumber instead."
+          example: 724f5141524b4d58576853766c786a45376e7637576e6d35695378515a726f494c36367763776775432f453d
+        displaySourceAccountNumber:
+          type: string
+          description: A masked account number that can be displayed to the customer
+          example: XXXXXX2364
+        sourceAccountCurrencyCode:
+          type: string
+          description: The currency code of the source account in ISO 4217 format
+          example: SGD
+        accountGroup:
+          type: string
+          description: "Account Group associated with the source Account.This is a\
+            \ reference data field. Please use /v1/utilities//referenceData/{accountGroup}\
+            \ resource to get valid value of this field with description. You can\
+            \ use accountGroup as the referenceCode parameter to retrieve the values."
+          example: SAVINGS_AND_INVESTMENTS
+        availableBalance:
+          type: number
+          description: The available balance including any pending or in progress
+            deposits and withdrawals
+          format: double
+          example: 50000.25
+        nextPaymentAmount:
+          type: number
+          description: The next payment amount due.
+          format: double
+          example: 4500.25
+        productName:
+          type: string
+          description: The name of the product
+          example: Personal Checking Account
+        accountNickName:
+          type: string
+          description: The nick name of the account assigned by the customer
+          example: James
+    PayeeSourceAccountCombinations:
+      required:
+      - payeeAccountCurrencyCode
+      - payeeId
+      - payeeNickName
+      - sourceAccountIds
+      type: object
+      properties:
+        payeeId:
+          type: string
+          description: Unique identifier associated with the payee
+          example: C$0003019202$AU$XX$01000540000001
+        displayPayeeAccountNumber:
+          type: string
+          description: The display account number of the destination account
+          example: XXXXXX4085
+        payeeAccountCurrencyCode:
+          type: string
+          description: The currency code of the payee account in ISO 4217 format
+          example: SGD
+        payeeNickName:
+          type: string
+          description: Payee account nick name
+          example: James
+        sourceAccountIds:
+          type: string
+          description: "The primary identifier for ownership of an account.The source\
+            \ account identifier in encrypted format.Typically, this is not displayed\
+            \ to the customer,use displayAccountNumber instead."
+          example: 724f5141524b4d58576853766c786a45376e7637576e6d35695378515a726f494c36367763776775432f453d
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string

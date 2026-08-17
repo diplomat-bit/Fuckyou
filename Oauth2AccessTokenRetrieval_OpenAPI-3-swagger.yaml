@@ -1,0 +1,231 @@
+openapi: 3.0.1
+info:
+  title: Oauth2AccessTokenRetrieval_OpenAPI
+  description: This API is used to issue the access token using the authorization
+    code.
+  version: 1.1.99
+  x-linked-api: RetrieveAccessTokenBasedOnCountryCode
+servers:
+- url: "https://127.0.0.1/openapi/authCode/oauth2/token/{countrycode}/{businesscode}"
+paths:
+  /:
+    post:
+      tags:
+      - IAM_Authentication and Authorization_Token Management
+      summary: Retrieve Authorization Code Grant Access Token.
+      description: This API is used to issue the access token using the authorization
+        code.
+      parameters:
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/uuid"
+      - $ref: "#/components/parameters/Accept"
+      - $ref: "#/components/parameters/client_id"
+      - $ref: "#/components/parameters/Content-Type"
+      - $ref: "#/components/parameters/clientDetails"
+      - $ref: "#/components/parameters/x-jws-signature"
+      - $ref: "#/components/parameters/Accept-Language"
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required:
+              - grant_type
+              properties:
+                grant_type:
+                  type: string
+                  description: authorization_code or client_credentials or refresh_token.
+                code:
+                  type: string
+                  description: <optional based on grant_type> This is Mandatory when
+                    grant_type is authorization_code.
+                refresh_token:
+                  type: string
+                  description: <optional based on grant_type> This is Mandatory when
+                    grant_type is refresh_token.
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenEndpointResponse"
+        "400":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
+            or invalid Parameters</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>error</td><td>unAuthorized</td><td>Authorization
+            credentials are missing or invalid</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: <table><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
+            request failed due to an internal error</td></tr></table>
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    TokenEndpointResponse:
+      required:
+      - access_token
+      - expires_in
+      - scope
+      - token_type
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJQUz...
+        expires_in:
+          type: integer
+          example: 600
+        token_type:
+          type: string
+          description: "When grant_type is client_credential, this field appears in\
+            \ response body."
+          example: Bearer
+        scope:
+          type: string
+          description: "When grant_type is client_credential, this field appears in\
+            \ response body."
+          example: payments
+        refresh_token:
+          type: string
+          description: "When grant_type is authorization_code or refresh_token, this\
+            \ field should appears in response body."
+          example: eyJhbGciOiJQUz...
+    ErrorResponse:
+      required:
+      - code
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Invalid - Request did not confirm to the specification and
+            was unprocessed and rejected. Please fix the value and try again
+          enum:
+          - error
+          - warn
+          - invalid
+          - fatal
+        code:
+          type: string
+          description: Error code which qualifies the error
+        details:
+          type: string
+          description: Human readable explanation specific to the occurrence of the
+            problem
+        location:
+          type: string
+          description: The name of the field that resulted in the error
+        moreInfo:
+          type: object
+          properties: {}
+          description: URI to human readable documentation of the error
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ==."
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    uuid:
+      name: uuid
+      in: header
+      description: 128 bit random UUID generated uniquely for every request.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept:
+      name: Accept
+      in: header
+      description: Content-Type that are acceptable for the response.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    client_id:
+      name: client_id
+      in: header
+      description: Client ID generated during application registration.
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Content-Type:
+      name: Content-Type
+      in: header
+      description: application/json
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    clientDetails:
+      name: clientDetails
+      in: header
+      description: "This field is used to capture device,browser and network information.\
+        \ Refer the developer portal for more information.These are the fields which\
+        \ will be passed as part of the header devicePrint,deviceTokenCookie,userIpAddress,userAgent,hardwareId,simId,deviceModel,deviceName,deviceOsName,deviceOsVersion,multitaskingSupportFlag,languageSupport,wifiMacAddress,cellTowerId,locationAreaCode,rsaApplicationKey,wapClientId,mobileCarrierCode,mobileCountryCode,osId,geoLongitude,geoLatitude,geoHorizontalAccuracy,geoAltitude,geoAltitudeAccuracy,geoSpeed,geoTimestamp,geoStatus,basicServiceSetId,signalStrength,wifiChannel,serviceSetId"
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      description: List of acceptable human languages for response.
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    x-jws-signature:
+      name: x-jws-signature
+      in: header
+      description: "Signature generated when partner signs API payload. This signature\
+        \ will be used to validate that the call is coming from a valid partner. This\
+        \ signature is a JWT token, which will be validated with partner's JWK stored\
+        \ in DB."
+      required: false
+      style: simple
+      explode: false
+      schema:
+        type: string
+    countrycode:
+      name: countrycode
+      in: path
+      description: "The most recent Authorization token. This will have the format\
+        \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ=="
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    businesscode:
+      name: businesscode
+      in: path
+      description: businesscode
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
