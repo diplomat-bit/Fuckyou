@@ -123,6 +123,7 @@ export class AlpacaRebalancingService {
   }
 
   public async createPortfolio(name: string, description: string, weights: PortfolioWeight[]): Promise<AlpacaPortfolio> {
+    this.validateWeights(weights);
     const id = uuidv4();
     const portfolio: AlpacaPortfolio = {
       id,
@@ -143,6 +144,9 @@ export class AlpacaRebalancingService {
     if (!portfolio) {
       throw new Error(`Portfolio with ID ${id} not found`);
     }
+    if (updates.weights) {
+      this.validateWeights(updates.weights);
+    }
     const updated: AlpacaPortfolio = {
       ...portfolio,
       ...updates,
@@ -156,11 +160,41 @@ export class AlpacaRebalancingService {
     return this.portfolios.delete(id);
   }
 
+  private validateWeights(weights: PortfolioWeight[]): void {
+    let total = 0;
+    for (const w of weights) {
+      const val = parseFloat(w.percent);
+      if (isNaN(val) || val < 0 || val > 100) {
+        throw new Error(`Invalid weight percentage for symbol ${w.symbol}: ${w.percent}`);
+      }
+      total += val;
+    }
+    if (total > 100.001) {
+      throw new Error(`Total portfolio weights cannot exceed 100%. Current total: ${total}%`);
+    }
+  }
+
   public async createRun(
     portfolioId: string,
     accountId: string,
     type: 'full_rebalance' | 'invest_cash' = 'full_rebalance'
   ): Promise<AlpacaRebalanceRun> {
+    const portfolio = this.portfolios.get(portfolioId);
+    if (!portfolio) {
+      throw new Error(`Portfolio ${portfolioId} not found`);
+    }
+
+    const subscription = Array.from(this.subscriptions.values()).find(
+      s => s.account_id === accountId && s.portfolio_id === portfolioId
+    );
+    if (subscription && subscription.last_rebalanced_at) {
+      const lastRebalance = new Date(subscription.last_rebalanced_at).getTime();
+      const cooldownMs = portfolio.cooldown_days * 24 * 60 * 60 * 1000;
+      if (Date.now() - lastRebalance < cooldownMs) {
+        console.warn(`Warning: Portfolio ${portfolio.name} is within its cooldown period of ${portfolio.cooldown_days} days.`);
+      }
+    }
+
     const runId = uuidv4();
     const run: AlpacaRebalanceRun = {
       id: runId,
@@ -174,7 +208,6 @@ export class AlpacaRebalancingService {
     };
     this.runs.set(runId, run);
 
-    // Trigger asynchronous execution of the rebalance
     this.executeRebalance(runId).catch(err => {
       console.error(`Rebalance run ${runId} failed:`, err);
     });
@@ -196,7 +229,11 @@ export class AlpacaRebalancingService {
         throw new Error(`Portfolio ${run.portfolio_id} not found`);
       }
 
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
       const tradingService = alpacaTradingService as any;
+      const executedAssets: string[] = [];
+
       if (tradingService) {
         for (const weight of portfolio.weights) {
           if (weight.type === 'asset') {
@@ -218,6 +255,7 @@ export class AlpacaRebalancingService {
                 } else if (typeof tradingService.createOrder === 'function') {
                   await tradingService.createOrder(orderPayload);
                 }
+                executedAssets.push(weight.symbol);
               } catch (orderErr) {
                 console.warn(`Failed to place order for ${weight.symbol}:`, orderErr);
               }
@@ -227,7 +265,9 @@ export class AlpacaRebalancingService {
       }
 
       run.status = 'COMPLETED';
-      run.details = `Successfully rebalanced portfolio "${portfolio.name}" with ${portfolio.weights.length} assets.`;
+      run.details = `Successfully rebalanced portfolio "${portfolio.name}". Executed orders for: ${
+        executedAssets.length > 0 ? executedAssets.join(', ') : 'none (simulated/no assets)'
+      }.`;
       run.updated_at = new Date().toISOString();
       this.runs.set(runId, run);
 
@@ -310,7 +350,7 @@ export class AlpacaRebalancingService {
         symbol: w.symbol,
         targetPercent: parseFloat(w.percent),
         currentPercent: 0,
-        drift: parseFloat(w.percent),
+        drift: -parseFloat(w.percent),
         action: 'BUY',
         estimatedValueChange: 0
       }));
@@ -340,6 +380,21 @@ export class AlpacaRebalancingService {
         action,
         estimatedValueChange: Math.round(((targetPercent - currentPercent) / 100) * totalValue * 100) / 100
       });
+    }
+
+    for (const holding of currentHoldings) {
+      const inPortfolio = portfolio.weights.some(w => w.symbol.toUpperCase() === holding.symbol.toUpperCase());
+      if (!inPortfolio) {
+        const currentPercent = (holding.value / totalValue) * 100;
+        analysis.push({
+          symbol: holding.symbol,
+          targetPercent: 0,
+          currentPercent: Math.round(currentPercent * 100) / 100,
+          drift: Math.round(currentPercent * 100) / 100,
+          action: 'SELL',
+          estimatedValueChange: -Math.round(holding.value * 100) / 100
+        });
+      }
     }
 
     return analysis;
