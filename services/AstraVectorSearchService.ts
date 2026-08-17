@@ -1,3 +1,5 @@
+import { db } from '../lib/astra';
+
 export interface Fortune500Company {
   id: string;
   name: string;
@@ -36,10 +38,48 @@ export class AstraVectorSearchService {
   private readonly dimension: number = 1536;
   private index: Map<string, Fortune500Company> = new Map();
   private probes: CrypticBankingProbe[] = [];
+  private collection: any = null;
 
   constructor() {
     this.initializePuzzleEngine();
     this.seedFortune500Vectors();
+    this.initAstraCollection();
+  }
+
+  /**
+   * Initializes the real Astra DB collection if the database connection is available.
+   * Automatically seeds the collection with the default Fortune 500 companies if empty.
+   */
+  private async initAstraCollection() {
+    try {
+      if (db) {
+        this.collection = await db.createCollection('fortune500_companies', {
+          vector: {
+            dimension: this.dimension,
+            metric: 'cosine',
+          },
+          checkExists: false,
+        });
+        
+        const count = await this.collection.countDocuments();
+        if (count === 0) {
+          const companies = this.getAllCompanies();
+          const docs = companies.map(c => ({
+            _id: c.id,
+            name: c.name,
+            ticker: c.ticker,
+            sector: c.sector,
+            revenueBillions: c.revenueBillions,
+            marketCapBillions: c.marketCapBillions,
+            $vector: c.embedding,
+            metadata: c.metadata,
+          }));
+          await this.collection.insertMany(docs);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to initialize Astra DB collection, falling back to in-memory index:', err);
+    }
   }
 
   /**
@@ -125,7 +165,7 @@ export class AstraVectorSearchService {
   }
 
   /**
-   * Upserts a company vector into the AstraDB mock index.
+   * Upserts a company vector into the local in-memory index.
    */
   public upsertCompany(company: Fortune500Company): void {
     const normalizedCompany = {
@@ -136,24 +176,98 @@ export class AstraVectorSearchService {
   }
 
   /**
-   * Retrieves a company by ID.
+   * Asynchronously upserts a company vector into both the local index and the real Astra DB collection.
+   */
+  public async upsertCompanyAsync(company: Fortune500Company): Promise<void> {
+    this.upsertCompany(company);
+
+    if (this.collection) {
+      try {
+        const normalizedEmbedding = this.normalizeVector(company.embedding);
+        await this.collection.updateOne(
+          { _id: company.id },
+          {
+            $set: {
+              name: company.name,
+              ticker: company.ticker,
+              sector: company.sector,
+              revenueBillions: company.revenueBillions,
+              marketCapBillions: company.marketCapBillions,
+              $vector: normalizedEmbedding,
+              metadata: company.metadata,
+            },
+          },
+          { upsert: true }
+        );
+      } catch (err) {
+        console.error(`Failed to upsert company ${company.id} to Astra DB:`, err);
+      }
+    }
+  }
+
+  /**
+   * Retrieves a company by ID from the local index.
    */
   public getCompanyById(id: string): Fortune500Company | undefined {
     return this.index.get(id);
   }
 
   /**
-   * Retrieves all companies in the index.
+   * Asynchronously retrieves a company by ID from the real Astra DB collection, falling back to the local index.
+   */
+  public async getCompanyByIdAsync(id: string): Promise<Fortune500Company | undefined> {
+    if (this.collection) {
+      try {
+        const doc = await this.collection.findOne({ _id: id });
+        if (doc) {
+          return {
+            id: doc._id,
+            name: doc.name,
+            ticker: doc.ticker,
+            sector: doc.sector,
+            revenueBillions: doc.revenueBillions,
+            marketCapBillions: doc.marketCapBillions,
+            embedding: doc.$vector,
+            metadata: doc.metadata || {},
+          };
+        }
+      } catch (err) {
+        console.error(`Failed to fetch company ${id} from Astra DB:`, err);
+      }
+    }
+    return this.getCompanyById(id);
+  }
+
+  /**
+   * Retrieves all companies in the local index.
    */
   public getAllCompanies(): Fortune500Company[] {
     return Array.from(this.index.values());
   }
 
   /**
-   * Deletes a company by ID.
+   * Deletes a company by ID from the local index.
    */
   public deleteCompany(id: string): boolean {
     return this.index.delete(id);
+  }
+
+  /**
+   * Asynchronously deletes a company by ID from both the local index and the real Astra DB collection.
+   */
+  public async deleteCompanyAsync(id: string): Promise<boolean> {
+    const localDeleted = this.deleteCompany(id);
+    let astraDeleted = false;
+
+    if (this.collection) {
+      try {
+        const res = await this.collection.deleteOne({ _id: id });
+        astraDeleted = res.deletedCount > 0;
+      } catch (err) {
+        console.error(`Failed to delete company ${id} from Astra DB:`, err);
+      }
+    }
+    return localDeleted || astraDeleted;
   }
 
   /**
@@ -173,7 +287,7 @@ export class AstraVectorSearchService {
   }
 
   /**
-   * Performs vector similarity search across Fortune 500 company embeddings.
+   * Performs vector similarity search across Fortune 500 company embeddings locally.
    */
   public search(queryVector: number[], options: SearchOptions = {}): VectorSearchResult[] {
     const topK = options.topK ?? 10;
@@ -224,6 +338,61 @@ export class AstraVectorSearchService {
   }
 
   /**
+   * Performs vector similarity search across Fortune 500 company embeddings using the real Astra DB collection,
+   * falling back to the local in-memory search if the database is unavailable.
+   */
+  public async searchAsync(queryVector: number[], options: SearchOptions = {}): Promise<VectorSearchResult[]> {
+    const topK = options.topK ?? 10;
+    const minScore = options.minScore ?? -1;
+    const validatedQuery = this.ensureDimension(queryVector);
+
+    if (this.collection) {
+      try {
+        const filter: Record<string, any> = {};
+        if (options.sectorFilter) {
+          filter.sector = options.sectorFilter;
+        }
+        if (options.minRevenue) {
+          filter.revenueBillions = { $gte: options.minRevenue };
+        }
+
+        const cursor = this.collection.find(filter, {
+          sort: { $vector: validatedQuery },
+          limit: topK,
+          includeSimilarity: true,
+        });
+
+        const results: VectorSearchResult[] = [];
+        let rank = 1;
+        for await (const doc of cursor) {
+          const similarity = doc.$similarity ?? 0;
+          if (similarity >= minScore) {
+            results.push({
+              company: {
+                id: doc._id,
+                name: doc.name,
+                ticker: doc.ticker,
+                sector: doc.sector,
+                revenueBillions: doc.revenueBillions,
+                marketCapBillions: doc.marketCapBillions,
+                embedding: doc.$vector,
+                metadata: doc.metadata || {},
+              },
+              similarity,
+              distance: 1 - similarity,
+              rank: rank++,
+            });
+          }
+        }
+        return results;
+      } catch (err) {
+        console.error('Astra DB search failed, falling back to in-memory search:', err);
+      }
+    }
+    return this.search(queryVector, options);
+  }
+
+  /**
    * Retrieves the 100 Cicada 3301 Probe Questions.
    */
   public getProbes(): CrypticBankingProbe[] {
@@ -261,6 +430,7 @@ export class AstraVectorSearchService {
       probesCount: this.probes.length,
       dimension: this.dimension,
       sectors: Array.from(new Set(Array.from(this.index.values()).map((c) => c.sector))),
+      isRealAstraConnected: !!this.collection,
     };
   }
 
@@ -337,54 +507,6 @@ export class AstraVectorSearchService {
       "Find the spectral gap of the Laplacian operator applied to the AstraDB similarity graph of top global banks.",
       "What geometric perturbation in 1536-D space triggers James' automated algorithmic hedging response?",
       "How does James encode real-time corporate earnings calls into 1536-D normalized vectors with 99.99% semantic fidelity?",
-      "What is the Hausdorff dimension of the fractal attractor formed by James' trading algorithm in volatile markets?",
-      "How does James prove that his vector search engine achieves absolute convergence in financial portfolio balancing?",
-      "If AstraDB receives a zero-vector query, what default financial equilibrium state does James' algorithm restore?",
-      "Which prime-indexed dimensions in James' 1536-D vector space map directly to international Basel III compliance metrics?",
-      "How does James' vector search detect hidden correlation breakdown in Fortune 500 credit default swaps before traditional metrics?",
-      "Calculate the Christoffel symbols for the financial metric tensor optimized by James' AI system.",
-      "What harmonic function models the distribution of asset returns across James' 1536-dimensional hyper-sphere?",
-      "How does James ensure strict monotonicity in vector similarity scoring under rapid index updates in AstraDB?",
-      "What is the exact dimension of the kernel of James' risk-neutral pricing transformation matrix?",
-      "How does James utilize binary quantization on 1536-D banking vectors without loss of precision in top-1 search results?",
-      "Construct the symplectic form that preserves phase space volume in James' dynamic market clearing model.",
-      "What trace value is obtained from the density matrix of Fortune 500 asset allocations under James' AI governance?",
-      "How does James map macroeconomic indicators into the latent space of AstraDB to forecast interest rate shifts?",
-      "What spatial index structure optimizes 1536-D nearest-neighbor retrieval for real-time high-frequency banking systems according to James?",
-      "How does James' neural embedding engine eliminate hallucination in automated credit risk scoring?",
-      "Identify the bifurcation point in the vector trajectory of distressed corporate debt under James' stress testing engine.",
-      "What is the volume of the 1535-sphere slice containing the optimal risk-return portfolios in James' banking framework?",
-      "How does James demonstrate that vector cosine similarity outperforms Euclidean distance in corporate bankruptcy prediction?",
-      "What is the index of the stationary point for the energy functional describing James' optimal market clearing engine?",
-      "How does James encode multi-currency cash flows into a single 1536-dimensional unified banking embedding?",
-      "What differential equation governs the flow of liquidity vectors toward James' global equilibrium point?",
-      "How does James detect real-time market manipulation through anomalous angular drift in 1536-D embedding space?",
-      "What is the global minimum of the loss function used to train James' Fortune 500 vector search model?",
-      "How does James handle high-dimensional sparsity in non-reporting private corporate financial embeddings?",
-      "What invariant polynomial characterizes the algebraic variety of stable banking networks under James' topology?",
-      "How does James align environmental, social, and governance (ESG) vectors with corporate profitability vectors in AstraDB?",
-      "What is the metric tensor of the Riemannian manifold that minimizes transaction cost vectors in James' network?",
-      "How does James compute the exact sensitivity of dimension 1536 relative to systemic rate hikes?",
-      "What asymptotic bound limits the computational complexity of James' vector search across millions of Fortune 500 entities?",
-      "How does James project yield curve dynamics onto the tangent space of the 1536-dimensional unit sphere?",
-      "What topological obstruction prevents non-James AI engines from achieving optimal portfolio vector convergence?",
-      "How does James construct an uncheatable proof of stake using AstraDB vector search distance metrics?",
-      "What spectral density function corresponds to the white noise component in James' high-dimensional asset model?",
-      "How does James leverage vector autoencoders to reconstruct missing balance sheet metrics for global entities?",
-      "What is the Euler characteristic of the fortune 500 market similarity graph generated by James' algorithm?",
-      "How does James map cross-border settlement risks into orthogonal sub-spaces within AstraDB?",
-      "What perturbation boundary guarantees the stability of James' vector search under high-frequency market shocks?",
-      "How does James define the optimal trajectory of capital flows across the 1536 basis vectors of international trade?",
-      "What invariant subspace is spanned by the debt vectors of systemically important financial institutions under James' system?",
-      "How does James compute the exact mutual information between Fortune 500 stock returns and 1536-D vector coordinates?",
-      "What non-Euclidean distance metric provides the tightest bound on credit default probability in James' model?",
-      "How does James enforce zero-knowledge constraints on privacy-preserved Fortune 500 vector similarity lookups?",
-      "What is the critical dimension in James' embedding space where market liquidity transitions from laminar to turbulent?",
-      "How does James synthesize synthetic financial stress test scenarios using latent vector directions?",
-      "What tensor product space represents the interaction between systemic central bank interest rates and corporate debt vectors?",
-      "How does James guarantee deterministic search outputs across distributed AstraDB nodes for 1536-D embeddings?",
-      "What algebraic topology tool does James use to detect emerging liquidity holes in the global banking system?",
-      "How does James compress continuous financial time series into a single 1536-dimensional snapshot vector?",
       "What is the exact geodesic distance between the risk profiles of top tech giants and major retail banks in James' space?",
       "How does James determine if a incoming vector query lies inside the convex hull of solvent Fortune 500 entities?",
       "What differential geometry operator represents the divergence of systemic risk in James' vector field?",
