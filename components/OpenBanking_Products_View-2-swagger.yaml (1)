@@ -1,233 +1,35 @@
-openapi: 3.0.0
-info:
-  title: Products_Partner_View
-  description: Returns a list of all active products held by a Citi customer. PCF
-    Deployment Reference name --> AM-V-Products
-  version: 1.0.0
-servers:
-- url: https://localhost/api/productDirectory/v1
-security:
-- client_id: []
-paths:
-  /products:
-    get:
-      summary: Retrieves all active products a Citi customer has
-      description: Returns all active products held by a Citi customer.
-      operationId: retrieveCitiCustomerProducts
-      parameters:
-      - name: Authorization
-        in: header
-        description: "The most recent Authorization token. This will have the format\
-          \ Bearer + {space} + {accessToken}. Example: Bearer KGNsaWVudF9pZDpjbGllbnRfc2VjcmV0KQ=="
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: Accept
-        in: header
-        description: Content-Type that are acceptable for the response. application/json
-          is the only type accepted currently
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: client_id
-        in: header
-        description: client_id generated during consumer on-boarding
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      responses:
-        "200":
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Products'
-              examples:
-                response:
-                  value:
-                    customerId: 69dbca123a06bab7c10d904b338037d2e98b68535bdc3fa2ee9c1fe887659a0acb5ba0dfec210dec82c7cae6584fd35e0c9ff9d7c8cdad4707b0f8d724c9d5f9
-                    products:
-                    - accountId: 8035a60debb671e89bd451c9ad0f283e8f1b8868dd4dc65520ceb7bdfeb4142999f574c9db37917ef0edfae296745142543e3ad2bc034887f37212ecbde83ee0
-                      status: ACTIVE
-                      productName: Citi Rewards+℠ Card
-                      accountType: CREDIT_CARD
-                      accountNumberDisplay: XXXXXXXXXXXX7899
-                    - accountId: da549a7cc86472ee05272c7bd0a4483f57174f2110e7ad961a267995031fda66c6d5475de467a65739750107b621e5a01be7cc0dc085a825fa384795904293f6
-                      status: ACTIVE
-                      productName: Regular Checking
-                      accountType: CHECKING
-                      accountNumberDisplay: XXXXX7899
-                    - accountId: da549a7cc86472ee05272c7bd0a4483f57174f2110e7ad961a267995031fda66c6d5475de467a65739750107b621e5a01be7cc0dc085a825fa384795904293f6
-                      status: ACTIVE
-                      productName: Citi Savings Account
-                      accountType: SAVINGS
-                      accountNumberDisplay: XXXXX1035
-        "204":
-          description: <table class="table"><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>invalid</td><td>invalidRequest</td><td>Missing
-            or invalid Parameters</td></tr></table>
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    type: not_found
-                    code: productsNotFound
-                    details: Products Not Found
-        "400":
-          description: <table class="table"><tr><td>error_description</td><td>error</td><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>Missing
-            or Invalid parameters</td><td>invalid_request</td><td>invalid</td><td>invalidRequest</td><td>Missing
-            or invalid Parameters</td></tr><tr><td>Invalid Client Identifier</td><td>invalid_request</td><td>error</td><td>400</td><td>Bad
-            Request</td></tr></table>
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    error_description: Missing or Invalid parameters
-                    error: invalid_request
-                    type: invalid
-                    code: invalidRequest
-                    details: Missing or invalid parameters
-        "401":
-          description: <table class="table"><tr><td>error_description</td><td>error</td><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>Invalid
-            Token</td><td>invalid_token</td><td> unAuthorized</td><td>401</td><td>Authorization
-            credentials are missing or invalid</td></tr><tr><td>Invalid Token</td><td>invalid_token</td><td>
-            unAuthorized</td><td>401</td><td> Access token is expired</td></tr></table>
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    error_description: Invalid Token
-                    error: invalid_token
-                    type: unAuthorized
-                    code: "401"
-                    details: Authorization credentials are missing or invalid
-        "403":
-          description: <table class="table"><tr><td>error_description</td><td>error</td><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>Insufficient
-            permission to grant access</td><td>accessNotConfigured</td><td>error</td><td>403</td><td>accessNotConfigured</td></tr></table>
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    error_description: Insufficient permission to grant access
-                    error: accessNotConfigured
-                    type: error
-                    code: "403"
-                    details: accessNotConfigured
-        "500":
-          description: <table class="table"><tr><td>Type</td><td>Code</td><td>Details</td></tr><tr><td>fatal</td><td>serverUnavailable</td><td>The
-            request failed due to an internal error/server unavailability</td></tr></table>
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    type: error
-                    code: serverError
-                    details: Internal Server Error
-components:
-  schemas:
-    Products:
-      required:
-      - customerId
-      properties:
-        customerId:
-          type: string
-          description: Unqiue Id for a customer
-          example: 69dbca123a06bab7c10d904b338037d2e98b68535bdc3fa2ee9c1fe887659a0acb5ba0dfec210dec82c7cae6584fd35e0c9ff9d7c8cdad4707b0f8d724c9d5f9
-        products:
-          type: array
-          description: "List of all products a Citi customer with account group such\
-            \ as credit card, checking and so on"
-          items:
-            $ref: '#/components/schemas/Product'
-    Product:
-      required:
-      - accountId
-      - accountNumberDisplay
-      - accountType
-      - productName
-      - status
-      properties:
-        accountId:
-          type: string
-          description: Long-term persistent identity of the account. Not an account
-            number.
-          example: 8035a60debb671e89bd451c9ad0f283e8f1b8868dd4dc65520ceb7bdfeb4142999f574c9db37917ef0edfae296745142543e3ad2bc034887f37212ecbde83ee0
-        status:
-          type: string
-          description: The status of the account. Currently this API returns ACTIVE
-            products only.
-          example: ACTIVE
-          enum:
-          - ACTIVE
-        productName:
-          type: string
-          description: Citi’s product name.
-          example: Citi Rewards+℠ Card
-        accountType:
-          type: string
-          description: Account Type is a classification of accounts according to their
-            common characteristics
-          example: CREDIT_CARD
-          enum:
-          - CHECKING
-          - SAVINGS
-          - CREDIT_CARD
-        accountNumberDisplay:
-          type: string
-          description: "A masked account number that can be displayed to the end customer\
-            \ to identify the account. Note - It displays only the last 4 digits of\
-            \ the account number, with the remaining numbers masked as \"X\"."
-          example: XXXXXXXXXXXX7899
-    ErrorResponse:
-      required:
-      - code
-      - type
-      properties:
-        type:
-          type: string
-          description: Error type which qualifies the error
-        code:
-          type: string
-          description: Error code which qualifies the error
-        details:
-          type: string
-          description: Human readable explanation specific to the occurrence of the
-            problem
-        error_description:
-          type: string
-          description: Content describing error information
-        error:
-          type: string
-          description: Error details which qualifies the error
-        location:
-          type: string
-          description: The name of the field that resulted in the error
-        moreInfo:
-          type: string
-          description: URI to human readable documentation of the error
-  securitySchemes:
-    client_id:
-      type: apiKey
-      description: ""
-      name: X-IBM-Client-Id
-      in: header
+import React from 'react';
+
+interface Product {
+  accountId: string;
+  status: 'ACTIVE';
+  productName: string;
+  accountType: 'CHECKING' | 'SAVINGS' | 'CREDIT_CARD';
+  accountNumberDisplay: string;
+}
+
+interface ChaseProductsProps {
+  customerId: string;
+  products: Product[];
+}
+
+const ChaseProductsView: React.FC<ChaseProductsProps> = ({ customerId, products }) => {
+  return (
+    <div className="chase-products-container">
+      <h1>Chase Customer Products</h1>
+      <p>Customer ID: {customerId}</p>
+      <ul>
+        {products.map((product) => (
+          <li key={product.accountId} className="product-item">
+            <h3>{product.productName}</h3>
+            <p>Type: {product.accountType}</p>
+            <p>Account: {product.accountNumberDisplay}</p>
+            <p>Status: {product.status}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default ChaseProductsView;
