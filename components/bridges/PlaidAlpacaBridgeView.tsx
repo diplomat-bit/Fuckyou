@@ -595,4 +595,227 @@ export default function PlaidAlpacaBridgeView() {
                       <span className="text-sm font-semibold text-slate-200">{selectedBank?.name}</span>
                     </div>
                     <div className="flex justify-between items-end">
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-400">Balance</span>
+                      <span className="text-sm font-bold text-slate-200">${selectedAccount?.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                  {/* Alpaca Side */}
+                  <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-4">
+                    <span className="text-xs text-slate-500 block mb-1">Brokerage (Alpaca)</span>
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className="w-6 h-6 rounded bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">ALP</div>
+                      <span className="text-sm font-semibold text-slate-200">Alpaca Paper</span>
+                    </div>
+                    <div className="flex justify-between items-end">
+                      <span className="text-xs text-slate-400">Buying Power</span>
+                      <span className="text-sm font-bold text-emerald-400">${buyingPower.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Transfer Form */}
+                <form onSubmit={handleExecuteTransfer} className="space-y-4">
+                  <div className="flex gap-2 p-1 bg-slate-950 rounded-lg border border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setTransferDirection('deposit')}
+                      className={`flex-1 py-2 text-xs font-medium rounded-md transition-all ${transferDirection === 'deposit' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'}`}
+                    >
+                      Deposit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTransferDirection('withdraw')}
+                      className={`flex-1 py-2 text-xs font-medium rounded-md transition-all ${transferDirection === 'withdraw' ? 'bg-rose-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'}`}
+                    >
+                      Withdraw
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-3 w-5 h-5 text-slate-500" />
+                    <input
+                      type="number"
+                      value={transferAmount}
+                      onChange={(e) => setTransferAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                    />
+                  </div>
+
+                  {transferError && (
+                    <div className="flex items-center gap-2 text-rose-400 text-xs bg-rose-500/10 p-3 rounded-lg border border-rose-500/20">
+                      <AlertTriangle className="w-4 h-4" />
+                      {transferError}
+                    </div>
+                  )}
+
+                  {transferSuccess && (
+                    <div className="flex items-center gap-2 text-emerald-400 text-xs bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Transfer initiated successfully.
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isTransferring}
+                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 text-slate-950 font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    {isTransferring ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        {transferDirection === 'deposit' ? 'Confirm Deposit' : 'Confirm Withdrawal'}
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Logs & History */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 backdrop-blur-md shadow-xl h-[600px] flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-semibold text-slate-200 flex items-center gap-2">
+                <Terminal className="w-5 h-5 text-slate-500" />
+                API Activity Logs
+              </h3>
+              <button 
+                onClick={() => setShowLogs(!showLogs)}
+                className="text-xs text-slate-500 hover:text-slate-300"
+              >
+                {showLogs ? 'Hide' : 'Show'}
+              </button>
+            </div>
+
+            {showLogs && (
+              <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                {apiLogs.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-600 text-sm">
+                    <Code className="w-8 h-8 mb-2 opacity-20" />
+                    No API activity yet
+                  </div>
+                ) : (
+                  apiLogs.map((log) => (
+                    <div 
+                      key={log.id} 
+                      className={`p-3 rounded-xl border transition-all cursor-pointer ${activeLogId === log.id ? 'bg-slate-800 border-slate-700' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
+                      onClick={() => setActiveLogId(log.id)}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${log.method === 'POST' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                            {log.method}
+                          </span>
+                          <span className="text-xs font-medium text-slate-300">{log.title}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-500">{log.timestamp.split(' ')[1]}</span>
+                      </div>
+                      {activeLogId === log.id && (
+                        <div className="mt-3 pt-3 border-t border-slate-700 space-y-2">
+                          <div className="text-[10px] text-slate-500 font-mono">URL: {log.url}</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <div className="text-[9px] text-slate-600 uppercase mb-1">Request</div>
+                              <pre className="text-[9px] text-slate-400 bg-slate-900 p-2 rounded overflow-x-auto">{log.request}</pre>
+                            </div>
+                            <div>
+                              <div className="text-[9px] text-slate-600 uppercase mb-1">Response</div>
+                              <pre className="text-[9px] text-slate-400 bg-slate-900 p-2 rounded overflow-x-auto">{log.response}</pre>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Plaid Modal Simulation */}
+      {plaidModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            {plaidStep === 'search' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-slate-200">Select your bank</h3>
+                <input 
+                  type="text" 
+                  placeholder="Search banks..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-200"
+                />
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {filteredBanks.map(bank => (
+                    <button 
+                      key={bank.id}
+                      onClick={() => handleSelectBank(bank)}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 transition-colors"
+                    >
+                      <div className={`w-8 h-8 rounded ${bank.logoBg} flex items-center justify-center text-[10px] font-bold text-white`}>{bank.logoText}</div>
+                      <span className="text-sm text-slate-300">{bank.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {plaidStep === 'credentials' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-slate-200">Sign in to {selectedBank?.name}</h3>
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-200" />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-200" />
+                <button 
+                  onClick={handlePlaidSubmitCredentials}
+                  className="w-full py-2 bg-emerald-500 text-slate-950 font-bold rounded-lg"
+                >
+                  {isPlaidLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Continue'}
+                </button>
+              </div>
+            )}
+
+            {plaidStep === 'accounts' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-slate-200">Select Account</h3>
+                {MOCK_ACCOUNTS[selectedBank?.id || '']?.map(acc => (
+                  <button 
+                    key={acc.id}
+                    onClick={() => handlePlaidSelectAccount(acc)}
+                    className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-800 transition-colors"
+                  >
+                    <div className="text-left">
+                      <div className="text-sm text-slate-200">{acc.name}</div>
+                      <div className="text-xs text-slate-500">•••• {acc.mask}</div>
+                    </div>
+                    <div className="text-sm font-bold text-emerald-400">${acc.balance.toLocaleString()}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {plaidStep === 'success' && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-200">Successfully Linked</h3>
+                <p className="text-sm text-slate-400 mt-2">Redirecting to bridge setup...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
