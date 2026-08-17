@@ -16,10 +16,6 @@ declare global {
     transfer(newByteLength?: number): ArrayBuffer;
     transferToFixedLength(newByteLength?: number): ArrayBuffer;
   }
-
-  interface String {
-    (value?: any): string;
-  }
 }
 
 declare module '@google/generative-ai' {
@@ -125,6 +121,16 @@ export enum View {
   SovereignMarketTakeover = 'SOVEREIGN_MARKET_TAKEOVER_HUB',
   AlpacaTqqq = 'ALPACA_TQQQ_ALGORITHM_TERMINAL',
   IframeView = 'IFRAME_VIEW',
+
+  // Additional Views for Complete Integration
+  GriffinMcp = 'GRIFFIN_MCP_GATEWAY',
+  AppDeploymentPipeline = 'APP_DEPLOYMENT_PIPELINE',
+  AppErrorRateTracker = 'APP_ERROR_RATE_TRACKER',
+  AppIntegrationsBridge = 'APP_INTEGRATIONS_BRIDGE',
+  AppMetricsDashboard = 'APP_METRICS_DASHBOARD',
+  AppRegistryAuth = 'APP_REGISTRY_AUTH',
+  AppRegistryManager = 'APP_REGISTRY_MANAGER',
+  CardCustomization = 'CARD_CUSTOMIZATION_PORTAL',
 }
 
 export type AppView = View | string;
@@ -272,19 +278,6 @@ export interface CurrencyBasedValue {
 export interface CurrencyCurrentValue {
   alternateAmountValue: string[];
   baseAmountValue: string[];
-}
-
-export interface InsurancePolicySummary {
-  productName: string;
-  productCode: string;
-  displayAccountNumber: string;
-  currencyCode: string;
-  accountClassification: string;
-  accountStatus: string;
-  displayPolicyNumber: string;
-  insuranceApplicationId: string;
-  insuranceSumAssuredAmount: number;
-  totalPremiumPaidAmount: number;
 }
 
 export interface Transaction {
@@ -657,19 +650,19 @@ export interface PersistedQueryManifest {
 }
 
 export interface MarketMover {
-    ticker: string;
-    name: string;
-    change: number;
-    price: number;
+  ticker: string;
+  name: string;
+  change: number;
+  price: number;
 }
 
 export interface AuthorizedApp {
-    id: string;
-    name: string;
-    description: string;
-    status: 'active' | 'revoked';
-    authorizedAt: string;
-    scopes: string[];
+  id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'revoked';
+  authorizedAt: string;
+  scopes: string[];
 }
 
 export interface PaperNutsData {
