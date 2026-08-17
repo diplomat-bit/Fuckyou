@@ -1,12 +1,28 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, signInWithCredential } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import firebaseConfig from './firebase-applet-config.json';
 
+// Safe configuration fallback to prevent runtime crashes if config is missing
+const defaultAppletConfig = {
+  apiKey: "mock-api-key",
+  authDomain: "mock-auth-domain",
+  projectId: "mock-project-id",
+  storageBucket: "mock-storage-bucket",
+  messagingSenderId: "mock-sender-id",
+  appId: "mock-app-id",
+  firestoreDatabaseId: ""
+};
+
+const config = {
+  ...defaultAppletConfig,
+  ...(firebaseConfig || {})
+};
+
 // Initialize Firebase SDK safely
-export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-export const db = firebaseConfig.firestoreDatabaseId 
-  ? getFirestore(app, firebaseConfig.firestoreDatabaseId) 
+export const app = getApps().length === 0 ? initializeApp(config) : getApp();
+export const db = config.firestoreDatabaseId 
+  ? getFirestore(app, config.firestoreDatabaseId) 
   : getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
@@ -41,7 +57,12 @@ export const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
     const accessToken = credential?.accessToken || null;
-    (result.user as any).accessToken = accessToken;
+    Object.defineProperty(result.user, 'accessToken', {
+      value: accessToken,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    });
     return result.user;
   } catch (error) {
     console.error("Error signing in with Google:", error);
@@ -56,12 +77,13 @@ export const signInWithGooglePopup = async () => {
     const accessToken = credential?.accessToken || null;
     return { user: result.user, accessToken };
   } catch (error) {
-    console.error("Error signing in with Google:", error);
+    console.error("Error signing in with Google Popup:", error);
     throw error;
   }
 };
 
-export const logout = () => signOut(auth);
+export const firebaseLogout = () => signOut(auth);
+export const logout = firebaseLogout;
 
 export enum OperationType {
   CREATE = 'create',
@@ -88,10 +110,10 @@ export interface FirestoreErrorInfo {
       email: string | null;
       photoUrl: string | null;
     }[];
-  }
+  };
 }
 
-export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): never {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
@@ -109,7 +131,7 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     },
     operationType,
     path
-  }
+  };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));
 }
