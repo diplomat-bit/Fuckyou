@@ -106,6 +106,77 @@ export class AuthService {
       return { valid: false, error: err.message };
     }
   }
+
+  /**
+   * Generates a self-signed X.509 certificate and RSA private key.
+   * Extremely useful for testing Holder-of-Key (HoK) token binding.
+   */
+  public generateSelfSignedCertificate(commonName: string = 'Sovereign Client'): { certPem: string; privateKeyPem: string } {
+    try {
+      const keys = forge.pki.rsa.generateKeyPair(2048);
+      const cert = forge.pki.createCertificate();
+      
+      cert.publicKey = keys.publicKey;
+      cert.serialNumber = '01';
+      cert.validity.notBefore = new Date();
+      cert.validity.notAfter = new Date();
+      cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+      
+      const attrs = [
+        { name: 'commonName', value: commonName },
+        { name: 'countryName', value: 'US' },
+        { name: 'organizationName', value: 'Sovereign Nexus' },
+        { shortName: 'OU', value: 'Auth' }
+      ];
+      
+      cert.setSubject(attrs);
+      cert.setIssuer(attrs);
+      
+      // Self-sign certificate
+      cert.sign(keys.privateKey, forge.md.sha256.create());
+      
+      const certPem = forge.pki.certificateToPem(cert);
+      const privateKeyPem = forge.pki.privateKeyToPem(keys.privateKey);
+      
+      return { certPem, privateKeyPem };
+    } catch (err) {
+      console.error("Certificate generation failed:", err);
+      throw new Error("Failed to generate self-signed certificate.");
+    }
+  }
+
+  /**
+   * Signs a payload using an RSA private key.
+   */
+  public signWithPrivateKey(privateKeyPem: string, payload: string): string {
+    try {
+      const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+      const md = forge.md.sha256.create();
+      md.update(payload, 'utf8');
+      const signature = privateKey.sign(md);
+      return forge.util.encode64(signature);
+    } catch (err) {
+      console.error("Signing failed:", err);
+      throw new Error("Failed to sign payload with private key.");
+    }
+  }
+
+  /**
+   * Verifies a signature using an X.509 certificate.
+   */
+  public verifyWithCertificate(certPem: string, payload: string, signatureBase64: string): boolean {
+    try {
+      const cert = forge.pki.certificateFromPem(certPem);
+      const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;
+      const signature = forge.util.decode64(signatureBase64);
+      const md = forge.md.sha256.create();
+      md.update(payload, 'utf8');
+      return publicKey.verify(md.digest().bytes(), signature);
+    } catch (err) {
+      console.error("Verification failed:", err);
+      return false;
+    }
+  }
 }
 
 export const authService = AuthService.getInstance();
