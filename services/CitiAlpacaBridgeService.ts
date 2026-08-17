@@ -10,8 +10,9 @@ export interface CitiAlpacaSyncRecord {
   alpaca_account_id: string;
   alpaca_journal_id: string;
   iso20022_message_type: 'pacs.008.001.08' | 'pacs.009.001.08';
-  status: 'SETTLED' | 'IN_TRANSIT';
+  status: 'SETTLED' | 'IN_TRANSIT' | 'FAILED';
   timestamp: string;
+  error_message?: string;
 }
 
 export class CitiAlpacaBridgeService {
@@ -51,38 +52,98 @@ export class CitiAlpacaBridgeService {
     return this.syncRecords.get(accountId) || [];
   }
 
+  public async getSyncRecordById(accountId: string, recordId: string): Promise<CitiAlpacaSyncRecord | null> {
+    const records = this.syncRecords.get(accountId) || [];
+    return records.find(r => r.id === recordId) || null;
+  }
+
   public async executeCitiToAlpacaIso20022Wire(
     accountId: string,
     amountUSD: string,
-    citiConsentId: string
+    citiConsentId: string,
+    messageType: 'pacs.008.001.08' | 'pacs.009.001.08' = 'pacs.008.001.08'
   ): Promise<CitiAlpacaSyncRecord> {
+    if (!accountId) {
+      throw new Error('Alpaca account ID is required');
+    }
+    if (!amountUSD || parseFloat(amountUSD) <= 0) {
+      throw new Error('Invalid wire transfer amount');
+    }
+    if (!citiConsentId) {
+      throw new Error('Citi consent ID is required');
+    }
+
     const citiRef = `CITI_WIRE_${uuidv4().substring(0, 8).toUpperCase()}`;
 
-    // Execute instant JNLC Journal in Alpaca
-    const journal = await alpacaJournalsService.createSingleJournal(
-      'CITI_TREASURY_CORRESPONDENT_OMNIBUS',
-      accountId,
-      amountUSD,
-      'JNLC',
-      `Citi Open Banking FAPI Wire (${citiRef})`
-    );
+    try {
+      // Execute instant JNLC Journal in Alpaca
+      const journal = await alpacaJournalsService.createSingleJournal(
+        'CITI_TREASURY_CORRESPONDENT_OMNIBUS',
+        accountId,
+        amountUSD,
+        'JNLC',
+        `Citi Open Banking FAPI Wire (${citiRef})`
+      );
 
-    const record: CitiAlpacaSyncRecord = {
-      id: uuidv4(),
-      citi_wire_reference: citiRef,
-      citi_consent_id: citiConsentId,
-      amount: amountUSD,
-      currency: 'USD',
-      alpaca_account_id: accountId,
-      alpaca_journal_id: journal.id,
-      iso20022_message_type: 'pacs.008.001.08',
-      status: 'SETTLED',
+      const record: CitiAlpacaSyncRecord = {
+        id: uuidv4(),
+        citi_wire_reference: citiRef,
+        citi_consent_id: citiConsentId,
+        amount: amountUSD,
+        currency: 'USD',
+        alpaca_account_id: accountId,
+        alpaca_journal_id: journal?.id || uuidv4(),
+        iso20022_message_type: messageType,
+        status: 'SETTLED',
+        timestamp: new Date().toISOString()
+      };
+
+      const list = this.syncRecords.get(accountId) || [];
+      this.syncRecords.set(accountId, [record, ...list]);
+      return record;
+    } catch (error: any) {
+      const failedRecord: CitiAlpacaSyncRecord = {
+        id: uuidv4(),
+        citi_wire_reference: citiRef,
+        citi_consent_id: citiConsentId,
+        amount: amountUSD,
+        currency: 'USD',
+        alpaca_account_id: accountId,
+        alpaca_journal_id: '',
+        iso20022_message_type: messageType,
+        status: 'FAILED',
+        timestamp: new Date().toISOString(),
+        error_message: error?.message || 'Unknown error during Alpaca journal creation'
+      };
+
+      const list = this.syncRecords.get(accountId) || [];
+      this.syncRecords.set(accountId, [failedRecord, ...list]);
+      return failedRecord;
+    }
+  }
+
+  public async updateRecordStatus(
+    accountId: string,
+    recordId: string,
+    status: 'SETTLED' | 'IN_TRANSIT' | 'FAILED',
+    errorMessage?: string
+  ): Promise<CitiAlpacaSyncRecord | null> {
+    const records = this.syncRecords.get(accountId) || [];
+    const recordIndex = records.findIndex(r => r.id === recordId);
+    if (recordIndex === -1) {
+      return null;
+    }
+
+    const updatedRecord = {
+      ...records[recordIndex],
+      status,
+      error_message: errorMessage,
       timestamp: new Date().toISOString()
     };
 
-    const list = this.syncRecords.get(accountId) || [];
-    this.syncRecords.set(accountId, [record, ...list]);
-    return record;
+    records[recordIndex] = updatedRecord;
+    this.syncRecords.set(accountId, records);
+    return updatedRecord;
   }
 }
 
