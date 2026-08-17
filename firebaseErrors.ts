@@ -1,3 +1,5 @@
+import { getAuth, User } from 'firebase/auth';
+
 export enum OperationType {
   CREATE = 'create',
   UPDATE = 'update',
@@ -23,18 +25,21 @@ export interface FirestoreErrorInfo {
       email: string | null;
       photoUrl: string | null;
     }[];
-  }
+  };
 }
 
-export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  let currentUser: any = null;
+export function handleFirestoreError(
+  error: unknown,
+  operationType: OperationType,
+  path: string | null
+): never {
+  let currentUser: User | null = null;
+  
   try {
-    // Dynamically import/get auth to prevent circular dependency and initialization order issues
-    const { getAuth } = require('firebase/auth');
     const auth = getAuth();
     currentUser = auth.currentUser;
   } catch (e) {
-    // Fallback if Firebase is not initialized yet or in non-browser environment
+    // Silently fail if auth is not initialized
   }
 
   const errInfo: FirestoreErrorInfo = {
@@ -42,19 +47,20 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     authInfo: {
       userId: currentUser?.uid,
       email: currentUser?.email,
-      emailVerified: currentUser?.emailVerified,
-      isAnonymous: currentUser?.isAnonymous,
-      tenantId: currentUser?.tenantId,
-      providerInfo: currentUser?.providerData?.map((provider: any) => ({
+      emailVerified: currentUser?.emailVerified ?? false,
+      isAnonymous: currentUser?.isAnonymous ?? false,
+      tenantId: currentUser?.tenantId ?? null,
+      providerInfo: currentUser?.providerData?.map((provider) => ({
         providerId: provider.providerId,
         displayName: provider.displayName,
         email: provider.email,
-        photoUrl: provider.photoURL
-      })) || []
+        photoUrl: provider.photoURL,
+      })) ?? [],
     },
     operationType,
-    path
+    path,
   };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
+
+  console.error('Firestore Error:', errInfo);
   throw new Error(JSON.stringify(errInfo));
 }
