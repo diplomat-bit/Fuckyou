@@ -3,43 +3,33 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ===============================================================
-    // Assumed Data Model
+    // Assumed Data Model & Collections
     // ===============================================================
     //
     // Collection: /users/{userId}
-    // Fields:
-    //   - id: string (required)
-    //   - name: string (required, 1-100 chars)
-    //   - title: string (optional)
-    //   - email: string (required, email format)
-    //   - phone: string (optional)
-    //   - loyaltyTier: string (optional)
-    //   - avatarUrl: string (optional, url format)
-    //   - usdBalance: number (optional)
-    //   - fiatBalance: number (optional)
-    //   - cryptoBalance: number (optional)
-    //   - app_metadata: map (optional)
-    //   - user_metadata: map (optional)
+    // Subcollections:
+    //   - transactions
+    //   - accounts
+    //   - portfolio
+    //   - notifications
+    //   - insights
+    //   - budgets
+    //   - goals
+    //   - recipients
     //
-    // Collection: /users/{userId}/transactions/{transactionId}
-    // Fields:
-    //   - id: string (required)
-    //   - date: string (required, ISO 8601)
-    //   - amount: number (required)
-    //   - currency: string (required)
-    //   - type: string (required)
-    //   - category: string (required)
-    //   - description: string (required)
-    //   - metadata: map (optional)
+    // Collection: /workspaces/{workspaceId}
+    // Subcollections:
+    //   - messages
+    //   - tasks
+    //   - files
+    //   - channels
+    //   - members
     //
+    // Collection: /audit_trail/{auditId}
+    // Collection: /audits/{auditId}
+    // Collection: /remitrax/{remitraxId}
     // Collection: /rewards/{rewardId}
-    // Fields:
-    //   - id: string (required)
-    //   - name: string (required)
-    //   - cost: number (required)
-    //   - type: string (required)
-    //   - description: string (required)
-    //   - iconName: string (optional)
+    // Collection: /test/{docId}
     //
     // ===============================================================
 
@@ -56,9 +46,19 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.app_metadata.role == 'admin' ||
-         (request.auth.token.email == "sovereignties3@gmail.com" && request.auth.token.email_verified == true));
+      return isAuthenticated() && (
+        (request.auth.token.email == "sovereignties3@gmail.com" && request.auth.token.email_verified == true) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('app_metadata', {}).get('role', '') == 'admin')
+      );
+    }
+
+    function isWorkspaceMember(workspaceId) {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/workspaces/$(workspaceId)/members/$(request.auth.uid)) ||
+        (exists(/databases/$(database)/documents/workspaces/$(workspaceId)) &&
+         request.auth.uid in get(/databases/$(database)/documents/workspaces/$(workspaceId)).data.get('members', []))
+      );
     }
 
     function isValidEmail(email) {
@@ -124,6 +124,7 @@ service cloud.firestore {
     // Rules
     // ===============================================================
 
+    // User Profiles and Subcollections
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
@@ -138,23 +139,23 @@ service cloud.firestore {
       }
 
       match /accounts/{accountId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwner(userId) || isAdmin();
       }
 
       match /portfolio/{assetId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwner(userId) || isAdmin();
       }
 
       match /notifications/{notificationId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwner(userId) || isAdmin();
       }
 
       match /insights/{insightId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwner(userId) || isAdmin();
       }
 
       match /budgets/{budgetId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isOwner(userId) || isAdmin();
       }
 
       match /goals/{goalId} {
@@ -170,13 +171,62 @@ service cloud.firestore {
       }
     }
 
-    match /test/{docId} {
-      allow read: if true;
+    // Workspaces and Subcollections
+    match /workspaces/{workspaceId} {
+      allow read: if isWorkspaceMember(workspaceId) || isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isWorkspaceMember(workspaceId) || isAdmin();
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read, write: if isWorkspaceMember(workspaceId) || isAdmin();
+      }
+      match /tasks/{taskId} {
+        allow read, write: if isWorkspaceMember(workspaceId) || isAdmin();
+      }
+      match /files/{fileId} {
+        allow read, write: if isWorkspaceMember(workspaceId) || isAdmin();
+      }
+      match /channels/{channelId} {
+        allow read, write: if isWorkspaceMember(workspaceId) || isAdmin();
+      }
+      match /members/{memberId} {
+        allow read: if isWorkspaceMember(workspaceId) || isAdmin();
+        allow write: if isWorkspaceMember(workspaceId) || isAdmin();
+      }
     }
 
+    // Audit Trails (Append-Only)
+    match /audit_trail/{auditId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /audits/{auditId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Remitrax Transfers
+    match /remitrax/{remitraxId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // Rewards Catalog
     match /rewards/{rewardId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
+    }
+
+    // Test Collection
+    match /test/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
   }
 }
