@@ -12,6 +12,7 @@
     "rebuild": "echo 'rebuild'"
   },
   "dependencies": {
+    "vite-plugin-node-polyfills": "0.28.0",
     "@alpacahq/alpaca-trade-api": "^4.0.1",
     "@apidevtools/swagger-parser": "^12.1.0",
     "@auth0/auth0-react": "^2.16.1",
