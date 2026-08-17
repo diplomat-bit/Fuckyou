@@ -66,7 +66,7 @@ export class ApiSimulator {
       const content = fs.readFileSync(this.csvPath, 'utf8');
       const records = this.parseCSV(content);
       
-      this.endpoints = records.map((record, index) => {
+      this.endpoints = records.map((record) => {
         const method = (this.findValueByKeys(record, ['method']) || 'GET').toUpperCase();
         const rawPath = this.findValueByKeys(record, ['path', 'url', 'uri']) || '/';
         const normalizedPath = rawPath.split('?')[0]; // Strip query params for matching
@@ -315,7 +315,7 @@ export class ApiSimulator {
 }
 
 // Auto-start the simulator if run directly
-if (require.main === module) {
+if (typeof require !== 'undefined' && require.main === module) {
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
   const simulator = new ApiSimulator();
   simulator.initialize().then(() => {
