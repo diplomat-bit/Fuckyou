@@ -282,3 +282,7 @@ export class AccountService {
       return JSON.parse(text) as CreditScore;
     } catch (error) {
       logger.error(`Gemini credit score generation failed for account ${accountId}. Falling back to heuristics. Error: ${error instanceof Error ? error.message : error}`);
+      return this.generateHeuristicCreditScore(account);
+    }
+  }
+}
