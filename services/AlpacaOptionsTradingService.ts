@@ -1,3 +1,6 @@
+import { loadSecrets } from './serverHelpers';
+import { logger } from '../api/utils/logger';
+
 export interface AlpacaConfig {
   apiKey: string;
   apiSecret: string;
@@ -139,18 +142,47 @@ export interface HedgingRecommendation {
   hedgingStatus: 'EXECUTABLE' | 'EXCEEDS_BUDGET' | 'NO_CONTRACTS_FOUND';
 }
 
+function logInfo(message: string, ...args: any[]) {
+  if (logger && typeof logger.info === 'function') {
+    logger.info(message, ...args);
+  } else {
+    console.log(message, ...args);
+  }
+}
+
+function logError(message: string, ...args: any[]) {
+  if (logger && typeof logger.error === 'function') {
+    logger.error(message, ...args);
+  } else {
+    console.error(message, ...args);
+  }
+}
+
 export class AlpacaOptionsTradingService {
   private apiKey: string;
   private apiSecret: string;
   private baseUrl: string;
   private dataBaseUrl: string;
 
-  constructor(config: AlpacaConfig) {
-    this.apiKey = config.apiKey;
-    this.apiSecret = config.apiSecret;
-    const isPaper = config.paper !== undefined ? config.paper : true;
-    this.baseUrl = config.baseUrl || (isPaper ? 'https://paper-api.alpaca.markets' : 'https://api.alpaca.markets');
-    this.dataBaseUrl = config.dataBaseUrl || 'https://data.alpaca.markets';
+  constructor(config?: AlpacaConfig) {
+    let secrets: any = {};
+    try {
+      secrets = loadSecrets() || {};
+    } catch (e) {
+      // ignore
+    }
+
+    this.apiKey = config?.apiKey || process.env.ALPACA_API_KEY || secrets.ALPACA_API_KEY || '';
+    this.apiSecret = config?.apiSecret || process.env.ALPACA_API_SECRET || secrets.ALPACA_API_SECRET || '';
+    
+    const isPaper = config?.paper !== undefined 
+      ? config.paper 
+      : (process.env.ALPACA_PAPER !== 'false' && secrets.ALPACA_PAPER !== 'false');
+
+    this.baseUrl = config?.baseUrl || (isPaper ? 'https://paper-api.alpaca.markets' : 'https://api.alpaca.markets');
+    this.dataBaseUrl = config?.dataBaseUrl || 'https://data.alpaca.markets';
+
+    logInfo(`AlpacaOptionsTradingService initialized in ${isPaper ? 'PAPER' : 'LIVE'} mode`);
   }
 
   private getHeaders(): Record<string, string> {
@@ -269,8 +301,8 @@ export class AlpacaOptionsTradingService {
           });
         }
       }
-    } catch {
-      // Fallback or empty map if market data subscription is inactive
+    } catch (error) {
+      logError(`Failed to fetch option snapshots for symbols: ${symbols.join(', ')}`, error);
     }
 
     return resultMap;
@@ -342,6 +374,8 @@ export class AlpacaOptionsTradingService {
 
     const preferredType: OptionType = params.preferredOptionType || (deltaDeficit < 0 ? 'put' : 'call');
     
+    logInfo(`Calculating collateral hedge for ${params.underlyingSymbol}. Current Delta: ${currentDelta}, Target Delta: ${targetDelta}, Deficit: ${deltaDeficit}`);
+
     const contracts = await this.getOptionContracts({
       underlyingSymbol: params.underlyingSymbol,
       type: preferredType,
@@ -349,6 +383,7 @@ export class AlpacaOptionsTradingService {
     });
 
     if (contracts.length === 0) {
+      logError(`No available option contracts found for hedging ${params.underlyingSymbol}`);
       throw new Error(`No available option contracts found for hedging ${params.underlyingSymbol}`);
     }
 
@@ -382,13 +417,14 @@ export class AlpacaOptionsTradingService {
     }
 
     // Contracts needed = Delta Deficit / (Contract Delta * Multiplier)
-    const deltaPerContract = bestContractDelta * (bestContract.multiplier || 100);
+    const multiplier = bestContract.multiplier || 100;
+    const deltaPerContract = bestContractDelta * multiplier;
     const neededContracts = Math.max(1, Math.round(Math.abs(deltaDeficit / deltaPerContract)));
-    const estimatedCost = neededContracts * bestAskPrice * (bestContract.multiplier || 100);
+    const estimatedCost = neededContracts * bestAskPrice * multiplier;
 
     const isExecutable = estimatedCost <= params.maxCollateralBudgetUSD;
 
-    return {
+    const recommendation: HedgingRecommendation = {
       underlyingSymbol: params.underlyingSymbol,
       currentShares: params.portfolioSharesQty,
       targetDelta,
@@ -401,6 +437,10 @@ export class AlpacaOptionsTradingService {
       requiredCollateralUSD: estimatedCost,
       hedgingStatus: isExecutable ? 'EXECUTABLE' : 'EXCEEDS_BUDGET'
     };
+
+    logInfo(`Hedge recommendation calculated: Buy ${neededContracts} contracts of ${bestContract.symbol} for an estimated cost of $${estimatedCost}`);
+
+    return recommendation;
   }
 
   /**
@@ -453,3 +493,16 @@ export class AlpacaOptionsTradingService {
     });
   }
 }
+
+let defaultAlpacaOptionsTradingService: AlpacaOptionsTradingService | null = null;
+
+export function getAlpacaOptionsTradingService(): AlpacaOptionsTradingService {
+  if (!defaultAlpacaOptionsTradingService) {
+    defaultAlpacaOptionsTradingService = new AlpacaOptionsTradingService();
+  }
+  return defaultAlpacaOptionsTradingService;
+}
+
+export const alpacaOptionsTradingService = getAlpacaOptionsTradingService();
+
+export default AlpacaOptionsTradingService;
