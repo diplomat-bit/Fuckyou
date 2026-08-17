@@ -107,8 +107,13 @@ export class AlpacaJournalsService {
     }
 
     try {
-      const { SecurityService } = await import('./SecurityService');
-      const security = (SecurityService as any).getInstance();
+      const securityModule = await import('./SecurityService');
+      const security = securityModule.securityService || 
+                       securityModule.default || 
+                       (securityModule.SecurityService && typeof (securityModule.SecurityService as any).getInstance === 'function' 
+                         ? (securityModule.SecurityService as any).getInstance() 
+                         : null);
+      
       if (security && typeof security.verifyAccountAccess === 'function') {
         const isFromAuthorized = await security.verifyAccountAccess(fromAccount);
         const isToAuthorized = await security.verifyAccountAccess(toAccount);
@@ -120,8 +125,14 @@ export class AlpacaJournalsService {
     } catch (e) {}
 
     try {
-      const { SovereignIntelligence } = await import('./SovereignIntelligence');
-      const sovereign = (SovereignIntelligence as any).getInstance();
+      const sovereignModule = await import('./SovereignIntelligence');
+      const sovereign = sovereignModule.sovereignIntelligence || 
+                        sovereignModule.brain || 
+                        sovereignModule.default || 
+                        (sovereignModule.SovereignIntelligence && typeof (sovereignModule.SovereignIntelligence as any).getInstance === 'function' 
+                          ? (sovereignModule.SovereignIntelligence as any).getInstance() 
+                          : null);
+
       if (sovereign && typeof sovereign.checkSanctionsList === 'function') {
         const isSanctionedFrom = await sovereign.checkSanctionsList(fromAccount);
         const isSanctionedTo = await sovereign.checkSanctionsList(toAccount);
@@ -142,8 +153,14 @@ export class AlpacaJournalsService {
 
   private async generateZkProof(journal: AlpacaJournal): Promise<string> {
     try {
-      const { ZKPEngine } = await import('./ZKPEngine');
-      const zkp = (ZKPEngine as any).getInstance();
+      const zkpModule = await import('./ZKPEngine');
+      const zkp = zkpModule.zkpEngine || 
+                  zkpModule.ZKPEngine || 
+                  zkpModule.default || 
+                  (zkpModule.ZKPEngine && typeof (zkpModule.ZKPEngine as any).getInstance === 'function' 
+                    ? (zkpModule.ZKPEngine as any).getInstance() 
+                    : null);
+
       if (zkp && typeof zkp.generateTransactionProof === 'function') {
         const proof = await zkp.generateTransactionProof({
           id: journal.id || '',
@@ -162,8 +179,14 @@ export class AlpacaJournalsService {
 
   private async syncToLedger(journal: AlpacaJournal): Promise<void> {
     try {
-      const { ModernTreasuryService } = await import('./ModernTreasuryService');
-      const mt = (ModernTreasuryService as any).getInstance();
+      const mtModule = await import('./ModernTreasuryService');
+      const mt = mtModule.modernTreasuryService || 
+                 mtModule.ModernTreasuryService || 
+                 mtModule.default || 
+                 (mtModule.ModernTreasuryService && typeof (mtModule.ModernTreasuryService as any).getInstance === 'function' 
+                   ? (mtModule.ModernTreasuryService as any).getInstance() 
+                   : null);
+
       if (mt && typeof mt.recordJournalEntry === 'function') {
         await mt.recordJournalEntry({
           externalId: journal.id || '',
@@ -177,18 +200,70 @@ export class AlpacaJournalsService {
     } catch (e) {}
 
     try {
-      const { CitiAlpacaBridgeService } = await import('./CitiAlpacaBridgeService');
-      const bridge = (CitiAlpacaBridgeService as any).getInstance();
+      const bridgeModule = await import('./CitiAlpacaBridgeService');
+      const bridge = bridgeModule.citiAlpacaBridgeService || 
+                     bridgeModule.CitiAlpacaBridgeService || 
+                     bridgeModule.default || 
+                     (bridgeModule.CitiAlpacaBridgeService && typeof (bridgeModule.CitiAlpacaBridgeService as any).getInstance === 'function' 
+                       ? (bridgeModule.CitiAlpacaBridgeService as any).getInstance() 
+                       : null);
+
       if (bridge && typeof bridge.syncJournalToCitiLedger === 'function') {
         await bridge.syncJournalToCitiLedger(journal);
+      }
+    } catch (e) {}
+
+    try {
+      const ledgerSyncModule = await import('./SovereignLedgerSyncService');
+      const ledgerSync = ledgerSyncModule.sovereignLedgerSyncService || 
+                         ledgerSyncModule.SovereignLedgerSyncService || 
+                         ledgerSyncModule.default || 
+                         (ledgerSyncModule.SovereignLedgerSyncService && typeof (ledgerSyncModule.SovereignLedgerSyncService as any).getInstance === 'function' 
+                           ? (ledgerSyncModule.SovereignLedgerSyncService as any).getInstance() 
+                           : null);
+
+      if (ledgerSync && typeof ledgerSync.syncJournal === 'function') {
+        await ledgerSync.syncJournal(journal);
+      }
+    } catch (e) {}
+
+    try {
+      const lastBossModule = await import('./LastBossService');
+      const lastBoss = lastBossModule.lastBossService || 
+                       lastBossModule.default || 
+                       (lastBossModule.LastBossService && typeof (lastBossModule.LastBossService as any).getInstance === 'function' 
+                         ? (lastBossModule.LastBossService as any).getInstance() 
+                         : null);
+
+      if (lastBoss && typeof lastBoss.logAction === 'function') {
+        await lastBoss.logAction('alpaca_journal_execution', { journalId: journal.id });
+      }
+    } catch (e) {}
+
+    try {
+      const astraModule = await import('./AstraDBService');
+      const astra = astraModule.astraDBService || 
+                    astraModule.default || 
+                    (astraModule.AstraDBService && typeof (astraModule.AstraDBService as any).getInstance === 'function' 
+                      ? (astraModule.AstraDBService as any).getInstance() 
+                      : null);
+
+      if (astra && typeof astra.insertDocument === 'function') {
+        await astra.insertDocument('alpaca_journals', journal);
       }
     } catch (e) {}
   }
 
   private async publishJournalEvent(event: string, journal: AlpacaJournal): Promise<void> {
     try {
-      const { PulsarService } = await import('./PulsarService');
-      const pulsar = (PulsarService as any).getInstance();
+      const pulsarModule = await import('./PulsarService');
+      const pulsar = pulsarModule.pulsarService || 
+                     pulsarModule.PulsarService || 
+                     pulsarModule.default || 
+                     (pulsarModule.PulsarService && typeof (pulsarModule.PulsarService as any).getInstance === 'function' 
+                       ? (pulsarModule.PulsarService as any).getInstance() 
+                       : null);
+
       if (pulsar && typeof pulsar.publishEvent === 'function') {
         await pulsar.publishEvent(`alpaca.journals.${event}`, {
           journalId: journal.id || '',
