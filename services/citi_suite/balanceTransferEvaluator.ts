@@ -1,5 +1,5 @@
 /**
- * src/balanceTransferEvaluator.ts
+ * services/citi_suite/balanceTransferEvaluator.ts
  * 
  * Provides analytical logic to evaluate eligibility responses, calculate
  * effective interest rates and APR comparisons, score balance transfer offers
@@ -61,6 +61,8 @@ export interface BalanceTransferEvaluation {
   ineligibilityReasons: string[];
   transferAmount: number;
   upfrontTransferFee: number;
+  promoApr: number;
+  promoDurationMonths: number;
   totalInterestPaidPromo: number;
   totalInterestPaidPostPromo: number;
   totalInterestPaid: number;
@@ -112,6 +114,12 @@ export interface GeminiFunctionDeclaration {
   };
 }
 
+const CREDIT_SCORE_VALUES: Record<string, number> = {
+  FAIR: 1,
+  GOOD: 2,
+  EXCELLENT: 3
+};
+
 // ============================================================================
 // Core Calculation Logic
 // ============================================================================
@@ -120,6 +128,7 @@ export interface GeminiFunctionDeclaration {
  * Calculates the upfront transfer fee considering min/max fee constraints.
  */
 export function calculateTransferFee(amount: number, offer: BalanceTransferOffer): number {
+  if (amount <= 0) return 0;
   let fee = amount * (offer.transferFeePercentage / 100);
   if (offer.transferFeeMin !== undefined && fee < offer.transferFeeMin) {
     fee = offer.transferFeeMin;
@@ -135,9 +144,10 @@ export function calculateTransferFee(amount: number, offer: BalanceTransferOffer
  */
 export function calculateEffectiveApr(offer: BalanceTransferOffer, transferAmount: number): number {
   if (transferAmount <= 0) return offer.promoApr;
+  const promoMonths = offer.promoDurationMonths <= 0 ? 12 : offer.promoDurationMonths;
   const fee = calculateTransferFee(transferAmount, offer);
   const feeRatio = fee / transferAmount;
-  const annualizedFeeRate = (feeRatio / (offer.promoDurationMonths / 12)) * 100;
+  const annualizedFeeRate = (feeRatio / (promoMonths / 12)) * 100;
   return Math.round((offer.promoApr + annualizedFeeRate) * 100) / 100;
 }
 
@@ -158,6 +168,12 @@ export function simulateRepayment(
   let totalInterestPaidPostPromo = 0;
   let month = 0;
 
+  // Ensure we have a valid positive payment amount to prevent infinite loops
+  let paymentAmount = monthlyPayment;
+  if (paymentAmount <= 0) {
+    paymentAmount = Math.max(25, Math.round(initialBalance * 0.02 * 100) / 100);
+  }
+
   while (currentBalance > 0.01 && month < maxMonths) {
     month++;
     const isPromo = month <= promoDurationMonths;
@@ -166,7 +182,7 @@ export function simulateRepayment(
     
     const interestCharged = Math.round(currentBalance * monthlyRate * 100) / 100;
     
-    let payment = monthlyPayment;
+    let payment = paymentAmount;
     if (payment > currentBalance + interestCharged) {
       payment = currentBalance + interestCharged;
     }
@@ -226,11 +242,11 @@ export function evaluateEligibility(
     reasons.push(`Balance transfers are typically not allowed within the same card issuer (${card.issuer}).`);
   }
 
-  if (criteria.creditScoreTier) {
-    const scoreMap = { FAIR: 1, GOOD: 2, EXCELLENT: 3 };
-    const requiredMap = { FAIR: 1, GOOD: 2, EXCELLENT: 3 };
+  if (criteria.creditScoreTier && offer.creditScoreRequirement) {
+    const userScore = CREDIT_SCORE_VALUES[criteria.creditScoreTier] || 0;
+    const requiredScore = CREDIT_SCORE_VALUES[offer.creditScoreRequirement] || 0;
     
-    if (offer.creditScoreRequirement && scoreMap[criteria.creditScoreTier] < requiredMap[offer.creditScoreRequirement]) {
+    if (userScore < requiredScore) {
       reasons.push(`Credit score tier (${criteria.creditScoreTier}) does not meet offer requirement (${offer.creditScoreRequirement}).`);
     }
   }
@@ -258,7 +274,8 @@ export function evaluateOffer(
   // Determine actual monthly payment
   let monthlyPayment = criteria.plannedMonthlyPayment;
   if (criteria.payoffStrategy === 'PAY_BEFORE_PROMO_EXPIRES') {
-    monthlyPayment = Math.ceil(startingTransferBalance / offer.promoDurationMonths);
+    const promoMonths = offer.promoDurationMonths <= 0 ? 12 : offer.promoDurationMonths;
+    monthlyPayment = Math.ceil(startingTransferBalance / promoMonths);
   }
 
   // Simulate Transfer Balance Repayment
@@ -294,7 +311,7 @@ export function evaluateOffer(
     savingsScore = Math.min(100, Math.max(0, savingsRatio * 100));
   }
 
-  const feeRatio = upfrontTransferFee / transferAmount;
+  const feeRatio = transferAmount > 0 ? upfrontTransferFee / transferAmount : 0;
   let feeEfficiencyScore = Math.min(100, Math.max(0, (0.05 - feeRatio) * 2000)); // 0% fee = 100 pts, 5%+ fee = 0 pts
 
   let durationMatchScore = payoffBeforePromoEnds ? 100 : Math.max(0, 100 - (transferSim.monthsToPayoff - offer.promoDurationMonths) * 10);
@@ -335,6 +352,8 @@ export function evaluateOffer(
     ineligibilityReasons: reasons,
     transferAmount,
     upfrontTransferFee,
+    promoApr: offer.promoApr,
+    promoDurationMonths: offer.promoDurationMonths,
     totalInterestPaidPromo: transferSim.totalInterestPaidPromo,
     totalInterestPaidPostPromo: transferSim.totalInterestPaidPostPromo,
     totalInterestPaid,
@@ -417,8 +436,9 @@ export function generateMarkdownSummary(
     const feeStr = `$${e.upfrontTransferFee.toFixed(0)}`;
     const savingsStr = e.netSavings >= 0 ? `+$${e.netSavings.toFixed(0)}` : `-$${Math.abs(e.netSavings).toFixed(0)}`;
     const recStr = e.eligible ? e.recommendationTag.replace('_', ' ') : 'INELIGIBLE';
+    const promoStr = `${e.promoApr}% for ${e.promoDurationMonths}m`;
     
-    md += `| ${idx + 1} | **${e.offerName}** (${e.provider}) | ${feeStr} | 0% for ${e.monthsToPayoff}m | ${e.monthsToPayoff} mos | **${savingsStr}** | ${e.overallScore}/100 | \`${recStr}\` |\n`;
+    md += `| ${idx + 1} | **${e.offerName}** (${e.provider}) | ${feeStr} | ${promoStr} | ${e.monthsToPayoff} mos | **${savingsStr}** | ${e.overallScore}/100 | \`${recStr}\` |\n`;
   });
 
   md += `\n\n#### Key Recommendations:\n`;
@@ -426,7 +446,7 @@ export function generateMarkdownSummary(
   if (best && best.eligible) {
     md += `- **Top Choice:** **${best.offerName}** yields the highest total benefit with **$${best.netSavings.toFixed(2)}** in estimated savings.\n`;
     if (!best.payoffBeforePromoEnds) {
-      md += `- âš ï¸  **Warning:** The debt will spill past the promotional window. Consider increasing monthly payments to $${Math.ceil((best.transferAmount + best.upfrontTransferFee) / 12)}/mo to eliminate interest entirely.\n`;
+      md += `- ⚠️ **Warning:** The debt will spill past the promotional window. Consider increasing monthly payments to $${Math.ceil((best.transferAmount + best.upfrontTransferFee) / best.promoDurationMonths)}/mo to eliminate interest entirely.\n`;
     }
   } else {
     md += `- No balance transfer offer significantly outperforms keeping the balance on the current card under the specified payment strategy.\n`;
@@ -547,22 +567,37 @@ export function getGeminiBalanceTransferTools(): { functionDeclarations: GeminiF
  * Dispatcher function to handle tool call requests received directly from Gemini AI responses.
  */
 export async function executeGeminiToolCall(functionName: string, args: any): Promise<any> {
+  if (!args) {
+    throw new Error(`Arguments are missing for Gemini tool call: ${functionName}`);
+  }
+
   switch (functionName) {
     case 'evaluateSingleBalanceTransferOffer': {
-      const card: CardAccount = { id: 'c1', ...args.card };
-      const offer: BalanceTransferOffer = { id: 'o1', ...args.offer };
+      if (!args.card || !args.offer || !args.criteria) {
+        throw new Error(`Missing required parameters for evaluateSingleBalanceTransferOffer`);
+      }
+      const card: CardAccount = { id: args.card.id || 'c1', ...args.card };
+      const offer: BalanceTransferOffer = { id: args.offer.id || 'o1', ...args.offer };
       const criteria: EvaluationCriteria = args.criteria;
       return evaluateOffer(card, offer, criteria);
     }
 
     case 'compareMultipleBalanceTransferOffers': {
-      const card: CardAccount = { id: 'c1', ...args.card };
-      const offers: BalanceTransferOffer[] = args.offers.map((o: any, idx: number) => ({ id: `o_${idx}`, ...o }));
+      if (!args.card || !args.offers || !args.criteria) {
+        throw new Error(`Missing required parameters for compareMultipleBalanceTransferOffers`);
+      }
+      const card: CardAccount = { id: args.card.id || 'c1', ...args.card };
+      const offers: BalanceTransferOffer[] = Array.isArray(args.offers)
+        ? args.offers.map((o: any, idx: number) => ({ id: o.id || `o_${idx}`, ...o }))
+        : [];
       const criteria: EvaluationCriteria = args.criteria;
       return evaluateAndRankOffers(card, offers, criteria);
     }
 
     case 'calculateEffectiveApr': {
+      if (args.transferAmount === undefined || args.transferFeePercentage === undefined || args.promoApr === undefined || args.promoDurationMonths === undefined) {
+        throw new Error(`Missing required parameters for calculateEffectiveApr`);
+      }
       const dummyOffer: BalanceTransferOffer = {
         id: 'tmp',
         offerName: 'Temp',
