@@ -734,3 +734,10 @@ export default function IrsTaxFiling() {
         
         {/* Left Column: Controls & Quick Stats (3 cols) */}
         <div className="lg:col-span-3 space-y-6">
+        </div>
+        <div className="lg:col-span-9 space-y-6">
+        </div>
+      </div>
+    </div>
+  );
+}
