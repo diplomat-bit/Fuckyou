@@ -1,4 +1,4 @@
-import { RequestInit, Response } from 'node-fetch';
+import type { RequestInit, Response } from 'node-fetch';
 
 /**
  * Balance Transfer Offer Interface representing a promo credit card/loan offer.
@@ -388,10 +388,10 @@ export class BTEligibilityClient {
 
   private async executeFetch(url: string, options: RequestInit): Promise<Response> {
     if (typeof fetch !== 'undefined') {
-      return (fetch(url, options as any) as unknown) as Promise<Response>;
+      return fetch(url, options as any) as unknown as Response;
     }
     const nodeFetch = (await import('node-fetch')).default;
-    return (nodeFetch(url, options as any) as unknown) as Promise<Response>;
+    return nodeFetch(url, options as any) as unknown as Response;
   }
 
   private validateEligibilityRequest(req: BTEligibilityRequest): void {
