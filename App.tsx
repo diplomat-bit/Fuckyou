@@ -162,6 +162,235 @@ import APIIntegrationView from './components/APIIntegrationView';
 import Dashboard from './components/Dashboard';
 import InvestmentsPortfolio from './components/InvestmentsPortfolio';
 import GriffinMcpView from './components/GriffinMcpView';
+import AccountSummaryView from './components/AccountSummaryView';
+import AddPayeeWizard from './components/AddPayeeWizard';
+import AdhocPayeeSaver from './components/AdhocPayeeSaver';
+import AdhocTransferForm from './components/AdhocTransferForm';
+import AggregatorConsentManager from './components/AggregatorConsentManager';
+import AppDeploymentPipeline from './components/AppDeploymentPipeline';
+import AppErrorRateTracker from './components/AppErrorRateTracker';
+import AppIntegrationsBridgeView from './components/AppIntegrationsBridgeView';
+import AppLatencyPercentilesChart from './components/AppLatencyPercentilesChart';
+import AppMetricsAlertsConsole from './components/AppMetricsAlertsConsole';
+import AppMetricsDashboard from './components/AppMetricsDashboard';
+import AppMetricsThresholdsEditor from './components/AppMetricsThresholdsEditor';
+import AppRegistryAuthView from './components/AppRegistryAuthView';
+import AppRegistryManager from './components/AppRegistryManager';
+import AppVaultAndSecurity from './components/AppVaultAndSecurity';
+import AquariusDashboardView from './components/AquariusDashboard';
+import AuthDiagnosticsIntegrationPanel from './components/AuthDiagnosticsIntegrationPanel';
+import AutoScalingPolicyEditor from './components/AutoScalingPolicyEditor';
+import AzureADAppAuditor from './components/AzureADAppAuditor';
+import B2BAuditTrailGenerator from './components/B2BAuditTrailGenerator';
+import B2BCashFlowStressTester from './components/B2BCashFlowStressTester';
+import B2BCorporateLiquidityForecaster from './components/B2BCorporateLiquidityForecaster';
+import B2BDashboardComponent from './components/B2BDashboardComponent';
+import B2BInterestRateOptimizer from './components/B2BInterestRateOptimizer';
+import B2BPortfolioWealthAnalyzer from './components/B2BPortfolioWealthAnalyzer';
+import B2BRoutingDecryptorValidator from './components/B2BRoutingDecryptorValidator';
+import B2BRoutingNumberResolver from './components/B2BRoutingNumberResolver';
+import B2BTransactionCategorizer from './components/B2BTransactionCategorizer';
+import BalanceTransferAnalytics from './components/BalanceTransferAnalytics';
+import BalanceTransferBatchSuite from './components/BalanceTransferBatchSuite';
+import BalanceTransferCalculator from './components/BalanceTransferCalculator';
+import BridgeConfigEditor from './components/BridgeConfigEditor';
+import BridgeMetricsMonitor from './components/BridgeMetricsMonitor';
+import BulkEligibilityDashboard from './components/BulkEligibilityDashboard';
+import BundleHistoryManager from './components/BundleHistoryManager';
+import BundleStatusViewer from './components/BundleStatusViewer';
+import CamtWorkflowComponent from './components/CamtWorkflowComponent';
+import CardListingComponent from './components/CardListingComponent';
+import CitiAccountDashboardComponent from './components/CitiAccountDashboardComponent';
+import CitiConnectInquiryView from './components/CitiConnectInquiry';
+import CitiOutageTelemetryGateway from './components/CitiOutageTelemetryGateway';
+import CitiQuantumAIAdvisor from './components/CitiQuantumAIAdvisor';
+import CitiRepeatingPaymentTerminationGateway from './components/CitiRepeatingPaymentTerminationGateway';
+import ClaimsInspectorView from './components/ClaimsInspectorView';
+import ControlFlowConfirmation from './components/ControlFlowConfirmation';
+import ControlFlowTracker from './components/ControlFlowTracker';
+import CreditCardProductForm from './components/CreditCardProductForm';
+import CrossBorderTransferWizard from './components/CrossBorderTransferWizard';
+import CutoffTimeAlert from './components/CutoffTimeAlert';
+import DatabaseDiagnosticPanel from './components/DatabaseDiagnosticPanel';
+import DcrAuthComponent from './components/DcrAuthComponent';
+import DeploymentRollbackManager from './components/DeploymentRollbackManager';
+import DeploymentStreamViewer from './components/DeploymentStreamViewer';
+import DiagnosticAuthConsole from './components/DiagnosticAuthConsole';
+import DiagnosticDashboardView from './components/DiagnosticDashboardView';
+import DiagnosticReportView from './components/DiagnosticReportView';
+import DomesticTransferDashboard from './components/DomesticTransferDashboard';
+import EcosystemConfigView from './components/EcosystemConfigView';
+import EligibilitySimulator from './components/EligibilitySimulator';
+import EppOfferSelector from './components/EppOfferSelector';
+import ErrorResponseAlert from './components/ErrorResponseAlert';
+import FeatureFlagToggle from './components/FeatureFlagToggle';
+import FeeBreakdownCalculator from './components/FeeBreakdownCalculator';
+import FleetAppViewComponent from './components/FleetAppView';
+import FlowControllerView from './components/FlowController';
+import FxRateCalculator from './components/FxRateCalculator';
+import GeminiLivePortalView from './components/GeminiLivePortal';
+import HoKTokenMintView from './components/HoKTokenMint';
+import IbanValidator from './components/IbanValidator';
+import ImperialAccountDetailsTerminal from './components/ImperialAccountDetailsTerminal';
+import ImperialAccountListingPortal from './components/ImperialAccountListingPortal';
+import ImperialCounterpartySuite from './components/ImperialCounterpartySuite';
+import ImperialDeviceTelemetryConsole from './components/ImperialDeviceTelemetryConsole';
+import ImperialInterInstitutionTelemetryConsole from './components/ImperialInterInstitutionTelemetryConsole';
+import ImperialInvestmentPortfolioAI from './components/ImperialInvestmentPortfolioAI';
+import ImperialJweSecurityConsole from './components/ImperialJweSecurityConsole';
+import ImperialLedgerPayouts from './components/ImperialLedgerPayouts';
+import ImperialOutageNotificationHub from './components/ImperialOutageNotificationHub';
+import ImperialPaperItemVault from './components/ImperialPaperItemVault';
+import ImperialRoutingValidator from './components/ImperialRoutingValidator';
+import ImperialSecuritiesBrokerageAI from './components/ImperialSecuritiesBrokerageAI';
+import ImperialTokenSuite from './components/ImperialTokenSuite';
+import ImperialTransactionDetailTerminal from './components/ImperialTransactionDetailTerminal';
+import InPrincipleApprovalDashboard from './components/InPrincipleApprovalDashboard';
+import IntegrationDiagnosticsPanel from './components/IntegrationDiagnosticsPanel';
+import InteractiveConsoleComponent from './components/InteractiveConsoleComponent';
+import InvestmentPortfolioView from './components/InvestmentPortfolio';
+import IpaDecisionResultView from './components/IpaDecisionResultView';
+import IpaErrorHandling from './components/IpaErrorHandling';
+import JwsSignatureGenerator from './components/JwsSignatureGenerator';
+import KbaQuestionnaireRenderer from './components/KbaQuestionnaireRenderer';
+import MemoryMonitor from './components/MemoryMonitor';
+import MerchantSearchSelector from './components/MerchantSearchSelector';
+import MfaConfirmationModal from './components/MfaConfirmationModal';
+import MicroAppDeployer from './components/MicroAppDeployer';
+import ModernTreasuryAccountListingLedger from './components/ModernTreasuryAccountListingLedger';
+import ModernTreasuryAssetOrchestrator from './components/ModernTreasuryAssetOrchestrator';
+import ModernTreasuryDepositContractGateway from './components/ModernTreasuryDepositContractGateway';
+import ModernTreasuryDetailReconciler from './components/ModernTreasuryDetailReconciler';
+import ModernTreasuryEnrichedTxnBridge from './components/ModernTreasuryEnrichedTxnBridge';
+import ModernTreasuryFailoverLedger from './components/ModernTreasuryFailoverLedger';
+import ModernTreasuryLedgerSync from './components/ModernTreasuryLedgerSync';
+import ModernTreasuryMaintenanceAuditor from './components/ModernTreasuryMaintenanceAuditor';
+import ModernTreasuryMultiAssetReconciler from './components/ModernTreasuryMultiAssetReconciler';
+import ModernTreasuryOrchestrator from './components/ModernTreasuryOrchestrator';
+import ModernTreasuryPayeeRevocationLedger from './components/ModernTreasuryPayeeRevocationLedger';
+import ModernTreasuryRecurringFlowGateway from './components/ModernTreasuryRecurringFlowGateway';
+import ModernTreasuryResilienceGateway from './components/ModernTreasuryResilienceGateway';
+import ModernTreasuryRoutingGateway from './components/ModernTreasuryRoutingGateway';
+import ModernTreasurySecureAccountBridge from './components/ModernTreasurySecureAccountBridge';
+import ModernTreasurySecuritiesLedgerBridge from './components/ModernTreasurySecuritiesLedgerBridge';
+import ModernTreasuryStandingInstructionAuditor from './components/ModernTreasuryStandingInstructionAuditor';
+import ModernTreasuryTransactionReconciler from './components/ModernTreasuryTransactionReconciler';
+import ModernTreasuryUnmaskingPolicyEngine from './components/ModernTreasuryUnmaskingPolicyEngine';
+import ModernTreasuryZeroKnowledgeLedger from './components/ModernTreasuryZeroKnowledgeLedger';
+import MultipleTransferBasket from './components/MultipleTransferBasket';
+import MultipleTransferSimulator from './components/MultipleTransferSimulator';
+import NetworkDiagnosticsPanel from './components/NetworkDiagnosticsPanel';
+import OauthAuthorizeUrlBuilder from './components/OauthAuthorizeUrlBuilder';
+import OauthBasicAuthGenerator from './components/OauthBasicAuthGenerator';
+import OauthCallbackHandler from './components/OauthCallbackHandler';
+import OauthClientConfigurator from './components/OauthClientConfigurator';
+import OauthClientCredentialsDashboard from './components/OauthClientCredentialsDashboard';
+import OauthClientCredentialsForm from './components/OauthClientCredentialsForm';
+import OauthClientCredentialsSimulator from './components/OauthClientCredentialsSimulator';
+import OauthCountryBusinessSelector from './components/OauthCountryBusinessSelector';
+import OauthErrorSimulator from './components/OauthErrorSimulator';
+import OauthFlowVisualizer from './components/OauthFlowVisualizer';
+import OauthGrantTypeSelector from './components/OauthGrantTypeSelector';
+import OauthHeaderBuilder from './components/OauthHeaderBuilder';
+import OauthRefreshSimulator from './components/OauthRefreshSimulator';
+import OauthRequestPayloadViewer from './components/OauthRequestPayloadViewer';
+import OauthResponseInspector from './components/OauthResponseInspector';
+import OauthScopeBadgeList from './components/OauthScopeBadgeList';
+import OauthScopeSelector from './components/OauthScopeSelector';
+import OauthSessionMonitor from './components/OauthSessionMonitor';
+import OauthSessionRevocation from './components/OauthSessionRevocation';
+import OauthTokenExpirationTimer from './components/OauthTokenExpirationTimer';
+import OauthTokenRequestSimulator from './components/OauthTokenRequestSimulator';
+import OauthTokenResponseViewer from './components/OauthTokenResponseViewer';
+import OauthTokenRevoker from './components/OauthTokenRevoker';
+import OauthTokenStorageManager from './components/OauthTokenStorageManager';
+import OnboardingApplicantDemographicsForm from './components/OnboardingApplicantDemographicsForm';
+import OnboardingApplicationInquiry from './components/OnboardingApplicationInquiry';
+import OnboardingApplicationStatusTracker from './components/OnboardingApplicationStatusTracker';
+import OnboardingApplicationWizard from './components/OnboardingApplicationWizard';
+import OnboardingControlFlowManager from './components/OnboardingControlFlowManager';
+import OnboardingCreditSelectionForm from './components/OnboardingCreditSelectionForm';
+import OnboardingDocumentChecklist from './components/OnboardingDocumentChecklist';
+import OnboardingEmploymentForm from './components/OnboardingEmploymentForm';
+import OnboardingFinancialDetailsForm from './components/OnboardingFinancialDetailsForm';
+import OnboardingKbaAssessment from './components/OnboardingKbaAssessment';
+import OnboardingLoanSelectionForm from './components/OnboardingLoanSelectionForm';
+import OnboardingOfferAcceptanceDashboard from './components/OnboardingOfferAcceptanceDashboard';
+import OnboardingOfferAcceptancePayloadBuilder from './components/OnboardingOfferAcceptancePayloadBuilder';
+import OnboardingOfferAcceptanceResponseViewer from './components/OnboardingOfferAcceptanceResponseViewer';
+import OnboardingOfferComparisonMatrix from './components/OnboardingOfferComparisonMatrix';
+import OnboardingOfferErrorSimulator from './components/OnboardingOfferErrorSimulator';
+import OnboardingOfferEvaluator from './components/OnboardingOfferEvaluator';
+import OnboardingOfferProductSelector from './components/OnboardingOfferProductSelector';
+import PayeeCombinationList from './components/PayeeCombinationList';
+import PayeeCreationMfaFlow from './components/PayeeCreationMfaFlow';
+import PayeeDeleteConfirmation from './components/PayeeDeleteConfirmation';
+import PayeeDetailsModal from './components/PayeeDetailsModal';
+import PayeeEnrollmentManager from './components/PayeeEnrollmentManager';
+import PayeeImportExport from './components/PayeeImportExport';
+import PayeeListFilters from './components/PayeeListFilters';
+import PayeeManagementDashboard from './components/PayeeManagementDashboard';
+import PayeeReferenceDataSelector from './components/PayeeReferenceDataSelector';
+import PayliteBookingComponent from './components/PayliteBookingComponent';
+import PortalHandshakeView from './components/PortalHandshake';
+import PreprocessTransferForm from './components/PreprocessTransferForm';
+import ProductDisbursementDetails from './components/ProductDisbursementDetails';
+import ProductOfferCard from './components/ProductOfferCard';
+import ProductRepaymentConfig from './components/ProductRepaymentConfig';
+import QuantumComprehensiveDetailsSuite from './components/QuantumComprehensiveDetailsSuite';
+import QuantumDecryptionAuditor from './components/QuantumDecryptionAuditor';
+import QuantumLedgerMonitors from './components/QuantumLedgerMonitors';
+import QuantumLimitedPeriodAnalyzer from './components/QuantumLimitedPeriodAnalyzer';
+import QuantumOutagePredictorAI from './components/QuantumOutagePredictorAI';
+import QuantumPaymentFlows from './components/QuantumPaymentFlows';
+import QuantumRoutingDecryptor from './components/QuantumRoutingDecryptor';
+import QuantumSecurityShield from './components/QuantumSecurityShield';
+import QuantumStandingInstructionAIAdvisor from './components/QuantumStandingInstructionAIAdvisor';
+import RateLimitDashboard from './components/RateLimitDashboard';
+import ReadyCreditProductForm from './components/ReadyCreditProductForm';
+import RepaymentScheduleTable from './components/RepaymentScheduleTable';
+import RequiredDocumentList from './components/RequiredDocumentList';
+import ScenarioRunnerComponent from './components/ScenarioRunnerComponent';
+import SchemaCatalogComponent from './components/SchemaCatalogComponent';
+import SepaReceiptDownloader from './components/SepaReceiptDownloader';
+import SepaTransferLimitsManager from './components/SepaTransferLimitsManager';
+import SepaTransferWorkspace from './components/SepaTransferWorkspace';
+import SourceAccountList from './components/SourceAccountList';
+import SovereignAccountCollection from './components/SovereignAccountCollection';
+import SovereignClearAccountTerminal from './components/SovereignClearAccountTerminal';
+import SovereignClearDataVault from './components/SovereignClearDataVault';
+import SovereignExpectedPayments from './components/SovereignExpectedPayments';
+import SovereignIframeView from './components/SovereignIframe';
+import SovereignIntelligenceViewComponent from './components/SovereignIntelligenceView';
+import SovereignOutageDiscoveryConsole from './components/SovereignOutageDiscoveryConsole';
+import SovereignPremiumDepositMatrix from './components/SovereignPremiumDepositMatrix';
+import SovereignRepeatingPaymentVault from './components/SovereignRepeatingPaymentVault';
+import SovereignStatementGenerator from './components/SovereignStatementGenerator';
+import SovereignTransactionLedger from './components/SovereignTransactionLedger';
+import SovereignWealthAIAdvisor from './components/SovereignWealthAIAdvisor';
+import StandingInstructionForm from './components/StandingInstructionForm';
+import SwiftBicValidator from './components/SwiftBicValidator';
+import SystemStatusIndicator from './components/SystemStatusIndicator';
+import TabManagerView from './components/TabManager';
+import TaxPaymentForm from './components/TaxPaymentForm';
+import TenantContextManager from './components/TenantContextManager';
+import TokenProvisioningConsole from './components/TokenProvisioningConsole';
+import TokenRefreshConsole from './components/TokenRefreshConsole';
+import TokenRevocationConsole from './components/TokenRevocationConsole';
+import TokenVerificationTester from './components/TokenVerificationTester';
+import TransactionDetailsView from './components/TransactionDetailsView';
+import TransferConfirmationReceipt from './components/TransferConfirmationReceipt';
+import TransferHistoryTracker from './components/TransferHistoryTracker';
+import TransferLimitProgress from './components/TransferLimitProgress';
+import TransferPreprocessReview from './components/TransferPreprocessReview';
+import TransferTypeSelector from './components/TransferTypeSelector';
+import TransformationRulesManager from './components/TransformationRulesManager';
+import UnsecuredLoanProductForm from './components/UnsecuredLoanProductForm';
+import UnsecuredProductManager from './components/UnsecuredProductManager';
+import UnsecuredProductSummary from './components/UnsecuredProductSummary';
+import VoiceControlView from './components/VoiceControl';
+import WealthDistributionChartComponent from './components/WealthDistributionChart';
+import WorkspaceNexusViewComponent from './components/WorkspaceNexusView';
 
 interface Tab { id: string; name: string; }
 interface ViewProps { openTab: (id: string, name: string) => void; setView: (view: View | AppView) => void; }
@@ -321,6 +550,235 @@ const COMPONENT_MAP: Record<string, ComponentConfig> = {
     'flow-controller': { component: FlowController, moduleCode: 'AQ-FLW-CTR', label: 'Flow Controller' },
     'growth-nexus': { component: GrowthNexus, moduleCode: 'AQ-GTH-NEX-CORE', label: 'Growth Nexus' },
     'griffin-mcp': { component: GriffinMcpView, moduleCode: 'AQ-GRF-MCP', label: 'Griffin MCP Server' },
+    'account-summary': { component: AccountSummaryView, moduleCode: 'AQ-ACC-SUM', label: 'Account Summary' },
+    'add-payee-wizard': { component: AddPayeeWizard, moduleCode: 'AQ-PAY-WIZ', label: 'Add Payee Wizard' },
+    'adhoc-payee-saver': { component: AdhocPayeeSaver, moduleCode: 'AQ-PAY-SAV', label: 'Adhoc Payee Saver' },
+    'adhoc-transfer-form': { component: AdhocTransferForm, moduleCode: 'AQ-PAY-TRN', label: 'Adhoc Transfer Form' },
+    'aggregator-consent-manager': { component: AggregatorConsentManager, moduleCode: 'AQ-AGG-CON', label: 'Aggregator Consent Manager' },
+    'app-deployment-pipeline': { component: AppDeploymentPipeline, moduleCode: 'AQ-DEP-PIP', label: 'App Deployment Pipeline' },
+    'app-error-rate-tracker': { component: AppErrorRateTracker, moduleCode: 'AQ-ERR-TRK', label: 'App Error Rate Tracker' },
+    'app-integrations-bridge': { component: AppIntegrationsBridgeView, moduleCode: 'AQ-INT-BRG', label: 'App Integrations Bridge' },
+    'app-latency-percentiles': { component: AppLatencyPercentilesChart, moduleCode: 'AQ-LAT-CHRT', label: 'App Latency Percentiles' },
+    'app-metrics-alerts': { component: AppMetricsAlertsConsole, moduleCode: 'AQ-MET-ALT', label: 'App Metrics Alerts' },
+    'app-metrics-dashboard': { component: AppMetricsDashboard, moduleCode: 'AQ-MET-DSH', label: 'App Metrics Dashboard' },
+    'app-metrics-thresholds': { component: AppMetricsThresholdsEditor, moduleCode: 'AQ-MET-THR', label: 'App Metrics Thresholds' },
+    'app-registry-auth': { component: AppRegistryAuthView, moduleCode: 'AQ-REG-AUT', label: 'App Registry Auth' },
+    'app-registry-manager': { component: AppRegistryManager, moduleCode: 'AQ-REG-MGR', label: 'App Registry Manager' },
+    'app-vault-security': { component: AppVaultAndSecurity, moduleCode: 'AQ-VLT-SEC', label: 'App Vault & Security' },
+    'aquarius-dashboard-view': { component: AquariusDashboardView, moduleCode: 'AQ-AQ-DSH', label: 'Aquarius Dashboard' },
+    'auth-diagnostics-panel': { component: AuthDiagnosticsIntegrationPanel, moduleCode: 'AQ-DIA-AUT', label: 'Auth Diagnostics Panel' },
+    'auto-scaling-policy': { component: AutoScalingPolicyEditor, moduleCode: 'AQ-AUT-SCL', label: 'Auto Scaling Policy' },
+    'azure-ad-app-auditor': { component: AzureADAppAuditor, moduleCode: 'AQ-AZR-AUD', label: 'Azure AD App Auditor' },
+    'b2b-audit-trail': { component: B2BAuditTrailGenerator, moduleCode: 'AQ-B2B-AUD', label: 'B2B Audit Trail' },
+    'b2b-cash-flow-stress': { component: B2BCashFlowStressTester, moduleCode: 'AQ-B2B-CFS', label: 'B2B Cash Flow Stress' },
+    'b2b-liquidity-forecaster': { component: B2BCorporateLiquidityForecaster, moduleCode: 'AQ-B2B-LIQ', label: 'B2B Liquidity Forecaster' },
+    'b2b-dashboard': { component: B2BDashboardComponent, moduleCode: 'AQ-B2B-DSH', label: 'B2B Dashboard' },
+    'b2b-interest-optimizer': { component: B2BInterestRateOptimizer, moduleCode: 'AQ-B2B-INT', label: 'B2B Interest Optimizer' },
+    'b2b-portfolio-analyzer': { component: B2BPortfolioWealthAnalyzer, moduleCode: 'AQ-B2B-PTF', label: 'B2B Portfolio Analyzer' },
+    'b2b-routing-decryptor': { component: B2BRoutingDecryptorValidator, moduleCode: 'AQ-B2B-RDC', label: 'B2B Routing Decryptor' },
+    'b2b-routing-resolver': { component: B2BRoutingNumberResolver, moduleCode: 'AQ-B2B-RRS', label: 'B2B Routing Resolver' },
+    'b2b-transaction-categorizer': { component: B2BTransactionCategorizer, moduleCode: 'AQ-B2B-CAT', label: 'B2B Transaction Categorizer' },
+    'balance-transfer-analytics': { component: BalanceTransferAnalytics, moduleCode: 'AQ-BT-ANA', label: 'Balance Transfer Analytics' },
+    'balance-transfer-batch': { component: BalanceTransferBatchSuite, moduleCode: 'AQ-BT-BAT', label: 'Balance Transfer Batch' },
+    'balance-transfer-calculator': { component: BalanceTransferCalculator, moduleCode: 'AQ-BT-CAL', label: 'Balance Transfer Calculator' },
+    'bridge-config-editor': { component: BridgeConfigEditor, moduleCode: 'AQ-BRG-CFG', label: 'Bridge Config Editor' },
+    'bridge-metrics-monitor': { component: BridgeMetricsMonitor, moduleCode: 'AQ-BRG-MET', label: 'Bridge Metrics Monitor' },
+    'bulk-eligibility-dashboard': { component: BulkEligibilityDashboard, moduleCode: 'AQ-BUL-ELI', label: 'Bulk Eligibility Dashboard' },
+    'bundle-history-manager': { component: BundleHistoryManager, moduleCode: 'AQ-BND-HIS', label: 'Bundle History Manager' },
+    'bundle-status-viewer': { component: BundleStatusViewer, moduleCode: 'AQ-BND-STS', label: 'Bundle Status Viewer' },
+    'camt-workflow': { component: CamtWorkflowComponent, moduleCode: 'AQ-CAM-WKF', label: 'Camt Workflow' },
+    'card-listing': { component: CardListingComponent, moduleCode: 'AQ-CRD-LST', label: 'Card Listing' },
+    'citi-account-dashboard': { component: CitiAccountDashboardComponent, moduleCode: 'AQ-CIT-DSH', label: 'Citi Account Dashboard' },
+    'citi-connect-inquiry-view': { component: CitiConnectInquiryView, moduleCode: 'AQ-CIT-INQ-V', label: 'Citi Connect Inquiry' },
+    'citi-outage-telemetry': { component: CitiOutageTelemetryGateway, moduleCode: 'AQ-CIT-OUT', label: 'Citi Outage Telemetry' },
+    'citi-quantum-ai': { component: CitiQuantumAIAdvisor, moduleCode: 'AQ-CIT-QAI', label: 'Citi Quantum AI' },
+    'citi-repeating-payment-termination': { component: CitiRepeatingPaymentTerminationGateway, moduleCode: 'AQ-CIT-RPT', label: 'Citi Repeating Payment Termination' },
+    'claims-inspector': { component: ClaimsInspectorView, moduleCode: 'AQ-CLM-INS', label: 'Claims Inspector' },
+    'control-flow-confirmation': { component: ControlFlowConfirmation, moduleCode: 'AQ-CTL-CFM', label: 'Control Flow Confirmation' },
+    'control-flow-tracker': { component: ControlFlowTracker, moduleCode: 'AQ-CTL-TRK', label: 'Control Flow Tracker' },
+    'credit-card-product-form': { component: CreditCardProductForm, moduleCode: 'AQ-CRD-PRD', label: 'Credit Card Product Form' },
+    'cross-border-transfer-wizard': { component: CrossBorderTransferWizard, moduleCode: 'AQ-XBR-WIZ', label: 'Cross Border Transfer Wizard' },
+    'cutoff-time-alert': { component: CutoffTimeAlert, moduleCode: 'AQ-CUT-ALT', label: 'Cutoff Time Alert' },
+    'database-diagnostic-panel': { component: DatabaseDiagnosticPanel, moduleCode: 'AQ-DB-DIA', label: 'Database Diagnostic Panel' },
+    'dcr-auth-component': { component: DcrAuthComponent, moduleCode: 'AQ-DCR-AUT', label: 'DCR Auth Component' },
+    'deployment-rollback-manager': { component: DeploymentRollbackManager, moduleCode: 'AQ-DEP-ROL', label: 'Deployment Rollback Manager' },
+    'deployment-stream-viewer': { component: DeploymentStreamViewer, moduleCode: 'AQ-DEP-STR', label: 'Deployment Stream Viewer' },
+    'diagnostic-auth-console': { component: DiagnosticAuthConsole, moduleCode: 'AQ-DIA-AUT-C', label: 'Diagnostic Auth Console' },
+    'diagnostic-dashboard': { component: DiagnosticDashboardView, moduleCode: 'AQ-DIA-DSH', label: 'Diagnostic Dashboard' },
+    'diagnostic-report': { component: DiagnosticReportView, moduleCode: 'AQ-DIA-REP', label: 'Diagnostic Report' },
+    'domestic-transfer-dashboard': { component: DomesticTransferDashboard, moduleCode: 'AQ-DOM-DSH', label: 'Domestic Transfer Dashboard' },
+    'ecosystem-config': { component: EcosystemConfigView, moduleCode: 'AQ-ECO-CFG', label: 'Ecosystem Config' },
+    'eligibility-simulator': { component: EligibilitySimulator, moduleCode: 'AQ-ELI-SIM', label: 'Eligibility Simulator' },
+    'epp-offer-selector': { component: EppOfferSelector, moduleCode: 'AQ-EPP-OFF', label: 'EPP Offer Selector' },
+    'error-response-alert': { component: ErrorResponseAlert, moduleCode: 'AQ-ERR-ALT', label: 'Error Response Alert' },
+    'feature-flag-toggle': { component: FeatureFlagToggle, moduleCode: 'AQ-FEA-FLG', label: 'Feature Flag Toggle' },
+    'fee-breakdown-calculator': { component: FeeBreakdownCalculator, moduleCode: 'AQ-FEE-CAL', label: 'Fee Breakdown Calculator' },
+    'fleet-app-view': { component: FleetAppViewComponent, moduleCode: 'AQ-FLT-APP', label: 'Fleet App View' },
+    'flow-controller-view': { component: FlowControllerView, moduleCode: 'AQ-FLW-CTR-V', label: 'Flow Controller View' },
+    'fx-rate-calculator': { component: FxRateCalculator, moduleCode: 'AQ-FX-CAL', label: 'FX Rate Calculator' },
+    'gemini-live-portal': { component: GeminiLivePortalView, moduleCode: 'AQ-GEM-LIV-P', label: 'Gemini Live Portal' },
+    'hok-token-mint-view': { component: HoKTokenMintView, moduleCode: 'AQ-HOK-MNT-V', label: 'HoK Token Mint View' },
+    'iban-validator': { component: IbanValidator, moduleCode: 'AQ-IBN-VAL', label: 'IBAN Validator' },
+    'imperial-account-details': { component: ImperialAccountDetailsTerminal, moduleCode: 'AQ-IMP-ACC', label: 'Imperial Account Details' },
+    'imperial-account-listing': { component: ImperialAccountListingPortal, moduleCode: 'AQ-IMP-LST', label: 'Imperial Account Listing' },
+    'imperial-counterparty-suite': { component: ImperialCounterpartySuite, moduleCode: 'AQ-IMP-CNT', label: 'Imperial Counterparty Suite' },
+    'imperial-device-telemetry': { component: ImperialDeviceTelemetryConsole, moduleCode: 'AQ-IMP-TEL', label: 'Imperial Device Telemetry' },
+    'imperial-inter-institution-telemetry': { component: ImperialInterInstitutionTelemetryConsole, moduleCode: 'AQ-IMP-IIT', label: 'Imperial Inter-Institution Telemetry' },
+    'imperial-investment-portfolio-ai': { component: ImperialInvestmentPortfolioAI, moduleCode: 'AQ-IMP-INV', label: 'Imperial Investment Portfolio AI' },
+    'imperial-jwe-security': { component: ImperialJweSecurityConsole, moduleCode: 'AQ-IMP-JWE', label: 'Imperial JWE Security' },
+    'imperial-ledger-payouts': { component: ImperialLedgerPayouts, moduleCode: 'AQ-IMP-PAY', label: 'Imperial Ledger Payouts' },
+    'imperial-outage-notification': { component: ImperialOutageNotificationHub, moduleCode: 'AQ-IMP-OUT', label: 'Imperial Outage Notification' },
+    'imperial-paper-item-vault': { component: ImperialPaperItemVault, moduleCode: 'AQ-IMP-PPR', label: 'Imperial Paper Item Vault' },
+    'imperial-routing-validator': { component: ImperialRoutingValidator, moduleCode: 'AQ-IMP-RUT', label: 'Imperial Routing Validator' },
+    'imperial-securities-brokerage-ai': { component: ImperialSecuritiesBrokerageAI, moduleCode: 'AQ-IMP-SEC', label: 'Imperial Securities Brokerage AI' },
+    'imperial-token-suite': { component: ImperialTokenSuite, moduleCode: 'AQ-IMP-TOK', label: 'Imperial Token Suite' },
+    'imperial-transaction-detail': { component: ImperialTransactionDetailTerminal, moduleCode: 'AQ-IMP-TXN', label: 'Imperial Transaction Detail' },
+    'in-principle-approval-dashboard': { component: InPrincipleApprovalDashboard, moduleCode: 'AQ-IPA-DSH', label: 'In-Principle Approval Dashboard' },
+    'integration-diagnostics-panel': { component: IntegrationDiagnosticsPanel, moduleCode: 'AQ-INT-DIA', label: 'Integration Diagnostics Panel' },
+    'interactive-console': { component: InteractiveConsoleComponent, moduleCode: 'AQ-INT-CON', label: 'Interactive Console' },
+    'investment-portfolio-view': { component: InvestmentPortfolioView, moduleCode: 'AQ-INV-PTF-V', label: 'Investment Portfolio View' },
+    'ipa-decision-result': { component: IpaDecisionResultView, moduleCode: 'AQ-IPA-RES', label: 'IPA Decision Result' },
+    'ipa-error-handling': { component: IpaErrorHandling, moduleCode: 'AQ-IPA-ERR', label: 'IPA Error Handling' },
+    'jws-signature-generator': { component: JwsSignatureGenerator, moduleCode: 'AQ-JWS-GEN', label: 'JWS Signature Generator' },
+    'kba-questionnaire': { component: KbaQuestionnaireRenderer, moduleCode: 'AQ-KBA-QST', label: 'KBA Questionnaire' },
+    'memory-monitor': { component: MemoryMonitor, moduleCode: 'AQ-MEM-MON', label: 'Memory Monitor' },
+    'merchant-search-selector': { component: MerchantSearchSelector, moduleCode: 'AQ-MER-SEL', label: 'Merchant Search Selector' },
+    'mfa-confirmation-modal': { component: MfaConfirmationModal, moduleCode: 'AQ-MFA-CFM', label: 'MFA Confirmation Modal' },
+    'micro-app-deployer': { component: MicroAppDeployer, moduleCode: 'AQ-MIC-DEP', label: 'Micro App Deployer' },
+    'modern-treasury-account-listing': { component: ModernTreasuryAccountListingLedger, moduleCode: 'AQ-MT-ACC', label: 'Modern Treasury Account Listing' },
+    'modern-treasury-asset-orchestrator': { component: ModernTreasuryAssetOrchestrator, moduleCode: 'AQ-MT-ASO', label: 'Modern Treasury Asset Orchestrator' },
+    'modern-treasury-deposit-contract': { component: ModernTreasuryDepositContractGateway, moduleCode: 'AQ-MT-DEP', label: 'Modern Treasury Deposit Contract' },
+    'modern-treasury-detail-reconciler': { component: ModernTreasuryDetailReconciler, moduleCode: 'AQ-MT-REC', label: 'Modern Treasury Detail Reconciler' },
+    'modern-treasury-enriched-txn-bridge': { component: ModernTreasuryEnrichedTxnBridge, moduleCode: 'AQ-MT-ETB', label: 'Modern Treasury Enriched Txn Bridge' },
+    'modern-treasury-failover-ledger': { component: ModernTreasuryFailoverLedger, moduleCode: 'AQ-MT-FLV', label: 'Modern Treasury Failover Ledger' },
+    'modern-treasury-ledger-sync': { component: ModernTreasuryLedgerSync, moduleCode: 'AQ-MT-SYN', label: 'Modern Treasury Ledger Sync' },
+    'modern-treasury-maintenance-auditor': { component: ModernTreasuryMaintenanceAuditor, moduleCode: 'AQ-MT-AUD', label: 'Modern Treasury Maintenance Auditor' },
+    'modern-treasury-multi-asset-reconciler': { component: ModernTreasuryMultiAssetReconciler, moduleCode: 'AQ-MT-MAR', label: 'Modern Treasury Multi-Asset Reconciler' },
+    'modern-treasury-orchestrator': { component: ModernTreasuryOrchestrator, moduleCode: 'AQ-MT-ORC', label: 'Modern Treasury Orchestrator' },
+    'modern-treasury-payee-revocation': { component: ModernTreasuryPayeeRevocationLedger, moduleCode: 'AQ-MT-REV', label: 'Modern Treasury Payee Revocation' },
+    'modern-treasury-recurring-flow': { component: ModernTreasuryRecurringFlowGateway, moduleCode: 'AQ-MT-REC-F', label: 'Modern Treasury Recurring Flow' },
+    'modern-treasury-resilience': { component: ModernTreasuryResilienceGateway, moduleCode: 'AQ-MT-RES', label: 'Modern Treasury Resilience' },
+    'modern-treasury-routing': { component: ModernTreasuryRoutingGateway, moduleCode: 'AQ-MT-RUT', label: 'Modern Treasury Routing' },
+    'modern-treasury-secure-account-bridge': { component: ModernTreasurySecureAccountBridge, moduleCode: 'AQ-MT-SAB', label: 'Modern Treasury Secure Account Bridge' },
+    'modern-treasury-securities-ledger-bridge': { component: ModernTreasurySecuritiesLedgerBridge, moduleCode: 'AQ-MT-SLB', label: 'Modern Treasury Securities Ledger Bridge' },
+    'modern-treasury-standing-instruction-auditor': { component: ModernTreasuryStandingInstructionAuditor, moduleCode: 'AQ-MT-SIA', label: 'Modern Treasury Standing Instruction Auditor' },
+    'modern-treasury-transaction-reconciler': { component: ModernTreasuryTransactionReconciler, moduleCode: 'AQ-MT-TRX', label: 'Modern Treasury Transaction Reconciler' },
+    'modern-treasury-unmasking-policy': { component: ModernTreasuryUnmaskingPolicyEngine, moduleCode: 'AQ-MT-UNM', label: 'Modern Treasury Unmasking Policy' },
+    'modern-treasury-zero-knowledge-ledger': { component: ModernTreasuryZeroKnowledgeLedger, moduleCode: 'AQ-MT-ZKL', label: 'Modern Treasury Zero Knowledge Ledger' },
+    'multiple-transfer-basket': { component: MultipleTransferBasket, moduleCode: 'AQ-MUL-BSK', label: 'Multiple Transfer Basket' },
+    'multiple-transfer-simulator': { component: MultipleTransferSimulator, moduleCode: 'AQ-MUL-SIM', label: 'Multiple Transfer Simulator' },
+    'network-diagnostics-panel': { component: NetworkDiagnosticsPanel, moduleCode: 'AQ-NET-DIA', label: 'Network Diagnostics Panel' },
+    'oauth-authorize-url-builder': { component: OauthAuthorizeUrlBuilder, moduleCode: 'AQ-OAU-URL', label: 'Oauth Authorize URL Builder' },
+    'oauth-basic-auth-generator': { component: OauthBasicAuthGenerator, moduleCode: 'AQ-OAU-BAS', label: 'Oauth Basic Auth Generator' },
+    'oauth-callback-handler': { component: OauthCallbackHandler, moduleCode: 'AQ-OAU-CAL', label: 'Oauth Callback Handler' },
+    'oauth-client-configurator': { component: OauthClientConfigurator, moduleCode: 'AQ-OAU-CFG', label: 'Oauth Client Configurator' },
+    'oauth-client-credentials-dashboard': { component: OauthClientCredentialsDashboard, moduleCode: 'AQ-OAU-DSH', label: 'Oauth Client Credentials Dashboard' },
+    'oauth-client-credentials-form': { component: OauthClientCredentialsForm, moduleCode: 'AQ-OAU-FRM', label: 'Oauth Client Credentials Form' },
+    'oauth-client-credentials-simulator': { component: OauthClientCredentialsSimulator, moduleCode: 'AQ-OAU-SIM', label: 'Oauth Client Credentials Simulator' },
+    'oauth-country-business-selector': { component: OauthCountryBusinessSelector, moduleCode: 'AQ-OAU-SEL', label: 'Oauth Country Business Selector' },
+    'oauth-error-simulator': { component: OauthErrorSimulator, moduleCode: 'AQ-OAU-ERR', label: 'Oauth Error Simulator' },
+    'oauth-flow-visualizer': { component: OauthFlowVisualizer, moduleCode: 'AQ-OAU-VIS', label: 'Oauth Flow Visualizer' },
+    'oauth-grant-type-selector': { component: OauthGrantTypeSelector, moduleCode: 'AQ-OAU-GRA', label: 'Oauth Grant Type Selector' },
+    'oauth-header-builder': { component: OauthHeaderBuilder, moduleCode: 'AQ-OAU-HDR', label: 'Oauth Header Builder' },
+    'oauth-refresh-simulator': { component: OauthRefreshSimulator, moduleCode: 'AQ-OAU-REF', label: 'Oauth Refresh Simulator' },
+    'oauth-request-payload-viewer': { component: OauthRequestPayloadViewer, moduleCode: 'AQ-OAU-REQ', label: 'Oauth Request Payload Viewer' },
+    'oauth-response-inspector': { component: OauthResponseInspector, moduleCode: 'AQ-OAU-RES', label: 'Oauth Response Inspector' },
+    'oauth-scope-badge-list': { component: OauthScopeBadgeList, moduleCode: 'AQ-OAU-BDG', label: 'Oauth Scope Badge List' },
+    'oauth-scope-selector': { component: OauthScopeSelector, moduleCode: 'AQ-OAU-SCP', label: 'Oauth Scope Selector' },
+    'oauth-session-monitor': { component: OauthSessionMonitor, moduleCode: 'AQ-OAU-MON', label: 'Oauth Session Monitor' },
+    'oauth-session-revocation': { component: OauthSessionRevocation, moduleCode: 'AQ-OAU-REV', label: 'Oauth Session Revocation' },
+    'oauth-token-expiration-timer': { component: OauthTokenExpirationTimer, moduleCode: 'AQ-OAU-EXP', label: 'Oauth Token Expiration Timer' },
+    'oauth-token-request-simulator': { component: OauthTokenRequestSimulator, moduleCode: 'AQ-OAU-REQ-S', label: 'Oauth Token Request Simulator' },
+    'oauth-token-response-viewer': { component: OauthTokenResponseViewer, moduleCode: 'AQ-OAU-RES-V', label: 'Oauth Token Response Viewer' },
+    'oauth-token-revoker': { component: OauthTokenRevoker, moduleCode: 'AQ-OAU-REV-T', label: 'Oauth Token Revoker' },
+    'oauth-token-storage-manager': { component: OauthTokenStorageManager, moduleCode: 'AQ-OAU-STO', label: 'Oauth Token Storage Manager' },
+    'onboarding-applicant-demographics': { component: OnboardingApplicantDemographicsForm, moduleCode: 'AQ-ONB-DEM', label: 'Onboarding Applicant Demographics' },
+    'onboarding-application-inquiry': { component: OnboardingApplicationInquiry, moduleCode: 'AQ-ONB-INQ', label: 'Onboarding Application Inquiry' },
+    'onboarding-application-status': { component: OnboardingApplicationStatusTracker, moduleCode: 'AQ-ONB-STS', label: 'Onboarding Application Status' },
+    'onboarding-application-wizard': { component: OnboardingApplicationWizard, moduleCode: 'AQ-ONB-WIZ', label: 'Onboarding Application Wizard' },
+    'onboarding-control-flow': { component: OnboardingControlFlowManager, moduleCode: 'AQ-ONB-CTL', label: 'Onboarding Control Flow' },
+    'onboarding-credit-selection': { component: OnboardingCreditSelectionForm, moduleCode: 'AQ-ONB-CRE', label: 'Onboarding Credit Selection' },
+    'onboarding-document-checklist': { component: OnboardingDocumentChecklist, moduleCode: 'AQ-ONB-DOC', label: 'Onboarding Document Checklist' },
+    'onboarding-employment-form': { component: OnboardingEmploymentForm, moduleCode: 'AQ-ONB-EMP', label: 'Onboarding Employment Form' },
+    'onboarding-financial-details': { component: OnboardingFinancialDetailsForm, moduleCode: 'AQ-ONB-FIN', label: 'Onboarding Financial Details' },
+    'onboarding-kba-assessment': { component: OnboardingKbaAssessment, moduleCode: 'AQ-ONB-KBA', label: 'Onboarding KBA Assessment' },
+    'onboarding-loan-selection': { component: OnboardingLoanSelectionForm, moduleCode: 'AQ-ONB-LOA', label: 'Onboarding Loan Selection' },
+    'onboarding-offer-acceptance-dashboard': { component: OnboardingOfferAcceptanceDashboard, moduleCode: 'AQ-ONB-OFF', label: 'Onboarding Offer Acceptance Dashboard' },
+    'onboarding-offer-acceptance-payload': { component: OnboardingOfferAcceptancePayloadBuilder, moduleCode: 'AQ-ONB-OFF-P', label: 'Onboarding Offer Acceptance Payload' },
+    'onboarding-offer-acceptance-response': { component: OnboardingOfferAcceptanceResponseViewer, moduleCode: 'AQ-ONB-OFF-R', label: 'Onboarding Offer Acceptance Response' },
+    'onboarding-offer-comparison-matrix': { component: OnboardingOfferComparisonMatrix, moduleCode: 'AQ-ONB-OFF-C', label: 'Onboarding Offer Comparison Matrix' },
+    'onboarding-offer-error-simulator': { component: OnboardingOfferErrorSimulator, moduleCode: 'AQ-ONB-OFF-E', label: 'Onboarding Offer Error Simulator' },
+    'onboarding-offer-evaluator': { component: OnboardingOfferEvaluator, moduleCode: 'AQ-ONB-OFF-V', label: 'Onboarding Offer Evaluator' },
+    'onboarding-offer-product-selector': { component: OnboardingOfferProductSelector, moduleCode: 'AQ-ONB-OFF-S', label: 'Onboarding Offer Product Selector' },
+    'payee-combination-list': { component: PayeeCombinationList, moduleCode: 'AQ-PAY-COM', label: 'Payee Combination List' },
+    'payee-creation-mfa': { component: PayeeCreationMfaFlow, moduleCode: 'AQ-PAY-MFA', label: 'Payee Creation MFA' },
+    'payee-delete-confirmation': { component: PayeeDeleteConfirmation, moduleCode: 'AQ-PAY-DEL', label: 'Payee Delete Confirmation' },
+    'payee-details-modal': { component: PayeeDetailsModal, moduleCode: 'AQ-PAY-DET', label: 'Payee Details Modal' },
+    'payee-enrollment-manager': { component: PayeeEnrollmentManager, moduleCode: 'AQ-PAY-ENR', label: 'Payee Enrollment Manager' },
+    'payee-import-export': { component: PayeeImportExport, moduleCode: 'AQ-PAY-IMP', label: 'Payee Import Export' },
+    'payee-list-filters': { component: PayeeListFilters, moduleCode: 'AQ-PAY-FIL', label: 'Payee List Filters' },
+    'payee-management-dashboard': { component: PayeeManagementDashboard, moduleCode: 'AQ-PAY-DSH', label: 'Payee Management Dashboard' },
+    'payee-reference-data-selector': { component: PayeeReferenceDataSelector, moduleCode: 'AQ-PAY-REF', label: 'Payee Reference Data Selector' },
+    'paylite-booking': { component: PayliteBookingComponent, moduleCode: 'AQ-PAY-LIT', label: 'Paylite Booking' },
+    'portal-handshake-view': { component: PortalHandshakeView, moduleCode: 'AQ-POR-HAN', label: 'Portal Handshake View' },
+    'preprocess-transfer-form': { component: PreprocessTransferForm, moduleCode: 'AQ-PRE-TRN', label: 'Preprocess Transfer Form' },
+    'product-disbursement-details': { component: ProductDisbursementDetails, moduleCode: 'AQ-PRD-DIS', label: 'Product Disbursement Details' },
+    'product-offer-card': { component: ProductOfferCard, moduleCode: 'AQ-PRD-OFF', label: 'Product Offer Card' },
+    'product-repayment-config': { component: ProductRepaymentConfig, moduleCode: 'AQ-PRD-REP', label: 'Product Repayment Config' },
+    'quantum-comprehensive-details': { component: QuantumComprehensiveDetailsSuite, moduleCode: 'AQ-QUA-DET', label: 'Quantum Comprehensive Details' },
+    'quantum-decryption-auditor': { component: QuantumDecryptionAuditor, moduleCode: 'AQ-QUA-DEC', label: 'Quantum Decryption Auditor' },
+    'quantum-ledger-monitors': { component: QuantumLedgerMonitors, moduleCode: 'AQ-QUA-LED', label: 'Quantum Ledger Monitors' },
+    'quantum-limited-period-analyzer': { component: QuantumLimitedPeriodAnalyzer, moduleCode: 'AQ-QUA-LPA', label: 'Quantum Limited Period Analyzer' },
+    'quantum-outage-predictor': { component: QuantumOutagePredictorAI, moduleCode: 'AQ-QUA-OUT', label: 'Quantum Outage Predictor' },
+    'quantum-payment-flows': { component: QuantumPaymentFlows, moduleCode: 'AQ-QUA-PAY', label: 'Quantum Payment Flows' },
+    'quantum-routing-decryptor': { component: QuantumRoutingDecryptor, moduleCode: 'AQ-QUA-RUT', label: 'Quantum Routing Decryptor' },
+    'quantum-security-shield': { component: QuantumSecurityShield, moduleCode: 'AQ-QUA-SEC', label: 'Quantum Security Shield' },
+    'quantum-standing-instruction-ai': { component: QuantumStandingInstructionAIAdvisor, moduleCode: 'AQ-QUA-SIA', label: 'Quantum Standing Instruction AI' },
+    'rate-limit-dashboard': { component: RateLimitDashboard, moduleCode: 'AQ-RAT-DSH', label: 'Rate Limit Dashboard' },
+    'ready-credit-product-form': { component: ReadyCreditProductForm, moduleCode: 'AQ-RDY-CRE', label: 'Ready Credit Product Form' },
+    'repayment-schedule-table': { component: RepaymentScheduleTable, moduleCode: 'AQ-REP-SCH', label: 'Repayment Schedule Table' },
+    'required-document-list': { component: RequiredDocumentList, moduleCode: 'AQ-REQ-DOC', label: 'Required Document List' },
+    'scenario-runner': { component: ScenarioRunnerComponent, moduleCode: 'AQ-SCE-RUN', label: 'Scenario Runner' },
+    'schema-catalog': { component: SchemaCatalogComponent, moduleCode: 'AQ-SCH-CAT', label: 'Schema Catalog' },
+    'sepa-receipt-downloader': { component: SepaReceiptDownloader, moduleCode: 'AQ-SEP-REC', label: 'Sepa Receipt Downloader' },
+    'sepa-transfer-limits': { component: SepaTransferLimitsManager, moduleCode: 'AQ-SEP-LIM', label: 'Sepa Transfer Limits' },
+    'sepa-transfer-workspace': { component: SepaTransferWorkspace, moduleCode: 'AQ-SEP-WRK', label: 'Sepa Transfer Workspace' },
+    'source-account-list': { component: SourceAccountList, moduleCode: 'AQ-SRC-ACC', label: 'Source Account List' },
+    'sovereign-account-collection': { component: SovereignAccountCollection, moduleCode: 'AQ-SOV-ACC', label: 'Sovereign Account Collection' },
+    'sovereign-clear-account-terminal': { component: SovereignClearAccountTerminal, moduleCode: 'AQ-SOV-CLR', label: 'Sovereign Clear Account Terminal' },
+    'sovereign-clear-data-vault': { component: SovereignClearDataVault, moduleCode: 'AQ-SOV-DAT', label: 'Sovereign Clear Data Vault' },
+    'sovereign-expected-payments': { component: SovereignExpectedPayments, moduleCode: 'AQ-SOV-EXP', label: 'Sovereign Expected Payments' },
+    'sovereign-iframe-view': { component: SovereignIframeView, moduleCode: 'AQ-SOV-IFR', label: 'Sovereign Iframe View' },
+    'sovereign-intelligence-view': { component: SovereignIntelligenceViewComponent, moduleCode: 'AQ-SOV-INT-V', label: 'Sovereign Intelligence View' },
+    'sovereign-outage-discovery': { component: SovereignOutageDiscoveryConsole, moduleCode: 'AQ-SOV-OUT', label: 'Sovereign Outage Discovery' },
+    'sovereign-premium-deposit-matrix': { component: SovereignPremiumDepositMatrix, moduleCode: 'AQ-SOV-PRE', label: 'Sovereign Premium Deposit Matrix' },
+    'sovereign-repeating-payment-vault': { component: SovereignRepeatingPaymentVault, moduleCode: 'AQ-SOV-RPT', label: 'Sovereign Repeating Payment Vault' },
+    'sovereign-statement-generator': { component: SovereignStatementGenerator, moduleCode: 'AQ-SOV-STA', label: 'Sovereign Statement Generator' },
+    'sovereign-transaction-ledger': { component: SovereignTransactionLedger, moduleCode: 'AQ-SOV-TXN', label: 'Sovereign Transaction Ledger' },
+    'sovereign-wealth-ai': { component: SovereignWealthAIAdvisor, moduleCode: 'AQ-SOV-WTH', label: 'Sovereign Wealth AI' },
+    'standing-instruction-form': { component: StandingInstructionForm, moduleCode: 'AQ-STA-INS', label: 'Standing Instruction Form' },
+    'swift-bic-validator': { component: SwiftBicValidator, moduleCode: 'AQ-SWI-BIC', label: 'Swift Bic Validator' },
+    'system-status-indicator': { component: SystemStatusIndicator, moduleCode: 'AQ-SYS-STS', label: 'System Status Indicator' },
+    'tab-manager-view': { component: TabManagerView, moduleCode: 'AQ-TAB-MGR', label: 'Tab Manager View' },
+    'tax-payment-form': { component: TaxPaymentForm, moduleCode: 'AQ-TAX-PAY', label: 'Tax Payment Form' },
+    'tenant-context-manager': { component: TenantContextManager, moduleCode: 'AQ-TEN-CTX', label: 'Tenant Context Manager' },
+    'token-provisioning-console': { component: TokenProvisioningConsole, moduleCode: 'AQ-TOK-PRO', label: 'Token Provisioning Console' },
+    'token-refresh-console': { component: TokenRefreshConsole, moduleCode: 'AQ-TOK-REF', label: 'Token Refresh Console' },
+    'token-revocation-console': { component: TokenRevocationConsole, moduleCode: 'AQ-TOK-REV', label: 'Token Revocation Console' },
+    'token-verification-tester': { component: TokenVerificationTester, moduleCode: 'AQ-TOK-VER', label: 'Token Verification Tester' },
+    'transaction-details-view': { component: TransactionDetailsView, moduleCode: 'AQ-TXN-DET', label: 'Transaction Details View' },
+    'transfer-confirmation-receipt': { component: TransferConfirmationReceipt, moduleCode: 'AQ-TRN-CFM', label: 'Transfer Confirmation Receipt' },
+    'transfer-history-tracker': { component: TransferHistoryTracker, moduleCode: 'AQ-TRN-HIS', label: 'Transfer History Tracker' },
+    'transfer-limit-progress': { component: TransferLimitProgress, moduleCode: 'AQ-TRN-LIM', label: 'Transfer Limit Progress' },
+    'transfer-preprocess-review': { component: TransferPreprocessReview, moduleCode: 'AQ-TRN-PRE', label: 'Transfer Preprocess Review' },
+    'transfer-type-selector': { component: TransferTypeSelector, moduleCode: 'AQ-TRN-TYP', label: 'Transfer Type Selector' },
+    'transformation-rules-manager': { component: TransformationRulesManager, moduleCode: 'AQ-TRN-RUL', label: 'Transformation Rules Manager' },
+    'unsecured-loan-product-form': { component: UnsecuredLoanProductForm, moduleCode: 'AQ-UNS-LOA', label: 'Unsecured Loan Product Form' },
+    'unsecured-product-manager': { component: UnsecuredProductManager, moduleCode: 'AQ-UNS-MGR', label: 'Unsecured Product Manager' },
+    'unsecured-product-summary': { component: UnsecuredProductSummary, moduleCode: 'AQ-UNS-SUM', label: 'Unsecured Product Summary' },
+    'voice-control-view': { component: VoiceControlView, moduleCode: 'AQ-VOC-CON', label: 'Voice Control View' },
+    'wealth-distribution-chart-view': { component: WealthDistributionChartComponent, moduleCode: 'AQ-WTH-DST-V', label: 'Wealth Distribution Chart View' },
+    'workspace-nexus-view': { component: WorkspaceNexusViewComponent, moduleCode: 'AQ-WRK-NEX-V', label: 'Workspace Nexus View' },
 };
 
 const USERNAME = "admin08077";
@@ -488,7 +946,7 @@ const AppContent: React.FC = () => {
             };
         }
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (uuidRegex.test(view)) return { component: () => <FleetAppView appId={view} setView={setView} />, moduleCode: `FLEET-${view.slice(0, 4).toUpperCase()}`, label: 'Fleet Node', isProtected: true };
+        if (uuidRegex.test(view)) return { component: () => <FleetAppViewComponent appId={view} setView={setView} />, moduleCode: `FLEET-${view.slice(0, 4).toUpperCase()}`, label: 'Fleet Node', isProtected: true };
         return COMPONENT_MAP[View.Dashboard];
     }, [view, setView]);
 
