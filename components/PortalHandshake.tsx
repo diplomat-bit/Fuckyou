@@ -6,11 +6,11 @@ import { DataContext } from '../context/DataContext';
 import { useFirebase } from '../context/FirebaseContext';
 
 // Services & Security
-import { lastBossService } from './services/LastBossService';
-import { securityService } from './services/SecurityService';
+import { lastBossService } from '../services/LastBossService';
+import { securityService } from '../services/SecurityService';
 
 // Types & Constants
-import { SOVEREIGN_APPS } from './constants';
+import { SOVEREIGN_APPS } from '../constants';
 
 enum MessageType {
   HANDSHAKE_INIT = 'PORTAL_HANDSHAKE_INIT',
