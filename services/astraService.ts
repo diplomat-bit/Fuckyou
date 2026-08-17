@@ -11,10 +11,10 @@ export class AstraService {
   }
 
   private static async getDb() {
-    const endpoint = (typeof process !== 'undefined' && process.env?.ASTRA_DB_API_ENDPOINT) || 
+    const endpoint = (typeof process !== 'undefined' && (process.env?.ASTRA_DB_API_ENDPOINT || process.env?.ASTRA_DB_ENDPOINT)) || 
                      (import.meta as any).env?.VITE_ASTRA_DB_API_ENDPOINT || 
                      "";
-    const token = (typeof process !== 'undefined' && process.env?.ASTRA_DB_APPLICATION_TOKEN) || 
+    const token = (typeof process !== 'undefined' && (process.env?.ASTRA_DB_APPLICATION_TOKEN || process.env?.ASTRA_DB_TOKEN)) || 
                    (import.meta as any).env?.VITE_ASTRA_DB_APPLICATION_TOKEN || 
                    "";
 
@@ -36,7 +36,7 @@ export class AstraService {
       console.log(`Creating collection: ${name}...`);
       return await db.createCollection(name, options);
     } catch (error: any) {
-      if (error.message && error.message.includes("already exists")) {
+      if (error.message && (error.message.includes("already exists") || error.message.includes("ALREADY_EXISTS"))) {
         console.log(`Collection ${name} already exists.`);
         return { status: "exists" };
       }
@@ -74,8 +74,13 @@ export class AstraService {
 
     const results = [];
     for (const col of collections) {
-      const res = await this.createCollection(col.name, col.options);
-      results.push({ name: col.name, result: res });
+      try {
+        const res = await this.createCollection(col.name, col.options);
+        results.push({ name: col.name, result: res });
+      } catch (err: any) {
+        console.error(`Failed to create collection ${col.name}:`, err);
+        results.push({ name: col.name, error: err.message });
+      }
     }
     return results;
   }
@@ -93,6 +98,17 @@ export class AstraService {
     }
   }
 
+  public static async findOne(collectionName: string, filter: any) {
+    try {
+      const db = await this.getDb();
+      const col = db.collection(collectionName || "aibank");
+      return await col.findOne(filter);
+    } catch (e: any) {
+      console.warn(`Astra findOne fallback: ${e.message}`);
+      return null;
+    }
+  }
+
   public static async indexDocument(collectionName: string, document: any) {
     try {
       const db = await this.getDb();
@@ -102,6 +118,10 @@ export class AstraService {
       console.warn(`Astra indexDocument fallback: ${e.message}`);
       return { insertedId: `doc_${Date.now()}` };
     }
+  }
+
+  public static async insertOne(collectionName: string, document: any) {
+    return this.indexDocument(collectionName, document);
   }
 
   public static async bulkInsert(collectionName: string, documents: any[]) {
@@ -115,6 +135,10 @@ export class AstraService {
     }
   }
 
+  public static async insertMany(collectionName: string, documents: any[]) {
+    return this.bulkInsert(collectionName, documents);
+  }
+
   public static async updateDocument(collectionName: string, filter: any, update: any, options?: any) {
     try {
       const db = await this.getDb();
@@ -126,6 +150,10 @@ export class AstraService {
     }
   }
 
+  public static async updateOne(collectionName: string, filter: any, update: any, options?: any) {
+    return this.updateDocument(collectionName, filter, update, options);
+  }
+
   public static async deleteDocument(collectionName: string, filter: any) {
     try {
       const db = await this.getDb();
@@ -133,6 +161,21 @@ export class AstraService {
       return await col.deleteOne(filter);
     } catch (e: any) {
       console.warn(`Astra deleteDocument fallback: ${e.message}`);
+      return { deletedCount: 0 };
+    }
+  }
+
+  public static async deleteOne(collectionName: string, filter: any) {
+    return this.deleteDocument(collectionName, filter);
+  }
+
+  public static async deleteMany(collectionName: string, filter: any) {
+    try {
+      const db = await this.getDb();
+      const col = db.collection(collectionName || "aibank");
+      return await col.deleteMany(filter);
+    } catch (e: any) {
+      console.warn(`Astra deleteMany fallback: ${e.message}`);
       return { deletedCount: 0 };
     }
   }
