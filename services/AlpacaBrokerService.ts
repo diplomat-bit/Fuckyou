@@ -214,11 +214,23 @@ export interface AlpacaApiResponse<T> {
   headers: Record<string, string>;
 }
 
+const getEnvVar = (key: string): string => {
+  if (typeof process !== 'undefined' && process.env?.[key]) {
+    return process.env[key] as string;
+  }
+  // @ts-ignore
+  if (typeof import.meta !== 'undefined' && import.meta.env?.[key]) {
+    // @ts-ignore
+    return import.meta.env[key] as string;
+  }
+  return '';
+};
+
 export class AlpacaBrokerService {
   private static instance: AlpacaBrokerService;
   
-  private apiKey: string = (typeof process !== 'undefined' && process.env?.VITE_ALPACA_API_KEY) || 'PK_ALPACA_SANDBOX_2026_KEY';
-  private apiSecret: string = (typeof process !== 'undefined' && process.env?.VITE_ALPACA_API_SECRET) || 'SK_ALPACA_SECRET_MOCK_SECURE_KEY';
+  private apiKey: string = getEnvVar('VITE_ALPACA_API_KEY') || 'PK_ALPACA_SANDBOX_2026_KEY';
+  private apiSecret: string = getEnvVar('VITE_ALPACA_API_SECRET') || 'SK_ALPACA_SECRET_MOCK_SECURE_KEY';
   private baseUrl: string = 'https://broker-api.sandbox.alpaca.markets/v1';
   
   // Local state cache for interactive sandbox simulation
@@ -250,11 +262,21 @@ export class AlpacaBrokerService {
   }
 
   public getCredentials() {
+    const authString = `${this.apiKey}:${this.apiSecret}`;
+    let encoded = '';
+    if (typeof btoa === 'function') {
+      encoded = btoa(authString);
+    } else if (typeof Buffer !== 'undefined') {
+      encoded = Buffer.from(authString).toString('base64');
+    } else {
+      // @ts-ignore
+      encoded = globalThis.btoa ? globalThis.btoa(authString) : '';
+    }
     return {
       apiKey: this.apiKey,
       apiSecret: this.apiSecret,
       baseUrl: this.baseUrl,
-      basicAuthHeader: 'Basic ' + (typeof window !== 'undefined' ? btoa(`${this.apiKey}:${this.apiSecret}`) : Buffer.from(`${this.apiKey}:${this.apiSecret}`).toString('base64'))
+      basicAuthHeader: 'Basic ' + encoded
     };
   }
 
@@ -374,14 +396,114 @@ export class AlpacaBrokerService {
   }
 
   /**
-   * GET /v1/assets
-   * Fetches assets available on Alpaca
+   * Generic request helper that supports both live API calls and mock sandbox fallbacks.
+   * This provides a unified pipeline that other services can leverage.
    */
-  public async getAssets(): Promise<AlpacaApiResponse<AlpacaAsset[]>> {
+  public async request<T>(
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    path: string,
+    body?: any
+  ): Promise<AlpacaApiResponse<T>> {
     const requestId = this.generateRequestId();
+    const credentials = this.getCredentials();
     
-    // Default mock asset list based on real Alpaca equity symbols
-    const assets: AlpacaAsset[] = [
+    const isMockKey = this.apiKey.startsWith('PK_ALPACA_SANDBOX') || this.apiKey === 'PK_ALPACA_SANDBOX_2026_KEY' || !this.apiKey;
+    
+    if (!isMockKey && typeof fetch !== 'undefined') {
+      try {
+        const url = `${this.baseUrl}${path}`;
+        const headers: Record<string, string> = {
+          'Authorization': credentials.basicAuthHeader,
+          'Content-Type': 'application/json',
+          'X-Request-ID': requestId
+        };
+        
+        const response = await fetch(url, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined
+        });
+        
+        const data = await response.json();
+        return {
+          data: data as T,
+          requestId,
+          statusCode: response.status,
+          headers: Object.fromEntries(response.headers.entries())
+        };
+      } catch (error) {
+        console.error(`Alpaca API request failed: ${method} ${path}`, error);
+      }
+    }
+    
+    return this.handleMockRequest<T>(method, path, body, requestId);
+  }
+
+  private handleMockRequest<T>(
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    path: string,
+    body: any,
+    requestId: string
+  ): AlpacaApiResponse<T> {
+    let data: any = null;
+    let statusCode = 200;
+
+    try {
+      if (path === '/assets' && method === 'GET') {
+        data = this.getMockAssetsList();
+      } else if (path === '/accounts' && method === 'POST') {
+        data = this.createMockAccountInternal(body);
+      } else if (path === '/accounts' && method === 'GET') {
+        data = Array.from(this.mockAccounts.values());
+      } else if (path.startsWith('/accounts/') && path.endsWith('/ach_relationships')) {
+        const accountId = path.split('/')[2];
+        if (method === 'POST') {
+          data = this.createMockAchRelationshipInternal(accountId, body);
+        } else if (method === 'GET') {
+          data = this.mockAchRelationships.get(accountId) || [];
+        }
+      } else if (path.startsWith('/accounts/') && path.endsWith('/transfers') && method === 'POST') {
+        const accountId = path.split('/')[2];
+        data = this.fundMockAccountAchInternal(accountId, body);
+      } else if (path.startsWith('/accounts/activities/CSD') && method === 'GET') {
+        const urlParams = new URLSearchParams(path.split('?')[1] || '');
+        const accountId = urlParams.get('account_id') || '';
+        data = this.getMockCsdActivitiesInternal(accountId);
+      } else if (path === '/journals') {
+        if (method === 'POST') {
+          data = this.journalMockFundsInternal(body);
+        } else if (method === 'GET') {
+          data = this.mockJournals;
+        }
+      } else if (path.startsWith('/trading/accounts/') && path.endsWith('/orders')) {
+        const accountId = path.split('/')[3];
+        if (method === 'POST') {
+          data = this.createMockTradingOrderInternal(accountId, body);
+        } else if (method === 'GET') {
+          data = this.mockOrders.get(accountId) || [];
+        }
+      } else {
+        statusCode = 404;
+        data = { error: `Mock route not found: ${method} ${path}` };
+      }
+    } catch (err: any) {
+      statusCode = 500;
+      data = { error: err.message || 'Internal mock server error' };
+    }
+
+    return {
+      data: data as T,
+      requestId,
+      statusCode,
+      headers: {
+        'x-request-id': requestId,
+        'content-type': 'application/json'
+      }
+    };
+  }
+
+  private getMockAssetsList(): AlpacaAsset[] {
+    return [
       {
         id: '7595a8d2-68a6-46d7-910c-6b1958491f5c',
         class: 'us_equity',
@@ -448,24 +570,9 @@ export class AlpacaBrokerService {
         fractionable: true
       }
     ];
-
-    return {
-      data: assets,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
   }
 
-  /**
-   * POST /v1/accounts
-   * Creates an end-user brokerage account
-   */
-  public async createAccount(payload: AlpacaCreateAccountPayload): Promise<AlpacaApiResponse<AlpacaAccount>> {
-    const requestId = this.generateRequestId();
+  private createMockAccountInternal(payload: AlpacaCreateAccountPayload): AlpacaAccount {
     const accountId = uuidv4();
     const accountNumber = Math.floor(100000000 + Math.random() * 900000000).toString();
 
@@ -481,52 +588,17 @@ export class AlpacaBrokerService {
     };
 
     this.mockAccounts.set(accountId, account);
-
-    return {
-      data: account,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
+    return account;
   }
 
-  /**
-   * GET /v1/accounts
-   * Lists all brokerage accounts created under this correspondent
-   */
-  public async getAccounts(): Promise<AlpacaApiResponse<AlpacaAccount[]>> {
-    const requestId = this.generateRequestId();
-    return {
-      data: Array.from(this.mockAccounts.values()),
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
-  }
-
-  /**
-   * POST /v1/accounts/{account_id}/ach_relationships
-   * Establishes ACH relationship for virtual bank funding
-   */
-  public async createAchRelationship(
-    accountId: string, 
-    payload: AlpacaAchRelationshipPayload
-  ): Promise<AlpacaApiResponse<AlpacaAchRelationship>> {
-    const requestId = this.generateRequestId();
+  private createMockAchRelationshipInternal(accountId: string, payload: AlpacaAchRelationshipPayload): AlpacaAchRelationship {
     const achId = uuidv4();
-
     const achRel: AlpacaAchRelationship = {
       id: achId,
       account_id: accountId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      status: 'APPROVED', // Immediately approved in sandbox mode
+      status: 'APPROVED',
       account_owner_name: payload.account_owner_name,
       bank_account_type: payload.bank_account_type,
       bank_account_number: payload.bank_account_number,
@@ -536,45 +608,10 @@ export class AlpacaBrokerService {
 
     const existing = this.mockAchRelationships.get(accountId) || [];
     this.mockAchRelationships.set(accountId, [...existing, achRel]);
-
-    return {
-      data: achRel,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
+    return achRel;
   }
 
-  /**
-   * GET /v1/accounts/{account_id}/ach_relationships
-   */
-  public async getAchRelationships(accountId: string): Promise<AlpacaApiResponse<AlpacaAchRelationship[]>> {
-    const requestId = this.generateRequestId();
-    const rels = this.mockAchRelationships.get(accountId) || [];
-
-    return {
-      data: rels,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
-  }
-
-  /**
-   * POST /v1/accounts/{account_id}/transfers
-   * Funds account via ACH relationship
-   */
-  public async fundAccountAch(
-    accountId: string, 
-    payload: AlpacaTransferPayload
-  ): Promise<AlpacaApiResponse<AlpacaTransfer>> {
-    const requestId = this.generateRequestId();
+  private fundMockAccountAchInternal(accountId: string, payload: AlpacaTransferPayload): AlpacaTransfer {
     const transferId = uuidv4();
     const now = new Date();
     const expire = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -595,7 +632,6 @@ export class AlpacaBrokerService {
     const existing = this.mockTransfers.get(accountId) || [];
     this.mockTransfers.set(accountId, [...existing, transfer]);
 
-    // Update account equity
     const acc = this.mockAccounts.get(accountId);
     if (acc) {
       const currentEq = parseFloat(acc.last_equity) || 0;
@@ -603,26 +639,12 @@ export class AlpacaBrokerService {
       acc.last_equity = (currentEq + amountVal).toFixed(2);
     }
 
-    return {
-      data: transfer,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
+    return transfer;
   }
 
-  /**
-   * GET /v1/accounts/activities/CSD?account_id={account_id}
-   * Retrieves cash deposit activities
-   */
-  public async getCsdActivities(accountId: string): Promise<AlpacaApiResponse<AlpacaCsdActivity[]>> {
-    const requestId = this.generateRequestId();
+  private getMockCsdActivitiesInternal(accountId: string): AlpacaCsdActivity[] {
     const transfers = this.mockTransfers.get(accountId) || [];
-
-    const activities: AlpacaCsdActivity[] = transfers.map(t => ({
+    return transfers.map(t => ({
       id: `CSD_${t.id.slice(0, 8)}`,
       account_id: accountId,
       activity_type: 'CSD',
@@ -631,24 +653,9 @@ export class AlpacaBrokerService {
       description: `ACH Cash Deposit via Relationship ${t.relationship_id.slice(0, 8)}`,
       status: 'EXECUTED'
     }));
-
-    return {
-      data: activities,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
   }
 
-  /**
-   * POST /v1/journals
-   * Instant funding journal between Firm account and end user account
-   */
-  public async journalFunds(payload: AlpacaJournalPayload): Promise<AlpacaApiResponse<AlpacaJournal>> {
-    const requestId = this.generateRequestId();
+  private journalMockFundsInternal(payload: AlpacaJournalPayload): AlpacaJournal {
     const journalId = uuidv4();
     const amountVal = parseFloat(payload.amount);
 
@@ -665,7 +672,6 @@ export class AlpacaBrokerService {
 
     this.mockJournals.push(journal);
 
-    // Adjust balances
     if (payload.from_account === this.mockFirmAccountId) {
       this.mockFirmBalance -= amountVal;
     }
@@ -675,42 +681,10 @@ export class AlpacaBrokerService {
       targetAccount.last_equity = (currentEq + amountVal).toFixed(2);
     }
 
-    return {
-      data: journal,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
+    return journal;
   }
 
-  /**
-   * GET /v1/journals
-   */
-  public async getJournals(): Promise<AlpacaApiResponse<AlpacaJournal[]>> {
-    const requestId = this.generateRequestId();
-    return {
-      data: this.mockJournals,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
-  }
-
-  /**
-   * POST /v1/trading/accounts/{account_id}/orders
-   * Places trade orders on behalf of an end user
-   */
-  public async createTradingOrder(
-    accountId: string, 
-    payload: AlpacaOrderPayload
-  ): Promise<AlpacaApiResponse<AlpacaOrder>> {
-    const requestId = this.generateRequestId();
+  private createMockTradingOrderInternal(accountId: string, payload: AlpacaOrderPayload): AlpacaOrder {
     const orderId = uuidv4();
     const clientOrderId = uuidv4();
 
@@ -752,34 +726,101 @@ export class AlpacaBrokerService {
 
     const existing = this.mockOrders.get(accountId) || [];
     this.mockOrders.set(accountId, [...existing, order]);
+    return order;
+  }
 
-    return {
-      data: order,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
+  /**
+   * GET /v1/assets
+   * Fetches assets available on Alpaca
+   */
+  public async getAssets(): Promise<AlpacaApiResponse<AlpacaAsset[]>> {
+    return this.request<AlpacaAsset[]>('GET', '/assets');
+  }
+
+  /**
+   * POST /v1/accounts
+   * Creates an end-user brokerage account
+   */
+  public async createAccount(payload: AlpacaCreateAccountPayload): Promise<AlpacaApiResponse<AlpacaAccount>> {
+    return this.request<AlpacaAccount>('POST', '/accounts', payload);
+  }
+
+  /**
+   * GET /v1/accounts
+   * Lists all brokerage accounts created under this correspondent
+   */
+  public async getAccounts(): Promise<AlpacaApiResponse<AlpacaAccount[]>> {
+    return this.request<AlpacaAccount[]>('GET', '/accounts');
+  }
+
+  /**
+   * POST /v1/accounts/{account_id}/ach_relationships
+   * Establishes ACH relationship for virtual bank funding
+   */
+  public async createAchRelationship(
+    accountId: string, 
+    payload: AlpacaAchRelationshipPayload
+  ): Promise<AlpacaApiResponse<AlpacaAchRelationship>> {
+    return this.request<AlpacaAchRelationship>('POST', `/accounts/${accountId}/ach_relationships`, payload);
+  }
+
+  /**
+   * GET /v1/accounts/{account_id}/ach_relationships
+   */
+  public async getAchRelationships(accountId: string): Promise<AlpacaApiResponse<AlpacaAchRelationship[]>> {
+    return this.request<AlpacaAchRelationship[]>('GET', `/accounts/${accountId}/ach_relationships`);
+  }
+
+  /**
+   * POST /v1/accounts/{account_id}/transfers
+   * Funds account via ACH relationship
+   */
+  public async fundAccountAch(
+    accountId: string, 
+    payload: AlpacaTransferPayload
+  ): Promise<AlpacaApiResponse<AlpacaTransfer>> {
+    return this.request<AlpacaTransfer>('POST', `/accounts/${accountId}/transfers`, payload);
+  }
+
+  /**
+   * GET /v1/accounts/activities/CSD?account_id={account_id}
+   * Retrieves cash deposit activities
+   */
+  public async getCsdActivities(accountId: string): Promise<AlpacaApiResponse<AlpacaCsdActivity[]>> {
+    return this.request<AlpacaCsdActivity[]>('GET', `/accounts/activities/CSD?account_id=${accountId}`);
+  }
+
+  /**
+   * POST /v1/journals
+   * Instant funding journal between Firm account and end user account
+   */
+  public async journalFunds(payload: AlpacaJournalPayload): Promise<AlpacaApiResponse<AlpacaJournal>> {
+    return this.request<AlpacaJournal>('POST', '/journals', payload);
+  }
+
+  /**
+   * GET /v1/journals
+   */
+  public async getJournals(): Promise<AlpacaApiResponse<AlpacaJournal[]>> {
+    return this.request<AlpacaJournal[]>('GET', '/journals');
+  }
+
+  /**
+   * POST /v1/trading/accounts/{account_id}/orders
+   * Places trade orders on behalf of an end user
+   */
+  public async createTradingOrder(
+    accountId: string, 
+    payload: AlpacaOrderPayload
+  ): Promise<AlpacaApiResponse<AlpacaOrder>> {
+    return this.request<AlpacaOrder>('POST', `/trading/accounts/${accountId}/orders`, payload);
   }
 
   /**
    * GET /v1/trading/accounts/{account_id}/orders
    */
   public async getOrders(accountId: string): Promise<AlpacaApiResponse<AlpacaOrder[]>> {
-    const requestId = this.generateRequestId();
-    const orders = this.mockOrders.get(accountId) || [];
-
-    return {
-      data: orders,
-      requestId,
-      statusCode: 200,
-      headers: {
-        'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    };
+    return this.request<AlpacaOrder[]>('GET', `/trading/accounts/${accountId}/orders`);
   }
 }
 
