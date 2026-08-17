@@ -27,6 +27,8 @@ export interface AlpacaACHRelationship {
   processor_token?: string; // For Plaid integration
 }
 
+export type AlpacaAchRelationship = AlpacaACHRelationship;
+
 export interface AlpacaTransfer {
   id: string;
   account_id: string;
