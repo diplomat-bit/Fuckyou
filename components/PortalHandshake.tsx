@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useContext } from 'react';
 import { useMsal } from "@azure/msal-react";
 
 // Contexts & Providers
-import { DataContext } from './context/DataContext';
-import { useFirebase } from './context/FirebaseContext';
+import { DataContext } from '../context/DataContext';
+import { useFirebase } from '../context/FirebaseContext';
 
 // Services & Security
 import { lastBossService } from './services/LastBossService';
