@@ -80,7 +80,12 @@ export class CamtExportProcessor {
     fileBuffer: Buffer | ArrayBuffer | Uint8Array,
     options: CamtParseOptions = {}
   ): CamtExportGuideData {
-    const workbook = XLSX.read(fileBuffer, { type: 'buffer', cellDates: true, cellFormula: false });
+    let readType: 'buffer' | 'array' = 'buffer';
+    if (fileBuffer instanceof ArrayBuffer || ArrayBuffer.isView(fileBuffer)) {
+      readType = 'array';
+    }
+
+    const workbook = XLSX.read(fileBuffer, { type: readType, cellDates: true, cellFormula: false });
     
     const targetSheetName = options.sheetName || workbook.SheetNames[0];
     const worksheet = workbook.Sheets[targetSheetName];
@@ -134,7 +139,7 @@ export class CamtExportProcessor {
     const normalizedRow: Record<string, string> = {};
     for (const [key, val] of Object.entries(row)) {
       const cleanKey = key.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-      normalizedRow[cleanKey] = String(val).trim();
+      normalizedRow[cleanKey] = (val !== null && val !== undefined) ? String(val).trim() : '';
     }
 
     const xmlPath = normalizedRow['xmlpath'] || normalizedRow['path'] || normalizedRow['elementpath'] || normalizedRow['tagpath'] || '';
@@ -151,7 +156,7 @@ export class CamtExportProcessor {
     if (fieldName.toLowerCase().includes('field name') || xmlPath.toLowerCase().includes('xml path')) return null;
 
     const category = this.determineCategory(xmlPath, tag, fieldName);
-    const isMandatory = multiplicity.startsWith('1');
+    const isMandatory = typeof multiplicity === 'string' && multiplicity.startsWith('1');
 
     return {
       id: `CAMT053-FLD-${String(index).padStart(4, '0')}`,
@@ -220,7 +225,11 @@ export class CamtExportProcessor {
           nodeMap.set(currentPath, node);
 
           if (parentPath && nodeMap.has(parentPath)) {
-            nodeMap.get(parentPath)!.children.push(node);
+            const parentNode = nodeMap.get(parentPath)!;
+            parentNode.children.push(node);
+            if (parentNode.dataType !== 'ComplexType') {
+              parentNode.dataType = 'ComplexType';
+            }
           } else if (idx === 0) {
             rootNodes.push(node);
           }
@@ -296,7 +305,11 @@ export class CamtExportProcessor {
                     ...this.getPropertiesForCategory(guideData.fields, 'Entry'),
                     details: {
                       type: 'array',
-                      properties: this.getPropertiesForCategory(guideData.fields, 'TransactionDetails'),
+                      description: 'Transaction details for the entry',
+                      items: {
+                        type: 'object',
+                        properties: this.getPropertiesForCategory(guideData.fields, 'TransactionDetails'),
+                      },
                     },
                   },
                 },
@@ -317,7 +330,8 @@ export class CamtExportProcessor {
     const properties: Record<string, any> = {};
 
     for (const field of categoryFields) {
-      const key = field.tag || field.fieldName.replace(/[^a-zA-Z0-9]/g, '_');
+      const rawKey = (field.tag && field.tag !== 'N/A') ? field.tag : field.fieldName;
+      const key = rawKey.replace(/[^a-zA-Z0-9_]/g, '_');
       properties[key] = {
         type: this.mapDataTypeToJsonSchema(field.dataType),
         description: `${field.fieldName}: ${field.description} (Path: ${field.xmlPath})`,
@@ -382,6 +396,59 @@ export class CamtExportProcessor {
     }
 
     return markdownLines.join('\n');
+  }
+
+  /**
+   * Generates a mock JSON payload representing a complete CAMT statement with all mandatory fields
+   * populated with their example values or sensible defaults.
+   */
+  public generateTemplatePayload(guideData: CamtExportGuideData): Record<string, any> {
+    const payload: Record<string, any> = {};
+    
+    const getDefaultsForCategory = (category: CamtFieldDefinition['category']) => {
+      const obj: Record<string, any> = {};
+      const categoryFields = guideData.fields.filter(f => f.category === category);
+      for (const field of categoryFields) {
+        if (field.isMandatory) {
+          const rawKey = (field.tag && field.tag !== 'N/A') ? field.tag : field.fieldName;
+          const key = rawKey.replace(/[^a-zA-Z0-9_]/g, '_');
+          let val: any = field.exampleValue || '';
+          if (!val) {
+            const dt = field.dataType.toLowerCase();
+            if (dt.includes('number') || dt.includes('decimal') || dt.includes('amount')) {
+              val = 0.0;
+            } else if (dt.includes('bool')) {
+              val = false;
+            } else if (dt.includes('date')) {
+              val = new Date().toISOString();
+            } else {
+              val = 'PLACEHOLDER';
+            }
+          }
+          obj[key] = val;
+        }
+      }
+      return obj;
+    };
+
+    payload.groupHeader = getDefaultsForCategory('GroupHeader');
+    payload.statement = {
+      ...getDefaultsForCategory('Statement'),
+      balances: [
+        { ...getDefaultsForCategory('Balance'), tp: 'OPBD' },
+        { ...getDefaultsForCategory('Balance'), tp: 'CLBD' }
+      ],
+      entries: [
+        {
+          ...getDefaultsForCategory('Entry'),
+          details: [
+            getDefaultsForCategory('TransactionDetails')
+          ]
+        }
+      ]
+    };
+
+    return payload;
   }
 }
 
