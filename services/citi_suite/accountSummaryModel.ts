@@ -86,6 +86,54 @@ export function parseCsvRow(text: string): string[] {
 }
 
 /**
+ * Parses an entire CSV string into a 2D array of fields, correctly handling newlines inside quotes.
+ */
+export function parseCsv(text: string): string[][] {
+  const lines: string[][] = [];
+  let row: string[] = [];
+  let entry = '';
+  let insideQuote = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+
+    if (char === '"') {
+      if (insideQuote && nextChar === '"') {
+        entry += '"';
+        i++; // Skip the second quote
+      } else {
+        insideQuote = !insideQuote;
+      }
+    } else if (char === ',' && !insideQuote) {
+      row.push(entry.trim());
+      entry = '';
+    } else if ((char === '\r' || char === '\n') && !insideQuote) {
+      row.push(entry.trim());
+      entry = '';
+      if (row.length > 0 && (row.length > 1 || row[0] !== '')) {
+        lines.push(row);
+      }
+      row = [];
+      if (char === '\r' && nextChar === '\n') {
+        i++; // Skip the \n of \r\n
+      }
+    } else {
+      entry += char;
+    }
+  }
+  
+  if (entry || row.length > 0) {
+    row.push(entry.trim());
+    if (row.length > 0 && (row.length > 1 || row[0] !== '')) {
+      lines.push(row);
+    }
+  }
+
+  return lines;
+}
+
+/**
  * Serializes an array of string fields into a single RFC 4180 compliant CSV row.
  */
 export function serializeCsvRow(fields: string[]): string {
@@ -163,10 +211,10 @@ export function safeParseJson<T>(rawJson: string): T | null {
  * Parses the entire CSV content of the account-summary file into strongly-typed TypeScript objects.
  */
 export function parseAccountSummaryCsv(csvContent: string): AccountSummaryRow[] {
-  const lines = csvContent.split(/\r?\n/).filter(line => line.trim() !== '');
-  if (lines.length < 2) return [];
+  const allRows = parseCsv(csvContent);
+  if (allRows.length < 2) return [];
 
-  const headerRow = parseCsvRow(lines[0]);
+  const headerRow = allRows[0];
   const rows: AccountSummaryRow[] = [];
 
   // Dynamically map header names to indices to ensure robustness against column reordering
@@ -181,9 +229,12 @@ export function parseAccountSummaryCsv(csvContent: string): AccountSummaryRow[] 
     creditCardAccountSummary: headerRow.findIndex(h => /credit.*card/i.test(h)),
   };
 
-  for (let i = 1; i < lines.length; i++) {
-    const rawRow = parseCsvRow(lines[i]);
-    if (rawRow.length < Math.max(...Object.values(indices)) + 1) {
+  for (let i = 1; i < allRows.length; i++) {
+    const rawRow = allRows[i];
+    const validIndices = Object.values(indices).filter(idx => idx !== -1);
+    const maxIndex = validIndices.length > 0 ? Math.max(...validIndices) : -1;
+
+    if (rawRow.length < maxIndex + 1) {
       // Skip incomplete or malformed rows
       continue;
     }
@@ -250,4 +301,101 @@ export function serializeAccountSummaryCsv(rows: AccountSummaryRow[]): string {
   }
 
   return csvLines.join('\n');
+}
+
+/**
+ * Generates a mock AccountGroupSummary structure for testing and simulation.
+ */
+export function createMockAccountGroupSummary(): AccountGroupSummary {
+  return {
+    totalAssets: 154200.50,
+    totalLiabilities: 12500.00,
+    netWorth: 141700.50,
+    currency: 'USD',
+    accounts: [
+      {
+        accountId: 'act_8839102',
+        accountName: 'Citi Priority Checking',
+        accountType: 'CHECKING',
+        balance: 12450.75,
+        currency: 'USD',
+        status: 'ACTIVE',
+        lastUpdated: new Date().toISOString()
+      },
+      {
+        accountId: 'act_1102938',
+        accountName: 'Citi Accelerate Savings',
+        accountType: 'SAVINGS',
+        balance: 141749.75,
+        currency: 'USD',
+        status: 'ACTIVE',
+        lastUpdated: new Date().toISOString()
+      }
+    ],
+    refreshTimestamp: new Date().toISOString()
+  };
+}
+
+/**
+ * Generates a mock CreditCardAccountSummary structure for testing and simulation.
+ */
+export function createMockCreditCardAccountSummary(): CreditCardAccountSummary {
+  return {
+    totalCreditLimit: 50000.00,
+    totalOutstandingBalance: 3450.20,
+    totalAvailableCredit: 46549.80,
+    currency: 'USD',
+    cards: [
+      {
+        cardId: 'crd_99201',
+        cardName: 'Citi Double Cash Card',
+        cardNumberLastFour: '4321',
+        outstandingBalance: 1250.40,
+        creditLimit: 20000.00,
+        availableCredit: 18749.60,
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        minimumPaymentDue: 35.00,
+        apr: 18.99,
+        status: 'ACTIVE'
+      },
+      {
+        cardId: 'crd_11029',
+        cardName: 'Citi Custom Cash Card',
+        cardNumberLastFour: '8765',
+        outstandingBalance: 2199.80,
+        creditLimit: 30000.00,
+        availableCredit: 27800.20,
+        dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        minimumPaymentDue: 75.00,
+        apr: 19.99,
+        status: 'ACTIVE'
+      }
+    ],
+    refreshTimestamp: new Date().toISOString()
+  };
+}
+
+/**
+ * Type guard to validate if an object conforms to the AccountGroupSummary interface.
+ */
+export function isAccountGroupSummary(obj: any): obj is AccountGroupSummary {
+  return (
+    obj &&
+    typeof obj.totalAssets === 'number' &&
+    typeof obj.totalLiabilities === 'number' &&
+    typeof obj.netWorth === 'number' &&
+    Array.isArray(obj.accounts)
+  );
+}
+
+/**
+ * Type guard to validate if an object conforms to the CreditCardAccountSummary interface.
+ */
+export function isCreditCardAccountSummary(obj: any): obj is CreditCardAccountSummary {
+  return (
+    obj &&
+    typeof obj.totalCreditLimit === 'number' &&
+    typeof obj.totalOutstandingBalance === 'number' &&
+    Array.isArray(obj.cards)
+  );
 }
