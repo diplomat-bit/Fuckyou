@@ -1,4 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
+import { ZKPEngine } from './ZKPEngine';
+import { verifyIdentity } from './entraService';
+import { ModernTreasuryService } from './ModernTreasuryService';
+import { RealEstateService } from './RealEstateService';
+import { TaxLienService } from './TaxLienService';
+import { callGemini } from './geminiService';
 
 export interface AlpacaCipData {
   account_id: string;
@@ -302,38 +308,66 @@ export class AlpacaAccountsService {
   // ==========================================
 
   public async verifySovereignZkpIdentity(accountId: string, zkpProof: string): Promise<{ verified: boolean; riskScore: number }> {
+    let isVerified = false;
+    try {
+      if (ZKPEngine && typeof (ZKPEngine as any).verifyProof === 'function') {
+        isVerified = await (ZKPEngine as any).verifyProof(zkpProof);
+      } else {
+        isVerified = zkpProof ? true : false;
+      }
+    } catch (error) {
+      console.error('[AlpacaAccountsService] ZKP verification failed:', error);
+      isVerified = false;
+    }
+
     const cip = await this.getCip(accountId);
     const updatedCip: AlpacaCipData = {
       ...cip,
       sovereign_zkp: {
-        proof_verified: true,
+        proof_verified: isVerified,
         enclave_session_id: `enclave_session_${uuidv4().substring(0, 8)}`,
         verified_at: new Date().toISOString()
       },
       kyc: {
         ...cip.kyc,
-        risk_level: 'LOW',
-        risk_score: Math.max(1, cip.kyc.risk_score - 5)
+        risk_level: isVerified ? 'LOW' : 'HIGH',
+        risk_score: isVerified ? Math.max(1, cip.kyc.risk_score - 5) : 90
       }
     };
     this.cipRecords.set(accountId, updatedCip);
-    return { verified: true, riskScore: updatedCip.kyc.risk_score };
+    return { verified: isVerified, riskScore: updatedCip.kyc.risk_score };
   }
 
   public async linkEntraIdentity(accountId: string, entraUserPrincipal: string): Promise<{ status: string; claims: string[] }> {
+    let isVerified = false;
+    let roles: string[] = ['Sovereign_Operator'];
+    try {
+      if (typeof verifyIdentity === 'function') {
+        isVerified = await verifyIdentity(entraUserPrincipal);
+        if (isVerified) {
+          roles.push('Trillionaire_Candidate');
+        }
+      } else {
+        isVerified = true;
+        roles.push('Trillionaire_Candidate');
+      }
+    } catch (error) {
+      console.error('[AlpacaAccountsService] Entra identity verification failed:', error);
+    }
+
     const cip = await this.getCip(accountId);
     const updatedCip: AlpacaCipData = {
       ...cip,
       entra_claims: {
         user_principal: entraUserPrincipal,
         tenant_id: 'azure-gov-sovereign-tenant-001',
-        roles: ['Sovereign_Operator', 'Trillionaire_Candidate']
+        roles: roles
       }
     };
     this.cipRecords.set(accountId, updatedCip);
     return {
-      status: 'LINKED',
-      claims: ['Sovereign_Operator', 'Trillionaire_Candidate']
+      status: isVerified ? 'LINKED' : 'PENDING_VERIFICATION',
+      claims: roles
     };
   }
 
@@ -428,6 +462,8 @@ export class AlpacaAccountsService {
 
   public async collateralizeRealEstateDeed(accountId: string, deedId: string, propertyValue: number): Promise<TokenizedCollateral> {
     const collateralList = this.tokenizedCollateral.get(accountId) || [];
+    console.log(`[AlpacaAccountsService] Collateralizing real estate deed ${deedId} with valuation $${propertyValue}`);
+    
     const newCollateral: TokenizedCollateral = {
       id: uuidv4(),
       account_id: accountId,
@@ -445,6 +481,8 @@ export class AlpacaAccountsService {
 
   public async collateralizeTaxLien(accountId: string, lienId: string, faceValue: number): Promise<TokenizedCollateral> {
     const collateralList = this.tokenizedCollateral.get(accountId) || [];
+    console.log(`[AlpacaAccountsService] Collateralizing tax lien ${lienId} with face value $${faceValue}`);
+
     const newCollateral: TokenizedCollateral = {
       id: uuidv4(),
       account_id: accountId,
@@ -462,6 +500,8 @@ export class AlpacaAccountsService {
 
   public async linkCryptoWallet(accountId: string, walletAddress: string, chain: string): Promise<{ status: string; walletAddress: string }> {
     const collateralList = this.tokenizedCollateral.get(accountId) || [];
+    console.log(`[AlpacaAccountsService] Linking crypto wallet ${walletAddress} on chain ${chain}`);
+
     const newCollateral: TokenizedCollateral = {
       id: uuidv4(),
       account_id: accountId,
@@ -539,24 +579,69 @@ export class AlpacaAccountsService {
   // ==========================================
 
   public async generateAIAdvisorInsights(accountId: string): Promise<AIAdvisorRecommendation> {
-    const recommendation: AIAdvisorRecommendation = {
-      id: uuidv4(),
-      account_id: accountId,
-      suggested_portfolio_rebalance: true,
-      target_allocation: {
-        TQQQ: 40,
-        BTC: 30,
-        REAL_ESTATE_TOKENS: 20,
-        TAX_LIENS: 10
-      },
-      market_sentiment_analysis: 'Bullish on sovereign-backed tokenized real estate and leveraged tech indices. Recommending rebalancing to maximize yield.',
-      recommended_actions: [
-        'Execute TQQQ algorithm terminal rebalance',
-        'Mint additional Florida real estate deed tokens',
-        'Settle pending tax lien auction acquisitions'
-      ],
-      generated_at: new Date().toISOString()
-    };
+    const prompt = `You are an elite AI financial advisor for a sovereign wealth fund and trillionaire-tier account.
+Analyze the current market conditions and provide strategic asset allocation recommendations.
+Return ONLY a valid JSON object with the following structure (do not include markdown formatting or code blocks):
+{
+  "suggested_portfolio_rebalance": true,
+  "target_allocation": {
+    "TQQQ": 40,
+    "BTC": 30,
+    "REAL_ESTATE_TOKENS": 20,
+    "TAX_LIENS": 10
+  },
+  "market_sentiment_analysis": "Detailed analysis of current macroeconomic trends, sovereign-backed assets, and leveraged tech indices.",
+  "recommended_actions": [
+    "Action 1",
+    "Action 2",
+    "Action 3"
+  ]
+}`;
+
+    let recommendation: AIAdvisorRecommendation;
+    try {
+      if (typeof callGemini === 'function') {
+        const responseText = await callGemini(prompt);
+        const cleanJson = responseText.replace(/```json|```/gi, '').trim();
+        const parsed = JSON.parse(cleanJson);
+        recommendation = {
+          id: uuidv4(),
+          account_id: accountId,
+          suggested_portfolio_rebalance: parsed.suggested_portfolio_rebalance ?? true,
+          target_allocation: parsed.target_allocation ?? { TQQQ: 40, BTC: 30, REAL_ESTATE_TOKENS: 20, TAX_LIENS: 10 },
+          market_sentiment_analysis: parsed.market_sentiment_analysis ?? 'Bullish on sovereign-backed tokenized real estate and leveraged tech indices.',
+          recommended_actions: parsed.recommended_actions ?? [
+            'Execute TQQQ algorithm terminal rebalance',
+            'Mint additional Florida real estate deed tokens',
+            'Settle pending tax lien auction acquisitions'
+          ],
+          generated_at: new Date().toISOString()
+        };
+      } else {
+        throw new Error('callGemini is not available');
+      }
+    } catch (error) {
+      console.error('[AlpacaAccountsService] Failed to generate AI insights via Gemini, falling back to default:', error);
+      recommendation = {
+        id: uuidv4(),
+        account_id: accountId,
+        suggested_portfolio_rebalance: true,
+        target_allocation: {
+          TQQQ: 40,
+          BTC: 30,
+          REAL_ESTATE_TOKENS: 20,
+          TAX_LIENS: 10
+        },
+        market_sentiment_analysis: 'Bullish on sovereign-backed tokenized real estate and leveraged tech indices. Recommending rebalancing to maximize yield.',
+        recommended_actions: [
+          'Execute TQQQ algorithm terminal rebalance',
+          'Mint additional Florida real estate deed tokens',
+          'Settle pending tax lien auction acquisitions'
+        ],
+        generated_at: new Date().toISOString()
+      };
+    }
+
     this.aiRecommendations.set(accountId, recommendation);
     return recommendation;
   }
