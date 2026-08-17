@@ -14,8 +14,11 @@ import {
   EyeOff,
   Sparkles,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Lock
 } from 'lucide-react';
+
+type SigningAlgorithm = 'RS256' | 'HS256';
 
 // Helper to generate UUID v4
 const generateUUID = (): string => {
@@ -38,25 +41,36 @@ const base64url = (source: string): string => {
   }
 };
 
-// Simulated JWS Generator
+// Simulated JWS Generator (RS256)
 const generateMockJWS = (payloadStr: string, privateKey: string): string => {
   const header = JSON.stringify({ alg: 'RS256', typ: 'JWT', kid: 'key-id-123' });
   let payload = payloadStr;
   try {
-    // Ensure it's compact JSON
     payload = JSON.stringify(JSON.parse(payloadStr));
   } catch (e) {
-    // Fallback if not valid JSON
+    // Fallback if invalid JSON
   }
   
   const encodedHeader = base64url(header);
   const encodedPayload = base64url(payload);
-  
-  // Simulate a signature based on header + payload + private key
   const signatureInput = `${encodedHeader}.${encodedPayload}`;
-  const mockSignature = base64url(`signature-of(${signatureInput})-using(${privateKey || 'default-key'})`);
+  const mockSignature = base64url(`rs256-signature-of(${signatureInput})-using(${privateKey || 'default-key'})`);
   
   return `${encodedHeader}.${encodedPayload}.${mockSignature}`;
+};
+
+// Simulated HMAC-SHA256 Generator (HS256)
+const generateMockHMAC = (payloadStr: string, secret: string): string => {
+  let payload = payloadStr;
+  try {
+    payload = JSON.stringify(JSON.parse(payloadStr));
+  } catch (e) {
+    // Fallback if invalid JSON
+  }
+  
+  const signatureInput = `${payload}.${secret || 'default-secret'}`;
+  const mockHmac = base64url(`hmac-sha256-of(${signatureInput})`);
+  return `sha256=${mockHmac}`;
 };
 
 interface Preset {
@@ -109,17 +123,21 @@ const PRESETS: Record<string, Preset> = {
 };
 
 export default function OauthHeaderBuilder() {
-  // State variables
+  // Main State
   const [token, setToken] = useState<string>('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c');
   const [uuid, setUuid] = useState<string>('');
   const [clientId, setClientId] = useState<string>('client_mobile_ios_prod_992');
   const [clientDetails, setClientDetails] = useState<string>(PRESETS.mobileApp.clientDetails);
   const [acceptLanguage, setAcceptLanguage] = useState<string>('en-US');
-  const [privateKey, setPrivateKey] = useState<string>('-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC3T... (Simulated Key)\n-----END PRIVATE KEY-----');
   
+  // Signing Configuration
+  const [signingAlg, setSigningAlg] = useState<SigningAlgorithm>('RS256');
+  const [privateKey, setPrivateKey] = useState<string>('-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC3T... (Simulated RSA Key)\n-----END PRIVATE KEY-----');
+  const [hmacSecret, setHmacSecret] = useState<string>('whsec_9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d');
+
   // UI States
   const [isJsonValid, setIsJsonValid] = useState<boolean>(true);
-  const [showPrivateKey, setShowPrivateKey] = useState<boolean>(false);
+  const [showKey, setShowKey] = useState<boolean>(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'json' | 'curl' | 'fetch' | 'axios'>('json');
 
@@ -138,19 +156,20 @@ export default function OauthHeaderBuilder() {
     }
   }, [clientDetails]);
 
-  // Generate JWS Signature
-  const jwsSignature = generateMockJWS(
-    isJsonValid ? clientDetails : '{}',
-    privateKey
-  );
+  // Dynamic Signature calculation based on algorithm
+  const isJws = signingAlg === 'RS256';
+  const signatureHeaderKey = isJws ? 'x-jws-signature' : 'x-hmac-signature';
+  const signatureValue = isJws
+    ? generateMockJWS(isJsonValid ? clientDetails : '{}', privateKey)
+    : generateMockHMAC(isJsonValid ? clientDetails : '{}', hmacSecret);
 
-  // Construct final headers object
-  const headers = {
+  // Dynamic headers object
+  const headers: Record<string, string> = {
     'Authorization': `Bearer ${token}`,
     'uuid': uuid,
     'client_id': clientId,
     'clientDetails': isJsonValid ? JSON.stringify(JSON.parse(clientDetails)) : '{}',
-    'x-jws-signature': jwsSignature,
+    [signatureHeaderKey]: signatureValue,
     'Accept-Language': acceptLanguage,
   };
 
@@ -208,11 +227,11 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
               OAuth Header Builder &amp; Signer
             </h1>
             <p className="text-slate-400 mt-2 max-w-2xl text-sm md:text-base">
-              Construct, sign, and preview complex API headers. Generate compliant UUIDs, validate client details payloads, and simulate JWS signatures instantly.
+              Construct, sign, and preview complex API headers. Support for both asymmetric RS256 (JWS) and symmetric HMAC-SHA256 signatures.
             </p>
           </div>
           
-          {/* Quick Presets */}
+          {/* Environment Presets */}
           <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col gap-2 w-full md:w-auto min-w-[280px]">
             <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-indigo-400" />
@@ -236,18 +255,51 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
         {/* Main Workspace Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          {/* Left Column: Interactive Form & Generators */}
+          {/* Left Column: Form & Key Settings */}
           <div className="lg:col-span-7 space-y-6">
             
-            {/* Section Title */}
             <div className="flex items-center gap-2 pb-2 border-b border-slate-900">
               <span className="bg-indigo-500/10 text-indigo-400 p-1.5 rounded-lg">
                 <Key className="w-5 h-5" />
               </span>
-              <h2 className="text-lg font-bold text-white">Header Parameters &amp; Generators</h2>
+              <h2 className="text-lg font-bold text-white">Header Parameters &amp; Signing</h2>
             </div>
 
-            {/* 1. Authorization Token */}
+            {/* 1. Signing Algorithm Selector */}
+            <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5 space-y-3 hover:border-slate-700/50 transition-all">
+              <label className="text-sm font-semibold text-slate-200 flex items-center justify-between">
+                <span>Signing Algorithm</span>
+                <span className="text-xs font-normal text-indigo-400 font-mono">
+                  {isJws ? 'Header: x-jws-signature' : 'Header: x-hmac-signature'}
+                </span>
+              </label>
+              <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setSigningAlg('RS256')}
+                  className={`py-2 text-xs font-bold rounded-md transition-all ${
+                    isJws 
+                      ? 'bg-indigo-600 text-white shadow-lg' 
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  }`}
+                >
+                  RS256 (JWS Asymmetric)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSigningAlg('HS256')}
+                  className={`py-2 text-xs font-bold rounded-md transition-all ${
+                    !isJws 
+                      ? 'bg-indigo-600 text-white shadow-lg' 
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  }`}
+                >
+                  HMAC-SHA256 (Symmetric)
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Authorization Token */}
             <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5 space-y-3 hover:border-slate-700/50 transition-all">
               <div className="flex justify-between items-center">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-2">
@@ -255,21 +307,16 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
                 </label>
                 <span className="text-xs text-indigo-400 bg-indigo-950/50 px-2 py-0.5 rounded border border-indigo-900/50">Required</span>
               </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="Paste JWT or OAuth access token..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
-                />
-              </div>
-              <p className="text-xs text-slate-500">
-                Simulates the standard Bearer token passed to downstream microservices.
-              </p>
+              <input
+                type="text"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                placeholder="Paste JWT or OAuth access token..."
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
+              />
             </div>
 
-            {/* 2. UUID Generator */}
+            {/* 3. UUID Generator */}
             <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5 space-y-3 hover:border-slate-700/50 transition-all">
               <div className="flex justify-between items-center">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-2">
@@ -282,21 +329,16 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
                   <RefreshCw className="w-3 h-3" /> Generate New
                 </button>
               </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={uuid}
-                  onChange={(e) => setUuid(e.target.value)}
-                  placeholder="e.g. f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
-                />
-              </div>
-              <p className="text-xs text-slate-500">
-                A unique v4 UUID generated per request for end-to-end distributed tracing.
-              </p>
+              <input
+                type="text"
+                value={uuid}
+                onChange={(e) => setUuid(e.target.value)}
+                placeholder="e.g. f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
+              />
             </div>
 
-            {/* 3. Client ID & Accept Language */}
+            {/* 4. Client ID & Accept Language */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5 space-y-3 hover:border-slate-700/50 transition-all">
                 <label className="text-sm font-semibold text-slate-200 block">
@@ -312,11 +354,9 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
               </div>
 
               <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5 space-y-3 hover:border-slate-700/50 transition-all">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-                    <Globe className="w-4 h-4 text-slate-400" /> Accept-Language
-                  </label>
-                </div>
+                <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-slate-400" /> Accept-Language
+                </label>
                 <select
                   value={acceptLanguage}
                   onChange={(e) => setAcceptLanguage(e.target.value)}
@@ -331,7 +371,7 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
               </div>
             </div>
 
-            {/* 4. Client Details JSON Builder */}
+            {/* 5. Client Details JSON Builder */}
             <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5 space-y-3 hover:border-slate-700/50 transition-all">
               <div className="flex justify-between items-center">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-2">
@@ -353,7 +393,7 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
               <textarea
                 value={clientDetails}
                 onChange={(e) => setClientDetails(e.target.value)}
-                rows={6}
+                rows={5}
                 className={`w-full bg-slate-950 border rounded-lg p-3 text-sm font-mono text-slate-300 focus:outline-none focus:ring-2 transition-all ${
                   isJsonValid 
                     ? 'border-slate-800 focus:ring-indigo-500/50 focus:border-indigo-500' 
@@ -361,47 +401,53 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
                 }`}
                 placeholder="{\n  \"platform\": \"web\"\n}"
               />
-              <p className="text-xs text-slate-500">
-                Metadata describing the client environment. This payload is signed to generate the <code className="text-indigo-400 font-mono">x-jws-signature</code>.
-              </p>
             </div>
 
-            {/* 5. JWS Signature Generator Settings */}
+            {/* 6. Dynamic Key Configuration */}
             <div className="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5 space-y-3 hover:border-slate-700/50 transition-all">
               <div className="flex justify-between items-center">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-indigo-400" />
-                  JWS Signing Key <span className="text-xs text-slate-500 font-normal">(Simulated RS256)</span>
+                  {isJws ? <Shield className="w-4 h-4 text-indigo-400" /> : <Lock className="w-4 h-4 text-indigo-400" />}
+                  {isJws ? 'RSA Private Key (PEM)' : 'HMAC Secret Key'}
                 </label>
                 <button
-                  onClick={() => setShowPrivateKey(!showPrivateKey)}
+                  onClick={() => setShowKey(!showKey)}
                   className="text-xs text-slate-400 hover:text-slate-300 flex items-center gap-1"
                 >
-                  {showPrivateKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  {showPrivateKey ? 'Hide Key' : 'Show Key'}
+                  {showKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  {showKey ? 'Hide Secret' : 'Show Secret'}
                 </button>
               </div>
-              <div className="relative">
+
+              {isJws ? (
                 <textarea
                   value={privateKey}
                   onChange={(e) => setPrivateKey(e.target.value)}
-                  rows={showPrivateKey ? 4 : 1}
+                  rows={showKey ? 4 : 1}
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all resize-none"
-                  placeholder="Paste private key..."
-                  readOnly={!showPrivateKey}
+                  readOnly={!showKey}
                 />
-              </div>
+              ) : (
+                <input
+                  type={showKey ? 'text' : 'password'}
+                  value={hmacSecret}
+                  onChange={(e) => setHmacSecret(e.target.value)}
+                  placeholder="Enter webhook / HMAC secret..."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-xs font-mono text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                />
+              )}
               <p className="text-xs text-slate-500">
-                The private key used to sign the <code className="text-indigo-400 font-mono">clientDetails</code> payload. The signature is outputted in the <code className="text-indigo-400 font-mono">x-jws-signature</code> header.
+                {isJws 
+                  ? 'Used to sign clientDetails into an RS256 JWS token.' 
+                  : 'Used to compute an HMAC-SHA256 hash over the clientDetails string.'}
               </p>
             </div>
 
           </div>
 
-          {/* Right Column: Live Preview & Code Snippets */}
+          {/* Right Column: Live Output & Snippets */}
           <div className="lg:col-span-5 space-y-6">
             
-            {/* Section Title */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-900">
               <div className="flex items-center gap-2">
                 <span className="bg-emerald-500/10 text-emerald-400 p-1.5 rounded-lg">
@@ -427,7 +473,7 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
               </button>
             </div>
 
-            {/* Interactive Header Preview Cards */}
+            {/* Header Field Cards */}
             <div className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
               <div className="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">HTTP Header Fields</span>
@@ -459,7 +505,7 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
               </div>
             </div>
 
-            {/* Code Snippet Generator Tabs */}
+            {/* Code Snippet Tabs */}
             <div className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
               <div className="bg-slate-900 border-b border-slate-800 flex justify-between items-center px-2">
                 <div className="flex">
@@ -506,13 +552,17 @@ axios.post('https://api.securegateway.com/v2/oauth/token',
               </div>
             </div>
 
-            {/* Security Notice / Info */}
+            {/* Verification Security Note */}
             <div className="bg-indigo-950/20 border border-indigo-900/40 rounded-xl p-4 flex gap-3">
               <Info className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <h4 className="text-xs font-bold text-indigo-300">JWS Signature Verification</h4>
+                <h4 className="text-xs font-bold text-indigo-300">
+                  {isJws ? 'JWS RS256 Verification' : 'HMAC-SHA256 Verification'}
+                </h4>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  The <code className="text-indigo-300 font-mono">x-jws-signature</code> header ensures non-repudiation of client details. Downstream gateways verify this signature using your public key to guarantee client metadata has not been tampered with in transit.
+                  {isJws 
+                    ? 'Downstream systems verify x-jws-signature using your public RSA certificate to ensure payload authenticity.' 
+                    : 'Downstream systems recalculate the HMAC-SHA256 digest using a shared secret to verify the clientDetails payload.'}
                 </p>
               </div>
             </div>
