@@ -48,7 +48,16 @@ export class AlpacaTokenizationService {
     });
   }
 
-  public async requestMint(symbol: string, qty: string, issuer: 'st0x' | 'xstocks', network: any, walletAddress: string): Promise<AlpacaTokenizationRequest> {
+  public async requestMint(
+    symbol: string,
+    qty: string,
+    issuer: 'st0x' | 'xstocks',
+    network: AlpacaTokenizationRequest['network'],
+    walletAddress: string
+  ): Promise<AlpacaTokenizationRequest> {
+    if (!symbol || !qty || !walletAddress) {
+      throw new Error('Missing required parameters for tokenization mint request');
+    }
     const id = uuidv4();
     const req: AlpacaTokenizationRequest = {
       tokenization_request_id: id,
@@ -69,7 +78,7 @@ export class AlpacaTokenizationService {
 
   public async confirmMintCallback(requestId: string, txHash: string): Promise<AlpacaTokenizationRequest> {
     const req = this.requests.get(requestId);
-    if (!req) throw new Error('Tokenization request not found');
+    if (!req) throw new Error(`Tokenization request with ID ${requestId} not found`);
     req.status = 'completed';
     req.tx_hash = txHash;
     req.updated_at = new Date().toISOString();
@@ -77,14 +86,34 @@ export class AlpacaTokenizationService {
     return req;
   }
 
-  public async requestRedeem(issuerRequestId: string, underlyingSymbol: string, tokenSymbol: string, qty: string, network: any, walletAddress: string, txHash: string): Promise<AlpacaTokenizationRequest> {
+  public async rejectMintCallback(requestId: string): Promise<AlpacaTokenizationRequest> {
+    const req = this.requests.get(requestId);
+    if (!req) throw new Error(`Tokenization request with ID ${requestId} not found`);
+    req.status = 'rejected';
+    req.updated_at = new Date().toISOString();
+    this.requests.set(requestId, req);
+    return req;
+  }
+
+  public async requestRedeem(
+    issuerRequestId: string,
+    underlyingSymbol: string,
+    tokenSymbol: string,
+    qty: string,
+    network: AlpacaTokenizationRequest['network'],
+    walletAddress: string,
+    txHash: string
+  ): Promise<AlpacaTokenizationRequest> {
+    if (!underlyingSymbol || !tokenSymbol || !qty || !walletAddress || !txHash) {
+      throw new Error('Missing required parameters for tokenization redemption request');
+    }
     const id = uuidv4();
     const req: AlpacaTokenizationRequest = {
       tokenization_request_id: id,
       type: 'redeem',
       status: 'completed',
-      underlying_symbol: underlyingSymbol,
-      token_symbol: tokenSymbol,
+      underlying_symbol: underlyingSymbol.toUpperCase(),
+      token_symbol: tokenSymbol.toUpperCase(),
       qty,
       issuer: 'st0x',
       network,
@@ -98,7 +127,13 @@ export class AlpacaTokenizationService {
   }
 
   public async getRequests(): Promise<AlpacaTokenizationRequest[]> {
-    return Array.from(this.requests.values());
+    return Array.from(this.requests.values()).sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }
+
+  public async getRequestById(requestId: string): Promise<AlpacaTokenizationRequest | undefined> {
+    return this.requests.get(requestId);
   }
 }
 
