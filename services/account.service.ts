@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, Schema, SchemaType as Type } from '@google/generative-ai';
+import { logger } from '../api/utils/logger';
 
 export interface Holding {
   asset: string;
@@ -59,13 +60,17 @@ export interface ComprehensiveAnalysis {
 export class AccountService {
   private ai: GoogleGenerativeAI;
   private accounts: Map<string, BrokerAccount> = new Map();
+  private isMockMode: boolean = false;
 
   constructor() {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY environment variable is required.');
+      logger.warn('GEMINI_API_KEY or GOOGLE_API_KEY environment variable is missing. AccountService will operate in fallback mock mode.');
+      this.isMockMode = true;
+      this.ai = new GoogleGenerativeAI('MOCK_KEY');
+    } else {
+      this.ai = new GoogleGenerativeAI(apiKey);
     }
-    this.ai = new GoogleGenerativeAI(apiKey);
   }
 
   /**
@@ -79,6 +84,7 @@ export class AccountService {
       createdAt: new Date(),
     };
     this.accounts.set(id, newAccount);
+    logger.info(`Broker account created successfully with ID: ${id}`);
     return newAccount;
   }
 
@@ -99,6 +105,7 @@ export class AccountService {
     }
     const updatedAccount = { ...account, ...updates };
     this.accounts.set(id, updatedAccount);
+    logger.info(`Broker account updated successfully: ${id}`);
     return updatedAccount;
   }
 
@@ -106,11 +113,16 @@ export class AccountService {
    * Deletes a broker account.
    */
   public async deleteAccount(id: string): Promise<boolean> {
-    return this.accounts.delete(id);
+    const deleted = this.accounts.delete(id);
+    if (deleted) {
+      logger.info(`Broker account deleted successfully: ${id}`);
+    }
+    return deleted;
   }
 
   /**
    * Uses Gemini to analyze the risk profile of the account holder based on holdings and transactions.
+   * Falls back to a robust heuristic analysis if the API key is missing or the call fails.
    */
   public async analyzeRiskProfile(accountId: string): Promise<RiskProfile> {
     const account = await this.getAccount(accountId);
@@ -118,50 +130,60 @@ export class AccountService {
       throw new Error(`Account with ID ${accountId} not found.`);
     }
 
-    const model = this.ai.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            level: { type: Type.STRING, enum: ['Low', 'Medium', 'High'], format: 'string' },
-            score: { type: Type.INTEGER },
-            analysis: { type: Type.STRING },
-            recommendedAllocation: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  assetClass: { type: Type.STRING },
-                  percentage: { type: Type.INTEGER },
+    if (this.isMockMode) {
+      return this.generateHeuristicRiskProfile(account);
+    }
+
+    try {
+      const model = this.ai.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              level: { type: Type.STRING, enum: ['Low', 'Medium', 'High'] },
+              score: { type: Type.INTEGER },
+              analysis: { type: Type.STRING },
+              recommendedAllocation: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    assetClass: { type: Type.STRING },
+                    percentage: { type: Type.INTEGER },
+                  },
+                  required: ['assetClass', 'percentage'],
                 },
-                required: ['assetClass', 'percentage'],
               },
             },
+            required: ['level', 'score', 'analysis', 'recommendedAllocation'],
           },
-          required: ['level', 'score', 'analysis', 'recommendedAllocation'],
         },
-      },
-    });
+      });
 
-    const prompt = `
-      Analyze the investment risk profile for the following broker account:
-      Account Type: ${account.accountType}
-      Current Balance: $${account.balance}
-      Holdings: ${JSON.stringify(account.holdings)}
-      Recent Transactions: ${JSON.stringify(account.transactionHistory.slice(0, 10))}
+      const prompt = `
+        Analyze the investment risk profile for the following broker account:
+        Account Type: ${account.accountType}
+        Current Balance: $${account.balance}
+        Holdings: ${JSON.stringify(account.holdings)}
+        Recent Transactions: ${JSON.stringify(account.transactionHistory.slice(0, 10))}
 
-      Provide a risk level (Low, Medium, High), a risk score from 1 to 100, a detailed analysis of their current risk exposure, and a recommended asset allocation strategy.
-    `;
+        Provide a risk level (Low, Medium, High), a risk score from 1 to 100, a detailed analysis of their current risk exposure, and a recommended asset allocation strategy.
+      `;
 
-    const response = await model.generateContent(prompt);
-    const text = response.response.text();
-    return JSON.parse(text) as RiskProfile;
+      const response = await model.generateContent(prompt);
+      const text = response.response.text();
+      return JSON.parse(text) as RiskProfile;
+    } catch (error) {
+      logger.error(`Gemini risk profile analysis failed for account ${accountId}. Falling back to heuristics. Error: ${error instanceof Error ? error.message : error}`);
+      return this.generateHeuristicRiskProfile(account);
+    }
   }
 
   /**
    * Uses Gemini to perform a comprehensive financial health analysis.
+   * Falls back to a robust heuristic analysis if the API key is missing or the call fails.
    */
   public async analyzeFinancialHealth(accountId: string): Promise<FinancialHealth> {
     const account = await this.getAccount(accountId);
@@ -169,43 +191,53 @@ export class AccountService {
       throw new Error(`Account with ID ${accountId} not found.`);
     }
 
-    const model = this.ai.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            score: { type: Type.INTEGER },
-            status: { type: Type.STRING, enum: ['Excellent', 'Good', 'Fair', 'Poor'], format: 'string' },
-            debtToIncomeRatio: { type: Type.NUMBER },
-            savingsRate: { type: Type.NUMBER },
-            keyInsights: { type: Type.ARRAY, items: { type: Type.STRING } },
-            recommendations: { type: Type.ARRAY, items: { type: Type.STRING } },
+    if (this.isMockMode) {
+      return this.generateHeuristicFinancialHealth(account);
+    }
+
+    try {
+      const model = this.ai.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              score: { type: Type.INTEGER },
+              status: { type: Type.STRING, enum: ['Excellent', 'Good', 'Fair', 'Poor'] },
+              debtToIncomeRatio: { type: Type.NUMBER },
+              savingsRate: { type: Type.NUMBER },
+              keyInsights: { type: Type.ARRAY, items: { type: Type.STRING } },
+              recommendations: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: ['score', 'status', 'debtToIncomeRatio', 'savingsRate', 'keyInsights', 'recommendations'],
           },
-          required: ['score', 'status', 'debtToIncomeRatio', 'savingsRate', 'keyInsights', 'recommendations'],
         },
-      },
-    });
+      });
 
-    const prompt = `
-      Analyze the financial health of the following broker account:
-      Account Type: ${account.accountType}
-      Current Balance: $${account.balance}
-      Holdings: ${JSON.stringify(account.holdings)}
-      Transaction History: ${JSON.stringify(account.transactionHistory)}
+      const prompt = `
+        Analyze the financial health of the following broker account:
+        Account Type: ${account.accountType}
+        Current Balance: $${account.balance}
+        Holdings: ${JSON.stringify(account.holdings)}
+        Transaction History: ${JSON.stringify(account.transactionHistory)}
 
-      Calculate or estimate the debt-to-income ratio and savings rate based on the transaction patterns.
-      Provide a financial health score (1-100), status, key insights, and actionable recommendations.
-    `;
+        Calculate or estimate the debt-to-income ratio and savings rate based on the transaction patterns.
+        Provide a financial health score (1-100), status, key insights, and actionable recommendations.
+      `;
 
-    const response = await model.generateContent(prompt);
-    const text = response.response.text();
-    return JSON.parse(text) as FinancialHealth;
+      const response = await model.generateContent(prompt);
+      const text = response.response.text();
+      return JSON.parse(text) as FinancialHealth;
+    } catch (error) {
+      logger.error(`Gemini financial health analysis failed for account ${accountId}. Falling back to heuristics. Error: ${error instanceof Error ? error.message : error}`);
+      return this.generateHeuristicFinancialHealth(account);
+    }
   }
 
   /**
    * Uses Gemini to generate an automated credit score and credit limit recommendation.
+   * Falls back to a robust heuristic analysis if the API key is missing or the call fails.
    */
   public async generateCreditScore(accountId: string): Promise<CreditScore> {
     const account = await this.getAccount(accountId);
@@ -213,52 +245,40 @@ export class AccountService {
       throw new Error(`Account with ID ${accountId} not found.`);
     }
 
-    const model = this.ai.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            score: { type: Type.INTEGER },
-            rating: { type: Type.STRING, enum: ['Excellent', 'Good', 'Fair', 'Poor'], format: 'string' },
-            factors: { type: Type.ARRAY, items: { type: Type.STRING } },
-            creditLimitRecommendation: { type: Type.NUMBER },
+    if (this.isMockMode) {
+      return this.generateHeuristicCreditScore(account);
+    }
+
+    try {
+      const model = this.ai.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              score: { type: Type.INTEGER },
+              rating: { type: Type.STRING, enum: ['Excellent', 'Good', 'Fair', 'Poor'] },
+              factors: { type: Type.ARRAY, items: { type: Type.STRING } },
+              creditLimitRecommendation: { type: Type.NUMBER },
+            },
+            required: ['score', 'rating', 'factors', 'creditLimitRecommendation'],
           },
-          required: ['score', 'rating', 'factors', 'creditLimitRecommendation'],
         },
-      },
-    });
+      });
 
-    const prompt = `
-      Perform an automated credit scoring assessment for the following broker account:
-      Account Type: ${account.accountType}
-      Current Balance: $${account.balance}
-      Holdings Value: $${account.holdings.reduce((sum, h) => sum + h.value, 0)}
-      Transaction History: ${JSON.stringify(account.transactionHistory)}
+      const prompt = `
+        Perform an automated credit scoring assessment for the following broker account:
+        Account Type: ${account.accountType}
+        Current Balance: $${account.balance}
+        Holdings Value: $${account.holdings.reduce((sum, h) => sum + h.value, 0)}
+        Transaction History: ${JSON.stringify(account.transactionHistory)}
 
-      Based on asset values, transaction consistency, deposits, and withdrawals, estimate a credit score (300-850), credit rating, key contributing factors, and a recommended credit limit.
-    `;
+        Based on asset values, transaction consistency, deposits, and withdrawals, estimate a credit score (300-850), credit rating, key contributing factors, and a recommended credit limit.
+      `;
 
-    const response = await model.generateContent(prompt);
-    const text = response.response.text();
-    return JSON.parse(text) as CreditScore;
-  }
-
-  /**
-   * Performs a comprehensive analysis combining risk profiling, financial health, and credit scoring in parallel.
-   */
-  public async getComprehensiveAnalysis(accountId: string): Promise<ComprehensiveAnalysis> {
-    const [riskProfile, financialHealth, creditScore] = await Promise.all([
-      this.analyzeRiskProfile(accountId),
-      this.analyzeFinancialHealth(accountId),
-      this.generateCreditScore(accountId),
-    ]);
-
-    return {
-      riskProfile,
-      financialHealth,
-      creditScore,
-    };
-  }
-}
+      const response = await model.generateContent(prompt);
+      const text = response.response.text();
+      return JSON.parse(text) as CreditScore;
+    } catch (error) {
+      logger.error(`Gemini credit score generation failed for account ${accountId}. Falling back to heuristics. Error: ${error instanceof Error ? error.message : error}`);
