@@ -43,7 +43,7 @@ export type ExternalCreditLineType1Code = 'REV';
 export type ExternalCreditorAgentInstruction1Code = 'PHOB';
 export type ExternalCreditorEnrolmentAmendmentReason1Code = 'BANK';
 export type ExternalCreditorEnrolmentCancellationReason1Code = 'CUST';
-// FIX: Removed duplicate identifier 'ExternalCreditorEnrolmentStatusReason1Code'
+// FIX: Removed duplicate type definition for ExternalCreditorEnrolmentStatusReason1Code
 export type ExternalCreditorEnrolmentStatusReason1Code = 'RJCT';
 export type ExternalCreditorReferenceType1Code = 'SCOR';
 export type ExternalDateFrequency1Code = 'DAIL' | 'WEEK';
@@ -73,6 +73,7 @@ export type ExternalGarnishmentType1Code = 'TAX';
 export type ExternalIncoterms1Code = 'FOB';
 export type ExternalIndustrySectorClassification1Code = 'NACE';
 export type ExternalInformationType1Code = 'INST';
+export type ExternalInformationType2Code = 'INST';
 export type ExternalInstructedAgentInstruction1Code = 'PHOB';
 export type ExternalInvestigationAction1Code = 'CNCL';
 export type ExternalInvestigationActionReason1Code = 'DUPL';
@@ -146,6 +147,7 @@ export type ExternalTradeTransactionCondition1Code = 'BCPD';
 export type ExternalTypeOfParty1Code = 'ALIA';
 export type ExternalUnableToApplyIncorrectData1Code = 'IN01';
 export type ExternalUnableToApplyMissingData1Code = 'MS01';
+// FIX: Removed duplicate type definition for ExternalUnderlyingTradeTransactionType1Code
 export type ExternalUnderlyingTradeTransactionType1Code = 'COMM';
 export type ExternalUndertakingAmountType1Code = 'ORIG';
 export type ExternalUndertakingDocumentType1Code = 'COOL';
