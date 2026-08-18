@@ -1,0 +1,734 @@
+import React, { useState } from 'react';
+
+// ==========================================
+// INLINE SVG ICONS FOR ZERO-DEPENDENCY RENDERING
+// ==========================================
+const ActivityIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+  </svg>
+);
+
+const ShieldIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+  </svg>
+);
+
+const CodeIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+  </svg>
+);
+
+const DatabaseIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+  </svg>
+);
+
+const ArrowRightIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+  </svg>
+);
+
+const CheckCircleIcon = () => (
+  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const InfoIcon = () => (
+  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+);
+
+const RefreshIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3m0 0l3 3m-3-3v12" />
+  </svg>
+);
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
+export default function CitibankChaseIntegrationDashboard() {
+  const [activeTab, setActiveTab] = useState<'overview' | 'chase-api' | 'treasury-api' | 'simulator'>('overview');
+  
+  // Chase API Interactive State
+  const [accountUuid, setAccountUuid] = useState('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+  const [enrollmentType, setEnrollmentType] = useState('ENROLL');
+  const [externalAccountIdentifier, setExternalAccountIdentifier] = useState('CITI-PRIV-BANK-99210');
+  const [channelType, setChannelType] = useState('WEB');
+  const [traceId, setTraceId] = useState('4a8b9c2d3e1f0a5b6c7d8e9f0a1b2c3d');
+  const [apiResponse, setApiResponse] = useState<any>(null);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiMethod, setApiMethod] = useState<'POST' | 'PUT' | 'PING'>('POST');
+
+  // Modern Treasury API Search State
+  const [treasurySearch, setTreasurySearch] = useState('');
+
+  // Simulator State
+  const [simulatorStep, setSimulatorStep] = useState(0);
+  const [simulatorLogs, setSimulatorLogs] = useState<string[]>([]);
+
+  // Mock Chase API Call
+  const handleChaseApiCall = (method: 'POST' | 'PUT' | 'PING') => {
+    setApiLoading(true);
+    setApiMethod(method);
+    setTimeout(() => {
+      if (method === 'PING') {
+        setApiResponse({
+          status: 200,
+          message: "Request processed successfully",
+          timestamp: new Date().toISOString(),
+          service: "Card Loyalty Pay With Points Enrollment API",
+          provider: "Chase"
+        });
+      } else if (method === 'POST') {
+        setApiResponse({
+          enrollment: {
+            enrollmentStatusName: "ENROLLED",
+            enrollmentStatusDate: new Date().toISOString().split('T')[0]
+          },
+          product: {
+            merchantDefinedProductCode: "SAPPHIRE_RESERVE"
+          },
+          meta: {
+            traceId: traceId,
+            externalAccountIdentifier: externalAccountIdentifier,
+            accountReferenceUuid: accountUuid,
+            enrollmentType: enrollmentType
+          }
+        });
+      } else {
+        setApiResponse({
+          enrollment: {
+            enrollmentStatusName: "UN-ENROLLED",
+            enrollmentStatusDate: new Date().toISOString().split('T')[0]
+          },
+          product: {
+            merchantDefinedProductCode: "SAPPHIRE_RESERVE"
+          },
+          meta: {
+            traceId: traceId,
+            externalAccountIdentifier: externalAccountIdentifier,
+            accountReferenceUuid: accountUuid,
+            enrollmentType: enrollmentType
+          }
+        });
+      }
+      setApiLoading(false);
+    }, 800);
+  };
+
+  // Simulator Flow Steps
+  const runSimulatorStep = (step: number) => {
+    setSimulatorStep(step);
+    const timestamp = new Date().toLocaleTimeString();
+    let log = '';
+    switch (step) {
+      case 1:
+        log = `[${timestamp}] Initiating health check: GET /ping to Chase API Gateway...`;
+        break;
+      case 2:
+        log = `[${timestamp}] Chase API Gateway returned 200 OK. Service is healthy.`;
+        break;
+      case 3:
+        log = `[${timestamp}] Fetching Citibank Private Bank account details via Modern Treasury GET /api/internal_accounts...`;
+        break;
+      case 4:
+        log = `[${timestamp}] Citibank account verified. Sending POST /merchants/programs/pay-with-points/enrollments to Chase...`;
+        break;
+      case 5:
+        log = `[${timestamp}] Chase processed enrollment successfully. Status: ENROLLED. Product: SAPPHIRE_RESERVE.`;
+        break;
+      case 6:
+        log = `[${timestamp}] Creating ledger entry in Modern Treasury to track loyalty points balance mapping. Flow complete!`;
+        break;
+      default:
+        log = `[${timestamp}] Simulator reset.`;
+    }
+    setSimulatorLogs(prev => [log, ...prev]);
+  };
+
+  const resetSimulator = () => {
+    setSimulatorStep(0);
+    setSimulatorLogs([]);
+  };
+
+  // Modern Treasury Endpoints List
+  const treasuryEndpoints = [
+    { path: '/api/{accounts_type}/{account_id}/account_details', method: 'GET', desc: 'List account details for a single internal or external account.' },
+    { path: '/api/{accounts_type}/{account_id}/account_details', method: 'POST', desc: 'Create an account detail for an external account.' },
+    { path: '/api/internal_accounts/{internal_account_id}/balance_reports', method: 'GET', desc: 'Get all balance reports for a given internal account.' },
+    { path: '/api/connections', method: 'GET', desc: 'Get a list of all connections.' },
+    { path: '/api/counterparties', method: 'GET', desc: 'Get a paginated list of all counterparties.' },
+    { path: '/api/counterparties', method: 'POST', desc: 'Create a new counterparty.' },
+    { path: '/api/documents', method: 'POST', desc: 'Create a document.' },
+    { path: '/api/expected_payments', method: 'GET', desc: 'List expected payments.' },
+    { path: '/api/external_accounts', method: 'POST', desc: 'Create external account.' },
+    { path: '/api/ledger_accounts', method: 'GET', desc: 'List ledger accounts.' },
+    { path: '/api/ledger_transactions', method: 'POST', desc: 'Create a ledger transaction.' },
+    { path: '/api/virtual_accounts', method: 'POST', desc: 'Create virtual account.' }
+  ].filter(e => e.path.toLowerCase().includes(treasurySearch.toLowerCase()) || e.desc.toLowerCase().includes(treasurySearch.toLowerCase()));
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans">
+      {/* Header */}
+      <header className="border-b border-slate-800 bg-slate-950 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded">CITIBANK PRIVATE BANK</span>
+              <span className="text-slate-500 font-semibold">×</span>
+              <span className="bg-sky-500 text-white text-xs font-bold px-2.5 py-1 rounded">CHASE LOYALTY</span>
+            </div>
+            <h1 className="text-2xl font-bold mt-1 text-white">Modern Treasury &amp; Pay with Points Integration</h1>
+            <p className="text-sm text-slate-400 mt-0.5">Unified Developer Portal &amp; API Sandbox</p>
+          </div>
+          <div className="flex items-center gap-3 bg-slate-900 p-2 rounded-lg border border-slate-800">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span className="text-xs font-mono text-slate-300">Sandbox Environment Connected</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation Tabs */}
+      <div className="bg-slate-950 border-b border-slate-800 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6">
+          <nav className="flex space-x-8" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-all ${
+                activeTab === 'overview'
+                  ? 'border-blue-500 text-blue-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
+              }`}
+            >
+              <ActivityIcon />
+              Overview &amp; Architecture
+            </button>
+            <button
+              onClick={() => setActiveTab('chase-api')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-all ${
+                activeTab === 'chase-api'
+                  ? 'border-blue-500 text-blue-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
+              }`}
+            >
+              <ShieldIcon />
+              Chase Pay with Points API
+            </button>
+            <button
+              onClick={() => setActiveTab('treasury-api')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-all ${
+                activeTab === 'treasury-api'
+                  ? 'border-blue-500 text-blue-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
+              }`}
+            >
+              <DatabaseIcon />
+              Citibank / Modern Treasury API
+            </button>
+            <button
+              onClick={() => setActiveTab('simulator')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-all ${
+                activeTab === 'simulator'
+                  ? 'border-blue-500 text-blue-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
+              }`}
+            >
+              <CodeIcon />
+              Integration Flow Simulator
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        
+        {/* TAB 1: OVERVIEW & ARCHITECTURE */}
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-slate-950 p-6 rounded-xl border border-slate-800">
+                  <h2 className="text-xl font-bold text-white mb-4">Loyalty Pay with Points Enrollment Service</h2>
+                  <p className="text-slate-300 leading-relaxed mb-4">
+                    This integrated service manages the Cardholder enrollment flow for the <strong>Pay with Points</strong> program between Chase and Citibank Private Bank (powered by Modern Treasury). It enables high-net-worth cardholders to seamlessly enroll or un-enroll their accounts, allowing real-time management of loyalty rewards status directly alongside their private banking ledgers.
+                  </p>
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    <span className="bg-slate-900 text-slate-300 text-xs px-3 py-1.5 rounded-md border border-slate-800">OAuth 2.0 Secured</span>
+                    <span className="bg-slate-900 text-slate-300 text-xs px-3 py-1.5 rounded-md border border-slate-800">Real-time Ledger Sync</span>
+                    <span className="bg-slate-900 text-slate-300 text-xs px-3 py-1.5 rounded-md border border-slate-800">Auto-Enrollment Support</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950 p-6 rounded-xl border border-slate-800">
+                  <h3 className="text-lg font-bold text-white mb-4">Key Integration Features</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-slate-900 rounded-lg border border-slate-800">
+                      <h4 className="font-semibold text-blue-400 mb-1">Unified Account Mapping</h4>
+                      <p className="text-xs text-slate-400">Map Citibank Private Bank accounts (Modern Treasury) to Chase Cardholder UUIDs securely.</p>
+                    </div>
+                    <div className="p-4 bg-slate-900 rounded-lg border border-slate-800">
+                      <h4 className="font-semibold text-blue-400 mb-1">Flexible Enrollment Flows</h4>
+                      <p className="text-xs text-slate-400">Supports both automated backend enrollment (AUTOENROLL) and user-initiated self-enrollment.</p>
+                    </div>
+                    <div className="p-4 bg-slate-900 rounded-lg border border-slate-800">
+                      <h4 className="font-semibold text-blue-400 mb-1">Ledger Integrity</h4>
+                      <p className="text-xs text-slate-400">Automatically post ledger transactions in Modern Treasury when points are redeemed or mapped.</p>
+                    </div>
+                    <div className="p-4 bg-slate-900 rounded-lg border border-slate-800">
+                      <h4 className="font-semibold text-blue-400 mb-1">Robust Error Handling</h4>
+                      <p className="text-xs text-slate-400">Standardized error payloads mapping Chase service codes to Citibank downstream exceptions.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="bg-slate-950 p-6 rounded-xl border border-slate-800">
+                  <h3 className="text-lg font-bold text-white mb-4">API Metadata</h3>
+                  <div className="space-y-4 text-sm">
+                    <div className="flex justify-between py-2 border-b border-slate-800">
+                      <span className="text-slate-400">Chase API Version</span>
+                      <span className="font-mono text-white">1.0.0</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-slate-800">
+                      <span className="text-slate-400">Modern Treasury Version</span>
+                      <span className="font-mono text-white">v1</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-slate-800">
+                      <span className="text-slate-400">Security Scheme</span>
+                      <span className="font-mono text-white">2-Legged OAuth / Basic Auth</span>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span className="text-slate-400">Default Host</span>
+                      <span className="font-mono text-white text-xs">api.chase.com</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-blue-950 to-slate-950 p-6 rounded-xl border border-blue-900/50">
+                  <h3 className="text-lg font-bold text-white mb-2">Need Assistance?</h3>
+                  <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                    For integration support regarding Chase Pay with Points or Citibank Private Bank API configurations, contact our joint engineering team.
+                  </p>
+                  <a href="mailto:RNB_DEV_Leads@restricted.chase.com" className="inline-flex items-center gap-2 text-xs font-semibold text-blue-400 hover:text-blue-300">
+                    Contact Support <ArrowRightIcon />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Glossary Section */}
+            <div className="bg-slate-950 p-6 rounded-xl border border-slate-800">
+              <h3 className="text-lg font-bold text-white mb-4">Integration Glossary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div>
+                  <h4 className="font-semibold text-slate-200 mb-1">account-reference-universal-unique-identifier</h4>
+                  <p className="text-xs text-slate-400">A universally unique identifier (UUID) generated to identify each account persisted at the merchant end.</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-slate-200 mb-1">enrollment-type-code</h4>
+                  <p className="text-xs text-slate-400">Codifies the type of enrollment based on the benefit offered. Examples: AUTOENROLL, ENROLL.</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-slate-200 mb-1">external-account-identifier</h4>
+                  <p className="text-xs text-slate-400">A unique identifier created to establish a relationship between customer and account in the enterprise system.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: CHASE PAY WITH POINTS API */}
+        {activeTab === 'chase-api' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left Column: Interactive Form */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="bg-slate-950 p-6 rounded-xl border border-slate-800">
+                <h2 className="text-lg font-bold text-white mb-4">Interactive API Explorer</h2>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Endpoint Operation</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => handleChaseApiCall('POST')}
+                        className={`py-2 px-3 rounded text-xs font-bold transition-all ${
+                          apiMethod === 'POST' ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                        }`}
+                      >
+                        POST Enroll
+                      </button>
+                      <button
+                        onClick={() => handleChaseApiCall('PUT')}
+                        className={`py-2 px-3 rounded text-xs font-bold transition-all ${
+                          apiMethod === 'PUT' ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                        }`}
+                      >
+                        PUT Un-Enroll
+                      </button>
+                      <button
+                        onClick={() => handleChaseApiCall('PING')}
+                        className={`py-2 px-3 rounded text-xs font-bold transition-all ${
+                          apiMethod === 'PING' ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                        }`}
+                      >
+                        GET Ping
+                      </button>
+                    </div>
+                  </div>
+
+                  {apiMethod !== 'PING' && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Account Reference UUID (Path)</label>
+                        <input
+                          type="text"
+                          value={accountUuid}
+                          onChange={(e) => setAccountUuid(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Enrollment Type Code (Header)</label>
+                        <select
+                          value={enrollmentType}
+                          onChange={(e) => setEnrollmentType(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="ENROLL">ENROLL</option>
+                          <option value="AUTOENROLL">AUTOENROLL</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">External Account Identifier (Header)</label>
+                        <input
+                          type="text"
+                          value={externalAccountIdentifier}
+                          onChange={(e) => setExternalAccountIdentifier(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Channel Type</label>
+                          <input
+                            type="text"
+                            value={channelType}
+                            onChange={(e) => setChannelType(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Trace ID</label>
+                          <input
+                            type="text"
+                            value={traceId}
+                            onChange={(e) => setTraceId(e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <button
+                    onClick={() => handleChaseApiCall(apiMethod)}
+                    disabled={apiLoading}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded transition-all flex items-center justify-center gap-2 mt-4"
+                  >
+                    {apiLoading ? (
+                      <>
+                        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                        Executing Request...
+                      </>
+                    ) : (
+                      'Send API Request'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Code & Response */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden">
+                <div className="bg-slate-900 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+                  <span className="text-xs font-mono text-slate-300">HTTP Request Payload</span>
+                  <span className="text-xs bg-blue-950 text-blue-400 px-2 py-0.5 rounded font-mono">
+                    {apiMethod === 'PING' ? 'GET' : apiMethod === 'POST' ? 'POST' : 'PUT'}
+                  </span>
+                </div>
+                <div className="p-4 font-mono text-xs text-slate-300 overflow-x-auto bg-slate-950">
+                  {apiMethod === 'PING' ? (
+                    <pre>GET https://api.chase.com/card/loyalty/earn-rewards/enrollment/v1/ping</pre>
+                  ) : (
+                    <pre>
+{`${apiMethod} https://api.chase.com/card/loyalty/earn-rewards/enrollment/v1/merchants/programs/pay-with-points/enrollments/${accountUuid}
+Headers:
+  enrollment-type-code: ${enrollmentType}
+  external-account-identifier: ${externalAccountIdentifier}
+  channel-type: ${channelType}
+  trace-id: ${traceId}
+  Authorization: Bearer ccoauth_token_sandbox_99210`}
+                    </pre>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden">
+                <div className="bg-slate-900 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+                  <span className="text-xs font-mono text-slate-300">Response Body</span>
+                  {apiResponse && (
+                    <span className="text-xs bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-mono">
+                      200 OK
+                    </span>
+                  )}
+                </div>
+                <div className="p-4 font-mono text-xs text-slate-300 overflow-x-auto bg-slate-950 min-h-[200px]">
+                  {apiResponse ? (
+                    <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-48 text-slate-500">
+                      <InfoIcon />
+                      <p className="mt-2">Send a request to view the live API response payload.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: CITIBANK / MODERN TREASURY API */}
+        {activeTab === 'treasury-api' && (
+          <div className="space-y-6">
+            <div className="bg-slate-950 p-6 rounded-xl border border-slate-800">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                  <h2 className="text-lg font-bold text-white">Citibank Private Bank API Endpoints</h2>
+                  <p className="text-sm text-slate-400">Powered by Modern Treasury REST API integration</p>
+                </div>
+                <div className="relative w-full md:w-72">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <SearchIcon />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Search endpoints..."
+                    value={treasurySearch}
+                    onChange={(e) => setTreasurySearch(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase">
+                      <th className="py-3 px-4">Method</th>
+                      <th className="py-3 px-4">Path</th>
+                      <th className="py-3 px-4">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800 text-sm">
+                    {treasuryEndpoints.map((endpoint, idx) => (
+                      <tr key={idx} className="hover:bg-slate-900/50 transition-colors">
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-1 rounded text-xs font-bold font-mono ${
+                            endpoint.method === 'GET' ? 'bg-emerald-950 text-emerald-400' : 'bg-blue-950 text-blue-400'
+                          }`}>
+                            {endpoint.method}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-xs text-slate-200">{endpoint.path}</td>
+                        <td className="py-3 px-4 text-slate-400">{endpoint.desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: INTEGRATION FLOW SIMULATOR */}
+        {activeTab === 'simulator' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left Column: Step Controller */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="bg-slate-950 p-6 rounded-xl border border-slate-800">
+                <h2 className="text-lg font-bold text-white mb-4">Step-by-Step Flow Simulator</h2>
+                <p className="text-sm text-slate-400 mb-6">
+                  Simulate a real-world integration scenario where a Citibank Private Bank client enrolls their account into Chase Pay with Points.
+                </p>
+
+                <div className="space-y-4">
+                  <div className={`p-4 rounded-lg border transition-all ${
+                    simulatorStep >= 1 ? 'bg-blue-950/30 border-blue-800' : 'bg-slate-900/50 border-slate-800'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        simulatorStep >= 1 ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}>1</span>
+                      <div>
+                        <h4 className="font-semibold text-sm text-white">Health Check</h4>
+                        <p className="text-xs text-slate-400">Verify Chase API Gateway availability.</p>
+                      </div>
+                    </div>
+                    {simulatorStep === 0 && (
+                      <button
+                        onClick={() => runSimulatorStep(1)}
+                        className="mt-3 w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-1.5 px-3 rounded transition-all"
+                      >
+                        Execute Health Check
+                      </button>
+                    )}
+                  </div>
+
+                  <div className={`p-4 rounded-lg border transition-all ${
+                    simulatorStep >= 3 ? 'bg-blue-950/30 border-blue-800' : 'bg-slate-900/50 border-slate-800'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        simulatorStep >= 3 ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}>2</span>
+                      <div>
+                        <h4 className="font-semibold text-sm text-white">Citibank Account Verification</h4>
+                        <p className="text-xs text-slate-400">Fetch account details via Modern Treasury.</p>
+                      </div>
+                    </div>
+                    {simulatorStep === 1 && (
+                      <button
+                        onClick={() => {
+                          runSimulatorStep(2);
+                          setTimeout(() => runSimulatorStep(3), 1000);
+                        }}
+                        className="mt-3 w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-1.5 px-3 rounded transition-all"
+                      >
+                        Verify Citibank Account
+                      </button>
+                    )}
+                  </div>
+
+                  <div className={`p-4 rounded-lg border transition-all ${
+                    simulatorStep >= 5 ? 'bg-blue-950/30 border-blue-800' : 'bg-slate-900/50 border-slate-800'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        simulatorStep >= 5 ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}>3</span>
+                      <div>
+                        <h4 className="font-semibold text-sm text-white">Chase Enrollment</h4>
+                        <p className="text-xs text-slate-400">Submit enrollment request to Chase API.</p>
+                      </div>
+                    </div>
+                    {simulatorStep === 3 && (
+                      <button
+                        onClick={() => {
+                          runSimulatorStep(4);
+                          setTimeout(() => runSimulatorStep(5), 1000);
+                        }}
+                        className="mt-3 w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-1.5 px-3 rounded transition-all"
+                      >
+                        Submit Enrollment
+                      </button>
+                    )}
+                  </div>
+
+                  <div className={`p-4 rounded-lg border transition-all ${
+                    simulatorStep >= 6 ? 'bg-blue-950/30 border-blue-800' : 'bg-slate-900/50 border-slate-800'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                        simulatorStep >= 6 ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}>4</span>
+                      <div>
+                        <h4 className="font-semibold text-sm text-white">Ledger Sync</h4>
+                        <p className="text-xs text-slate-400">Post ledger transaction in Modern Treasury.</p>
+                      </div>
+                    </div>
+                    {simulatorStep === 5 && (
+                      <button
+                        onClick={() => runSimulatorStep(6)}
+                        className="mt-3 w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-1.5 px-3 rounded transition-all"
+                      >
+                        Sync Ledger &amp; Complete
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {simulatorStep > 0 && (
+                  <button
+                    onClick={resetSimulator}
+                    className="mt-6 w-full bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold py-2 px-4 rounded border border-slate-800 transition-all flex items-center justify-center gap-2"
+                  >
+                    <RefreshIcon /> Reset Simulator
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column: Live Logs */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden h-full flex flex-col">
+                <div className="bg-slate-900 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+                  <span className="text-xs font-mono text-slate-300">Live Integration Logs</span>
+                  <span className="text-xs bg-blue-950 text-blue-400 px-2 py-0.5 rounded font-mono">
+                    Active Session
+                  </span>
+                </div>
+                <div className="p-4 font-mono text-xs text-slate-300 overflow-y-auto flex-1 min-h-[350px] bg-slate-950 space-y-2">
+                  {simulatorLogs.length > 0 ? (
+                    simulatorLogs.map((log, idx) => (
+                      <div key={idx} className="border-l-2 border-blue-500 pl-3 py-1 bg-slate-900/30 rounded-r">
+                        {log}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                      <InfoIcon />
+                      <p className="mt-2">Start the simulator to view live integration logs.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-800 bg-slate-950 py-8 px-6 mt-12">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-400">Citibank Private Bank</span>
+            <span>|</span>
+            <span>Chase Loyalty Solutions</span>
+          </div>
+          <p>© {new Date().getFullYear()} Restricted Chase &amp; Citibank Private Bank. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
+  );
+}

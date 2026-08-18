@@ -1,0 +1,14 @@
+[
+  {
+    "id": "org_001",
+    "name": "Global Sovereign Council",
+    "tier": "SUPREME",
+    "region": "GLOBAL"
+  },
+  {
+    "id": "org_002",
+    "name": "Vanguard Syndicate",
+    "tier": "EXECUTIVE",
+    "region": "APAC"
+  }
+]

@@ -1,0 +1,107 @@
+import React from 'react';
+
+export interface AccessTokenRequest {
+  grant_type: string;
+  code: string;
+  redirect_uri: string;
+}
+
+export interface RefreshTokenRequest {
+  grant_type: string;
+  refresh_token: string;
+}
+
+export interface RevokeTokenRequest {
+  token: string;
+  token_type_hint: string;
+}
+
+export interface AccessTokenResponse {
+  token_type: string;
+  access_token: string;
+  expires_in: number;
+  scope: string;
+  refresh_token: string;
+  refresh_token_expires_in: number;
+}
+
+export interface RefreshTokenResponse {
+  token_type: string;
+  access_token: string;
+  expires_in: number;
+  scope: string;
+  refresh_token: string;
+  refresh_token_expires_in: number;
+}
+
+export interface RevokeTokenResponse {
+  status?: string;
+}
+
+export interface ErrorResponse {
+  error_description?: string;
+  error?: string;
+  error_uri?: string;
+  type?: string;
+  code?: string;
+  details?: string;
+  message?: string;
+}
+
+export interface BadResponse extends ErrorResponse {
+  error: string;
+}
+
+export interface UnAuthorizedResponse extends ErrorResponse {
+  error: string;
+}
+
+export interface NotFoundResponse extends ErrorResponse {
+  code: string;
+  type?: string;
+  details?: string;
+  error?: string;
+  message?: string;
+}
+
+export interface ServerUnavailableResponse extends ErrorResponse {
+  type?: string;
+  code?: string;
+  details?: string;
+  error?: string;
+}
+
+export const ChaseTokenAuthorizationDocs: React.FC = () => {
+  return (
+    <div className="p-6 max-w-4xl mx-auto bg-white rounded-xl shadow-md space-y-4 font-sans">
+      <div className="border-b pb-4">
+        <span className="text-xs font-semibold tracking-wider text-blue-600 uppercase">Chase Integration</span>
+        <h1 className="text-2xl font-bold text-gray-900">Token Authorization API</h1>
+        <p className="text-gray-600 mt-1">
+          Exchanging the authorization code for an access/refresh token in order to grant a data aggregator permission to access a user’s data and share it with a fintech app. The revoke endpoint allows an aggregator to revoke access for a fintech app.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <h2 className="text-lg font-semibold text-gray-800">Endpoints Overview</h2>
+        <ul className="list-disc pl-5 space-y-1 text-gray-700">
+          <li><code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">POST /api/identity/auth/v1/oauth2/token/us/gcb</code> - Authorization code grant: Retrieve access token</li>
+          <li><code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">POST /api/identity/auth/v1/oauth2/refresh</code> - Authorization code grant: Refresh access token</li>
+          <li><code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">POST /api/identity/auth/v1/oauth2/revoke</code> - Authorization code grant: Revoke access</li>
+        </ul>
+      </div>
+
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-6">
+        <div className="flex">
+          <div className="ml-3">
+            <p className="text-sm text-blue-700">
+              Ensure all requests to Chase APIs include the proper <code className="font-mono bg-blue-100 px-1 rounded">Authorization</code> header containing base64 encoded client credentials and application/x-www-form-urlencoded content type.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ChaseTokenAuthorizationDocs;

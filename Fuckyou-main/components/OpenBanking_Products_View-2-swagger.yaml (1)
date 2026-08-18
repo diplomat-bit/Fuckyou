@@ -1,0 +1,35 @@
+import React from 'react';
+
+interface Product {
+  accountId: string;
+  status: 'ACTIVE';
+  productName: string;
+  accountType: 'CHECKING' | 'SAVINGS' | 'CREDIT_CARD';
+  accountNumberDisplay: string;
+}
+
+interface ChaseProductsProps {
+  customerId: string;
+  products: Product[];
+}
+
+const ChaseProductsView: React.FC<ChaseProductsProps> = ({ customerId, products }) => {
+  return (
+    <div className="chase-products-container">
+      <h1>Chase Customer Products</h1>
+      <p>Customer ID: {customerId}</p>
+      <ul>
+        {products.map((product) => (
+          <li key={product.accountId} className="product-item">
+            <h3>{product.productName}</h3>
+            <p>Type: {product.accountType}</p>
+            <p>Account: {product.accountNumberDisplay}</p>
+            <p>Status: {product.status}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default ChaseProductsView;

@@ -1,0 +1,22 @@
+{
+  "name": "Remix Oko",
+  "description": "Imported from GitHub: diplomat-bit/Oko",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation",
+    "identity-credentials-get",
+    "clipboard-read",
+    "clipboard-write",
+    "payment"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+aquarius",
+      "url": "/?portal=%s"
+    }
+  ]
+}

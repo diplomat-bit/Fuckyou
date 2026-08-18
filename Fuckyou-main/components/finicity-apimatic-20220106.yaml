@@ -1,0 +1,524 @@
+import React, { useState } from 'react';
+
+export interface EndpointParam {
+  name: string;
+  in: 'header' | 'path' | 'query' | 'body';
+  description: string;
+  required: boolean;
+  type: string;
+}
+
+export interface ApiEndpoint {
+  id: string;
+  path: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  summary: string;
+  description: string;
+  parameters: EndpointParam[];
+  category: 'Chase Pay with Points' | 'Finicity Aggregation';
+}
+
+export interface GlossaryItem {
+  term: string;
+  description: string;
+}
+
+const API_ENDPOINTS: ApiEndpoint[] = [
+  {
+    id: 'chase-ping',
+    path: '/ping',
+    method: 'GET',
+    summary: 'Check API Health Status',
+    description: 'Health check operation to verify that the Chase Card Loyalty API is operational and accessible.',
+    parameters: [],
+    category: 'Chase Pay with Points',
+  },
+  {
+    id: 'chase-enroll',
+    path: '/merchants/programs/pay-with-points/enrollments/{account-reference-universal-unique-identifier}',
+    method: 'POST',
+    summary: 'Enroll Cardholder in Pay with Points',
+    description: 'Enrolls a cardholder into the Pay with Points program and returns an enrollment confirmation. Supports self-enrollment and auto-enrollment.',
+    parameters: [
+      { name: 'account-reference-universal-unique-identifier', in: 'path', description: 'Universally unique identifier (UUID) identifying the card account at the merchant.', required: true, type: 'string (uuid)' },
+      { name: 'enrollment-type-code', in: 'header', description: 'Codifies type of enrollment (AUTOENROLL, ENROLL).', required: true, type: 'string' },
+      { name: 'external-account-identifier', in: 'header', description: 'Firm enterprise customer account relationship identifier.', required: true, type: 'string' },
+      { name: 'trace-id', in: 'header', description: 'Unique 128-bit hex trace ID for request tracking.', required: true, type: 'string' },
+      { name: 'channel-type', in: 'header', description: 'Digital channel where request originated (e.g. WEB, MOBILE).', required: false, type: 'string' },
+      { name: 'authorization', in: 'header', description: 'OAuth 2.0 bearer token.', required: false, type: 'string' },
+    ],
+    category: 'Chase Pay with Points',
+  },
+  {
+    id: 'chase-unenroll',
+    path: '/merchants/programs/pay-with-points/enrollments/{account-reference-universal-unique-identifier}',
+    method: 'PUT',
+    summary: 'Un-enroll Cardholder from Pay with Points',
+    description: 'Un-enrolls a cardholder from the Pay with Points program and returns the un-enrollment status.',
+    parameters: [
+      { name: 'account-reference-universal-unique-identifier', in: 'path', description: 'Universal unique account identifier UUID.', required: true, type: 'string (uuid)' },
+      { name: 'enrollment-type-code', in: 'header', description: 'Codifies type of enrollment.', required: true, type: 'string' },
+      { name: 'external-account-identifier', in: 'header', description: 'External customer account identifier.', required: true, type: 'string' },
+      { name: 'trace-id', in: 'header', description: 'Unique request trace identifier.', required: true, type: 'string' },
+    ],
+    category: 'Chase Pay with Points',
+  },
+  {
+    id: 'finicity-connect-generate',
+    path: '/connect/v2/generate',
+    method: 'POST',
+    summary: 'Generate Finicity Connect V2 URL',
+    description: 'Generates a Connect 2.0 URL link to embed within partner applications for account aggregation and verification.',
+    parameters: [
+      { name: 'Accept', in: 'header', description: 'application/json', required: true, type: 'string' },
+      { name: 'partnerId', in: 'body', description: 'Partner ID assigned from Finicity Developer Portal.', required: true, type: 'string' },
+      { name: 'customerId', in: 'body', description: 'Finicity Customer ID.', required: true, type: 'string' },
+      { name: 'consumerId', in: 'body', description: 'Finicity Consumer ID for credit decisioning reports.', required: false, type: 'string' },
+    ],
+    category: 'Finicity Aggregation',
+  },
+  {
+    id: 'finicity-institutions',
+    path: '/institution/v2/institutions',
+    method: 'GET',
+    summary: 'Get Supported Financial Institutions',
+    description: 'Search and retrieve details for connected financial institutions, including Chase and partner endpoints.',
+    parameters: [
+      { name: 'search', in: 'query', description: 'Search term for institution name.', required: false, type: 'string' },
+      { name: 'start', in: 'query', description: 'Pagination start index.', required: false, type: 'integer' },
+      { name: 'limit', in: 'query', description: 'Maximum records per page.', required: false, type: 'integer' },
+    ],
+    category: 'Finicity Aggregation',
+  },
+];
+
+const GLOSSARY_ITEMS: GlossaryItem[] = [
+  { term: '2-legged OAuth', description: 'A verification process between two parties (Partner and Chase) based on OAuth 2.0 protocol without direct user involvement.' },
+  { term: 'account-reference-uuid', description: 'A 128-bit randomly generated UUID used to safely identify card accounts across partner and Chase systems.' },
+  { term: 'Pay with Points Program', description: 'Loyalty reward feature allowing eligible Chase cardholders to redeem points directly for merchant transactions.' },
+  { term: 'merchantDefinedProductCode', description: 'Reward Product Code (RPC) such as SAPPHIRE_RESERVE, FREEDOM_UNLIMITED, INK_BUSINESS_PREFERRED identifying card eligibility.' },
+  { term: 'Trace ID', description: 'A unique 128-bit identifier passed in hex format with every request for request tracing and auditing.' },
+  { term: 'Finicity Connect', description: 'Web SDK and API suite enabling secure financial account aggregation and data verification.' },
+];
+
+const CHASE_PRODUCTS = [
+  'SAPPHIRE_RESERVE',
+  'JPM_RESERVE',
+  'SAPPHIRE_PREFERRED',
+  'SAPPHIRE_NO_FEE',
+  'INK_BUSINESS_PREFERRED',
+  'INK_PLUS',
+  'INK_BUSINESS_CASH',
+  'INK_CASH',
+  'INK_BUSINESS_UNLIMITED',
+  'FREEDOM_UNLIMITED',
+  'FREEDOM',
+  'FREEDOM_STUDENT',
+  'SLATE',
+];
+
+export default function ChaseFinicityIntegrationPortal() {
+  const [activeTab, setActiveTab] = useState<'overview' | 'endpoints' | 'console' | 'glossary'>('overview');
+  const [selectedEndpoint, setSelectedEndpoint] = useState<ApiEndpoint>(API_ENDPOINTS[1]);
+  const [requestHeaders, setRequestHeaders] = useState<Record<string, string>>({
+    'enrollment-type-code': 'ENROLL',
+    'external-account-identifier': 'CUST_ACC_987654321',
+    'trace-id': 'e4b8a9c2d10f4e38a9b2c1d0f5e6a7b8',
+    'channel-type': 'WEB',
+  });
+  const [selectedProduct, setSelectedProduct] = useState<string>('SAPPHIRE_RESERVE');
+  const [simulatedResponse, setSimulatedResponse] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleSimulateApiCall = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      if (selectedEndpoint.id === 'chase-ping') {
+        setSimulatedResponse(JSON.stringify({ status: 'UP', timestamp: new Date().toISOString(), service: 'Card Loyalty Pay With Points API' }, null, 2));
+      } else if (selectedEndpoint.id === 'chase-enroll') {
+        setSimulatedResponse(
+          JSON.stringify(
+            {
+              enrollment: {
+                enrollmentStatusName: 'ENROLLED',
+                enrollmentStatusDate: new Date().toISOString().split('T')[0],
+              },
+              product: {
+                merchantDefinedProductCode: selectedProduct,
+              },
+            },
+            null,
+            2
+          )
+        );
+      } else if (selectedEndpoint.id === 'chase-unenroll') {
+        setSimulatedResponse(
+          JSON.stringify(
+            {
+              enrollment: {
+                enrollmentStatusName: 'UN-ENROLLED',
+                enrollmentStatusDate: new Date().toISOString().split('T')[0],
+              },
+              product: {
+                merchantDefinedProductCode: selectedProduct,
+              },
+            },
+            null,
+            2
+          )
+        );
+      } else {
+        setSimulatedResponse(
+          JSON.stringify(
+            {
+              link: 'https://connect.finicity.com?consumerId=86238nvnw7269e224a4e3de12352d87d&partnerId=1445585709680',
+              status: 'success',
+            },
+            null,
+            2
+          )
+        );
+      }
+    }, 600);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans p-4 md:p-8">
+      {/* Top Header */}
+      <header className="border-b border-slate-700 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-blue-500/30">
+              C
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+              Chase Loyalty & Finicity Integration Portal
+            </h1>
+          </div>
+          <p className="text-slate-400 text-sm mt-1">
+            Card Loyalty Pay With Points Enrollment API & Finicity Aggregation Suite
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-2 rounded-lg border border-slate-700 text-slate-300">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Environment: Sandbox (api.chase.com / api.finicity.com)</span>
+        </div>
+      </header>
+
+      {/* Navigation Tabs */}
+      <nav className="flex border-b border-slate-800 mb-8 space-x-2">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+            activeTab === 'overview'
+              ? 'bg-slate-800 text-blue-400 border-b-2 border-blue-500'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          Architecture & Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('endpoints')}
+          className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+            activeTab === 'endpoints'
+              ? 'bg-slate-800 text-blue-400 border-b-2 border-blue-500'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          API Specification
+        </button>
+        <button
+          onClick={() => setActiveTab('console')}
+          className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+            activeTab === 'console'
+              ? 'bg-slate-800 text-blue-400 border-b-2 border-blue-500'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          API Test Console
+        </button>
+        <button
+          onClick={() => setActiveTab('glossary')}
+          className={`px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+            activeTab === 'glossary'
+              ? 'bg-slate-800 text-blue-400 border-b-2 border-blue-500'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          Glossary & Security
+        </button>
+      </nav>
+
+      {/* Tab 1: Architecture & Overview */}
+      {activeTab === 'overview' && (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-slate-800/80 p-6 rounded-xl border border-slate-700">
+              <div className="text-blue-400 text-sm font-semibold uppercase tracking-wider mb-2">Service Overview</div>
+              <h2 className="text-xl font-bold text-white mb-2">Chase Pay with Points</h2>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Manages cardholder enrollment flow for Pay with Points between Chase and partner applications. Supports auto-enrollment and self-enrollment seamlessly.
+              </p>
+            </div>
+            <div className="bg-slate-800/80 p-6 rounded-xl border border-slate-700">
+              <div className="text-indigo-400 text-sm font-semibold uppercase tracking-wider mb-2">Aggregation Engine</div>
+              <h2 className="text-xl font-bold text-white mb-2">Finicity Connect V2</h2>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Generates secure financial institution connections, allowing users to verify income, assets, transactions, and account details in real-time.
+              </p>
+            </div>
+            <div className="bg-slate-800/80 p-6 rounded-xl border border-slate-700">
+              <div className="text-emerald-400 text-sm font-semibold uppercase tracking-wider mb-2">Security Standard</div>
+              <h2 className="text-xl font-bold text-white mb-2">2-Legged OAuth 2.0</h2>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Secured via client credentials flow, scoped to <code className="bg-slate-900 px-1.5 py-0.5 rounded text-emerald-300">card</code> access, tokenized API gateway validation, and hex trace tracking.
+              </p>
+            </div>
+          </div>
+
+          {/* Integration Workflow Diagram */}
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+            <h3 className="text-lg font-bold text-white mb-4">Enrollment & Aggregation Flow</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+              <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                <div className="text-blue-400 font-bold text-sm mb-1">Step 1: Ping & Token</div>
+                <p className="text-xs text-slate-400">Call /ping endpoint & obtain OAuth 2-legged bearer token from sandbox server.</p>
+              </div>
+              <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                <div className="text-blue-400 font-bold text-sm mb-1">Step 2: Account Reference</div>
+                <p className="text-xs text-slate-400">Generate 128-bit UUID for merchant card account persistence.</p>
+              </div>
+              <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                <div className="text-blue-400 font-bold text-sm mb-1">Step 3: Enrollment POST</div>
+                <p className="text-xs text-slate-400">Submit POST enrollment request with required trace-id & enrollment headers.</p>
+              </div>
+              <div className="bg-slate-900 p-4 rounded-lg border border-slate-700">
+                <div className="text-blue-400 font-bold text-sm mb-1">Step 4: Confirmation</div>
+                <p className="text-xs text-slate-400">Receive EnrollmentResponse with merchantDefinedProductCode (e.g. SAPPHIRE_RESERVE).</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Supported Reward Product Codes */}
+          <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+            <h3 className="text-lg font-bold text-white mb-3">Eligible Chase Card Reward Products (RPC)</h3>
+            <div className="flex flex-wrap gap-2">
+              {CHASE_PRODUCTS.map((prod) => (
+                <span key={prod} className="px-3 py-1 bg-slate-900 text-blue-300 text-xs font-mono rounded-full border border-blue-900/50">
+                  {prod}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 2: API Specification */}
+      {activeTab === 'endpoints' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-3">
+            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Available Endpoints</h3>
+            {API_ENDPOINTS.map((endpoint) => (
+              <button
+                key={endpoint.id}
+                onClick={() => setSelectedEndpoint(endpoint)}
+                className={`w-full text-left p-3 rounded-lg border transition-all ${
+                  selectedEndpoint.id === endpoint.id
+                    ? 'bg-slate-700/80 border-blue-500 shadow-md'
+                    : 'bg-slate-900/50 border-slate-700/60 hover:bg-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className={`text-xs font-bold px-2 py-0.5 rounded ${
+                      endpoint.method === 'GET'
+                        ? 'bg-emerald-900/80 text-emerald-300'
+                        : endpoint.method === 'POST'
+                        ? 'bg-blue-900/80 text-blue-300'
+                        : 'bg-amber-900/80 text-amber-300'
+                    }`}
+                  >
+                    {endpoint.method}
+                  </span>
+                  <span className="text-xs text-slate-400 font-mono truncate">{endpoint.category}</span>
+                </div>
+                <div className="text-sm font-semibold text-white truncate">{endpoint.summary}</div>
+                <div className="text-xs text-slate-400 font-mono truncate mt-1">{endpoint.path}</div>
+              </button>
+            ))}
+          </div>
+
+          <div className="md:col-span-2 bg-slate-800/80 p-6 rounded-xl border border-slate-700">
+            <div className="flex items-center gap-3 mb-4">
+              <span
+                className={`text-sm font-bold px-3 py-1 rounded ${
+                  selectedEndpoint.method === 'GET'
+                    ? 'bg-emerald-900 text-emerald-300'
+                    : selectedEndpoint.method === 'POST'
+                    ? 'bg-blue-900 text-blue-300'
+                    : 'bg-amber-900 text-amber-300'
+                }`}
+              >
+                {selectedEndpoint.method}
+              </span>
+              <h2 className="text-xl font-bold text-white font-mono">{selectedEndpoint.path}</h2>
+            </div>
+            <p className="text-slate-300 text-sm mb-6">{selectedEndpoint.description}</p>
+
+            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Parameters</h3>
+            {selectedEndpoint.parameters.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-slate-300">
+                  <thead className="bg-slate-900/80 text-xs text-slate-400 uppercase">
+                    <tr>
+                      <th className="p-2.5">Name</th>
+                      <th className="p-2.5">In</th>
+                      <th className="p-2.5">Type</th>
+                      <th className="p-2.5">Required</th>
+                      <th className="p-2.5">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700">
+                    {selectedEndpoint.parameters.map((param) => (
+                      <tr key={param.name}>
+                        <td className="p-2.5 font-mono text-blue-300 text-xs">{param.name}</td>
+                        <td className="p-2.5 text-xs text-slate-400">{param.in}</td>
+                        <td className="p-2.5 font-mono text-xs">{param.type}</td>
+                        <td className="p-2.5 text-xs">
+                          {param.required ? (
+                            <span className="text-rose-400 font-semibold">Yes</span>
+                          ) : (
+                            <span className="text-slate-500">No</span>
+                          )}
+                        </td>
+                        <td className="p-2.5 text-xs text-slate-300">{param.description}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 italic">No parameters required for this operation.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Tab 3: API Test Console */}
+      {activeTab === 'console' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-slate-800/80 p-6 rounded-xl border border-slate-700 space-y-4">
+            <h3 className="text-lg font-bold text-white">Interactive API Request Tester</h3>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Select Endpoint</label>
+              <select
+                value={selectedEndpoint.id}
+                onChange={(e) => {
+                  const ep = API_ENDPOINTS.find((x) => x.id === e.target.value);
+                  if (ep) setSelectedEndpoint(ep);
+                }}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+              >
+                {API_ENDPOINTS.map((ep) => (
+                  <option key={ep.id} value={ep.id}>
+                    [{ep.method}] {ep.summary}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedEndpoint.id.startsWith('chase') && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Reward Product Code (RPC)</label>
+                <select
+                  value={selectedProduct}
+                  onChange={(e) => setSelectedProduct(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+                >
+                  {CHASE_PRODUCTS.map((prod) => (
+                    <option key={prod} value={prod}>
+                      {prod}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Trace ID (Hex 128-bit)</label>
+              <input
+                type="text"
+                value={requestHeaders['trace-id']}
+                onChange={(e) => setRequestHeaders({ ...requestHeaders, 'trace-id': e.target.value })}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 font-mono"
+              />
+            </div>
+
+            <button
+              onClick={handleSimulateApiCall}
+              disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <span>Executing API Request...</span>
+              ) : (
+                <span>Send {selectedEndpoint.method} Request</span>
+              )}
+            </button>
+          </div>
+
+          {/* Response Viewer */}
+          <div className="bg-slate-800/80 p-6 rounded-xl border border-slate-700 flex flex-col">
+            <h3 className="text-lg font-bold text-white mb-2">Simulated Response Payload</h3>
+            <div className="flex-1 bg-slate-950 p-4 rounded-lg border border-slate-800 overflow-x-auto">
+              {simulatedResponse ? (
+                <pre className="text-emerald-400 font-mono text-xs leading-relaxed">{simulatedResponse}</pre>
+              ) : (
+                <div className="text-slate-600 text-xs italic flex items-center justify-center h-full">
+                  Execute a request to view simulated status code 200 JSON payload.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 4: Glossary & Security */}
+      {activeTab === 'glossary' && (
+        <div className="space-y-8">
+          <div className="bg-slate-800/80 p-6 rounded-xl border border-slate-700">
+            <h3 className="text-lg font-bold text-white mb-4">Security & Authentication Specs</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-300">
+              <div className="p-4 bg-slate-900/60 rounded-lg border border-slate-700">
+                <div className="font-bold text-blue-400 mb-1">Common 2-Legged OAuth 2.0</div>
+                <p className="text-xs text-slate-400 mb-2">
+                  Token URL: <code className="text-slate-200 font-mono">https://api-sandbox.chase.com/ccoauth/token</code>
+                </p>
+                <p className="text-xs text-slate-400">Flow: Application / Scope: card</p>
+              </div>
+              <div className="p-4 bg-slate-900/60 rounded-lg border border-slate-700">
+                <div className="font-bold text-indigo-400 mb-1">Finicity App Key & Token</div>
+                <p className="text-xs text-slate-400 mb-2">Header: Finicity-App-Token / Partner Authentication</p>
+                <p className="text-xs text-slate-400">Token Validity: 2 hours standard lifecycle</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-800/80 p-6 rounded-xl border border-slate-700">
+            <h3 className="text-lg font-bold text-white mb-4">Terminology Glossary</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {GLOSSARY_ITEMS.map((item) => (
+                <div key={item.term} className="p-3 bg-slate-900/40 rounded-lg border border-slate-800">
+                  <span className="font-bold text-blue-300 text-sm">{item.term}: </span>
+                  <span className="text-xs text-slate-300">{item.description}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

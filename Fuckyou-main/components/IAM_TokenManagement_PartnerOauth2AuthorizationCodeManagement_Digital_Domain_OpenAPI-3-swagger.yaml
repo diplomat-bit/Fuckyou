@@ -1,0 +1,699 @@
+import React from 'react';
+
+const chaseApiSpec = `swagger: "2.0"
+
+info:
+  description: This service manages the Cardholder enrollment flow for Pay with Points
+    program between Chase and a Partner.
+  version: 1.0.0
+  title: Card Loyalty Pay With Points Enrollment API
+  contact:
+    name: Rewards and Beneficts Solutions Team
+    email: RNB_DEV_Leads@restricted.chase.com
+  license:
+    name: N/A
+    url: N/A
+  x-chase-api-store-servers:
+  - url: api.chase.com/card/loyalty/earn-rewards/enrollment/v1
+schemes:
+
+- https
+
+produces:
+
+- application/json
+
+security:
+
+- Common 2-Legged OAuth:
+  - card
+paths:
+  /ping:
+    get:
+      summary: Operation to check the health of this API
+      description: Health Check Operation
+      operationId: ping
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        "200":
+          description: Request processed successfully
+        "500":
+          description: Internal server error occurred
+        "504":
+          description: Some connectivity issue occurred e.g. timeout
+      responsesObject:
+        "200":
+          description: Request processed successfully
+        "500":
+          description: Internal server error occurred
+        "504":
+          description: Some connectivity issue occurred e.g. timeout
+  '/merchants/programs/pay-with-points/enrollments/{account-reference-universal-unique-identifier} ':
+    post:
+      summary: Enroll in Pay with Points Program.
+      description: Enrolls a cardholder into Pay with Points program and returns the
+        enrollment confirmation. This API allows auto enrollment as well as self-enrollment.
+      parameters:
+      - name: account-reference-universal-unique-identifier
+        in: path
+        description: A universally unique identifier (UUID) that is randomly generated
+          to identify each account that is persisted at the merchant end. This value
+          will help the merchant identify the card account during a transaction or
+          product trade.  A UUID is a 128-bit number used to identify information
+          in computer systems. The field length of 36 bytes corresponds to 128 bits
+          (via Hexadecimal string conversion).
+        required: true
+        type: string
+        format: uuid
+      - name: enrollment-type-code
+        in: header
+        description: "Codifies the type of enrollment based on the benefit offered.\\
+          \\ Example > AUTOENROLL, ENROLL."
+        required: true
+        type: string
+        maxLength: 30
+      - name: external-account-identifier
+        in: header
+        description: A unique identifier created to establish a relationship between
+          customer and account as it exists in Firms customer enterprise system
+        required: true
+        type: string
+        maxLength: 32
+      - name: channel-type
+        in: header
+        description: Digital channel type indicates where the request originated from.
+        required: false
+        type: string
+        maxLength: 15
+      - name: authorization
+        in: header
+        description: OAuth bearer token will be sent in this header as per the OAuth2
+          spec. This header will be used by the API gateway. The API does not need
+          to do anything with this header
+        required: false
+        type: string
+        maxLength: 8000
+      - name: authorization2
+        in: header
+        description: Additional authorization on top of standard OAuth token in the
+          Authorization Header. The use of this header is different for 3-legged and
+          2-legged use cases
+        required: false
+        type: string
+        maxLength: 8000
+      - name: trace-id
+        in: header
+        description: "A unique Trace Id for every request. This SHOULD be unique for\\
+          \\ every request and 128 bit number, represented in lower hex characters."
+        required: true
+        type: string
+        maxLength: 32
+      responses:
+        "200":
+          description: Returns an Enrollment object
+          responseSchema:
+            originalRef: "#/definitions/EnrollmentResponse"
+            $ref: "#/definitions/EnrollmentResponse"
+          schema:
+            originalRef: "#/definitions/EnrollmentResponse"
+            $ref: "#/definitions/EnrollmentResponse"
+        "400":
+          description: Request is invalid either required data is missing or data
+            is not consistent
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "401":
+          description: Authorization Failure. Customer Token does not match. Customer
+            will need to re-do the OAuth
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "404":
+          description: "The {resourceId} being requested is not found"
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "405":
+          description: Operation /method not allowed
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "409":
+          description: "List of business reasons of error codes and descriptions are\\
+            \\ as below <br/> 601  : Account is not eligible. <br/> 101  : Account\\
+            \\ is not found. <br/> 104  : Enrollment not found. <br/> 179  : Multiple\\
+            \\ accounts found. <br/>"
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "422":
+          description: The request could not be processed
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "500":
+          description: |-
+            "Internal Server Error"
+             \\\`9116: Unable to delete membership\\\`.
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "502":
+          description: Bad Gateway
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "503":
+          description: "Service is down for maintenance. \\\` 9102/9103: Service is temporarily\\
+            \\ unavailable. Please try again later.\\\`"
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+      responsesObject:
+        "200":
+          description: Returns an Enrollment object
+          responseSchema:
+            originalRef: "#/definitions/EnrollmentResponse"
+            $ref: "#/definitions/EnrollmentResponse"
+          schema:
+            originalRef: "#/definitions/EnrollmentResponse"
+            $ref: "#/definitions/EnrollmentResponse"
+        "400":
+          description: Request is invalid either required data is missing or data
+            is not consistent
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "401":
+          description: Authorization Failure. Customer Token does not match. Customer
+            will need to re-do the OAuth
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "404":
+          description: "The {resourceId} being requested is not found"
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "405":
+          description: Operation /method not allowed
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "409":
+          description: "List of business reasons of error codes and descriptions are\\
+            \\ as below <br/> 601  : Account is not eligible. <br/> 101  : Account\\
+            \\ is not found. <br/> 104  : Enrollment not found. <br/> 179  : Multiple\\
+            \\ accounts found. <br/>"
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "422":
+          description: The request could not be processed
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "500":
+          description: |-
+            "Internal Server Error"
+             \\\`9116: Unable to delete membership\\\`.
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "502":
+          description: Bad Gateway
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "503":
+          description: "Service is down for maintenance. \\\` 9102/9103: Service is temporarily\\
+            \\ unavailable. Please try again later.\\\`"
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+    put:
+      summary: Un-Enroll from Pay with Points Program.
+      description: Un-Enrolls a cardholder from the Pay with Points program and returns
+        the un-enrollment confirmation.
+      parameters:
+      - name: account-reference-universal-unique-identifier
+        in: path
+        description: A universally unique identifier (UUID) that is randomly generated
+          to identify each account that is persisted at the merchant end. This value
+          will help the merchant identify the card account during a transaction or
+          product trade.  A UUID is a 128-bit number used to identify information
+          in computer systems. The field length of 36 bytes corresponds to 128 bits
+          (via Hexadecimal string conversion).
+        required: true
+        type: string
+        format: uuid
+      - name: enrollment-type-code
+        in: header
+        description: "Codifies the type of enrollment based on the benefit offered.\\
+          \\ Example > AUTOENROLL, ENROLL."
+        required: true
+        type: string
+        maxLength: 30
+      - name: external-account-identifier
+        in: header
+        description: A unique identifier created to establish a relationship between
+          customer and account as it exists in Firms customer enterprise system
+        required: true
+        type: string
+        maxLength: 32
+      - name: channel-type
+        in: header
+        description: Digital channel type indicates where the request originated from.
+        required: false
+        type: string
+        maxLength: 15
+      - name: authorization
+        in: header
+        description: OAuth bearer token will be sent in this header as per the OAuth2
+          spec. This header will be used by the API gateway. The API does not need
+          to do anything with this header
+        required: false
+        type: string
+        maxLength: 8000
+      - name: authorization2
+        in: header
+        description: Additional authorization on top of standard OAuth token in the
+          Authorization Header. The use of this header is different for 3-legged and
+          2-legged use cases
+        required: false
+        type: string
+        maxLength: 8000
+      - name: trace-id
+        in: header
+        description: "A unique Trace Id for every request. This SHOULD be unique for\\
+          \\ every request and 128 bit number, represented in lower hex characters."
+        required: true
+        type: string
+        maxLength: 32
+      responses:
+        "200":
+          description: Returns and Enrollment object
+          responseSchema:
+            originalRef: "#/definitions/EnrollmentResponse"
+            $ref: "#/definitions/EnrollmentResponse"
+          schema:
+            originalRef: "#/definitions/EnrollmentResponse"
+            $ref: "#/definitions/EnrollmentResponse"
+        "400":
+          description: Request is invalid either required data is missing or data
+            is not consistent
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "401":
+          description: Authorization Failure. Customer Token does not match. Customer
+            will need to re-do the OAuth
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "403":
+          description: Access Forbidden
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "404":
+          description: The requested resource was not found
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "405":
+          description: Operation /method not allowed
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "409":
+          description: "List of business reasons of error codes and descriptions are\\
+            \\ as below <br/> 101  : Account is not found. <br/> 104  : Enrollment\\
+            \\ not found. <br/> 179  : Multiple accounts found. <br/>"
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "422":
+          description: The request could not be processed
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "500":
+          description: "Internal Server Error <br/> 9116 : Unable to delete membership\\\`.\\
+            \\ schema: $ref: "
+        "502":
+          description: Bad Gateway
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "503":
+          description: Downstream System Exception
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+      responsesObject:
+        "200":
+          description: Returns and Enrollment object
+          responseSchema:
+            originalRef: "#/definitions/EnrollmentResponse"
+            $ref: "#/definitions/EnrollmentResponse"
+          schema:
+            originalRef: "#/definitions/EnrollmentResponse"
+            $ref: "#/definitions/EnrollmentResponse"
+        "400":
+          description: Request is invalid either required data is missing or data
+            is not consistent
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "401":
+          description: Authorization Failure. Customer Token does not match. Customer
+            will need to re-do the OAuth
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "403":
+          description: Access Forbidden
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "404":
+          description: The requested resource was not found
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "405":
+          description: Operation /method not allowed
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "409":
+          description: "List of business reasons of error codes and descriptions are\\
+            \\ as below <br/> 101  : Account is not found. <br/> 104  : Enrollment\\
+            \\ not found. <br/> 179  : Multiple accounts found. <br/>"
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "422":
+          description: The request could not be processed
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "500":
+          description: "Internal Server Error <br/> 9116 : Unable to delete membership\\\`.\\
+            \\ schema: $ref: "
+        "502":
+          description: Bad Gateway
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+        "503":
+          description: Downstream System Exception
+          responseSchema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+          schema:
+            originalRef: "#/definitions/Error"
+            $ref: "#/definitions/Error"
+securityDefinitions:
+  Common 2-Legged OAuth:
+    description: This API is secured by the common 2-legged OAuth API.
+    type: oauth2
+    tokenUrl: https://api-sandbox.chase.com/ccoauth/token
+    flow: application
+    scopes:
+      card: ""
+definitions:
+  EnrollmentResponse:
+    type: object
+    properties:
+      enrollment:
+        originalRef: "#/definitions/Enrollment"
+        $ref: "#/definitions/Enrollment"
+      product:
+        originalRef: "#/definitions/Transaction"
+        $ref: "#/definitions/Transaction"
+  Transaction:
+    type: object
+    properties:
+      merchantDefinedProductCode:
+        type: string
+        description: Codifies the product referred in the Merchant Relationship Manager
+          Service built within Loyalty application interface. The value is internally
+          assigned by the application according to the reward product code (RPC).
+        maxLength: 50
+        enum:
+        - SAPPHIRE_RESERVE
+        - JPM_RESERVE
+        - SAPPHIRE_PREFERRED
+        - SAPPHIRE_NO_FEE
+        - INK_BUSINESS_PREFERRED
+        - INK_PLUS
+        - INK_BUSINESS_CASH
+        - INK_CASH
+        - INK_BUSINESS_UNLIMITED
+        - FREEDOM_UNLIMITED
+        - FREEDOM
+        - FREEDOM_STUDENT
+        - SLATE
+  Enrollment:
+    type: object
+    properties:
+      enrollmentStatusName:
+        type: string
+        description: "The label /decode of the participation status in a product,\\
+          \\ service or reward program."
+        maxLength: 100
+        enum:
+        - AUTOENROLLED
+        - ENROLLED
+        - UN-ENROLLED
+        - OPTED_OUT
+        - OPTED_IN
+        - NOT_ENROLLED
+      enrollmentStatusDate:
+        type: string
+        format: date
+        description: "Designates the year, month, and day the enrollment status was\\
+          \\ modified."
+  Error:
+    type: object
+    required:
+    - errorDescription
+    properties:
+      errorDescription:
+        type: string
+        description: Freeform explanatory text for the error.
+        maxLength: 250
+      serviceErrorCode:
+        type: string
+        description: "A code defined by the API provider that describes the specific\\
+          \\ error for a given API. This code provides more fine grained information\\
+          \\ than the httpStatusCode. As an example if an API provides an httpStatusCode\\
+          \\ of 400 they may also include the serviceErrorCode that includes more specific\\
+          \\ information of what caused a 400 response. (i.e. INVALID_EMAIL, INVALID_PHONE_NUMBER,\\
+          \\ etc)"
+        maxLength: 20
+      externalErrorCode:
+        type: string
+        description: A code defined by the service for the external partner that includes
+          a more specific information of what caused the error.
+        maxLength: 90
+    description: base object for the error response
+parameters:
+  enrollment-type-code:
+    name: enrollment-type-code
+    in: header
+    description: "Codifies the type of enrollment based on the benefit offered. Example\\
+      \\ > AUTOENROLL, ENROLL."
+    required: true
+    type: string
+    maxLength: 30
+  authorization:
+    name: authorization
+    in: header
+    description: OAuth bearer token will be sent in this header as per the OAuth2
+      spec. This header will be used by the API gateway. The API does not need to
+      do anything with this header
+    required: false
+    type: string
+    maxLength: 8000
+  authorization2:
+    name: authorization2
+    in: header
+    description: Additional authorization on top of standard OAuth token in the Authorization
+      Header. The use of this header is different for 3-legged and 2-legged use cases
+    required: false
+    type: string
+    maxLength: 8000
+  trace-id:
+    name: trace-id
+    in: header
+    description: "A unique Trace Id for every request. This SHOULD be unique for every\\
+      \\ request and 128 bit number, represented in lower hex characters."
+    required: true
+    type: string
+    maxLength: 32
+  external-account-identifier:
+    name: external-account-identifier
+    in: header
+    description: A unique identifier created to establish a relationship between customer
+      and account as it exists in Firms customer enterprise system
+    required: true
+    type: string
+    maxLength: 32
+  account-reference-universal-unique-identifier:
+    name: account-reference-universal-unique-identifier
+    in: path
+    description: A universally unique identifier (UUID) that is randomly generated
+      to identify each account that is persisted at the merchant end. This value will
+      help the merchant identify the card account during a transaction or product
+      trade.  A UUID is a 128-bit number used to identify information in computer
+      systems. The field length of 36 bytes corresponds to 128 bits (via Hexadecimal
+      string conversion).
+    required: true
+    type: string
+    format: uuid
+  channel-type:
+    name: channel-type
+    in: header
+    description: Digital channel type indicates where the request originated from.
+    required: false
+    type: string
+    maxLength: 15
+x-chase-info: 24380//External///Product`;
+
+const ChaseApiComponent: React.FC = () => {
+  return (
+    <div className="p-6 max-w-4xl mx-auto bg-white rounded-xl shadow-md space-y-4">
+      <h1 className="text-2xl font-bold text-gray-900">Card Loyalty Pay With Points Enrollment API</h1>
+      <p className="text-gray-600">
+        Enables cardholders to enroll or un-enroll in the Pay with Points program, allowing management of loyalty rewards enrollment status and providing confirmation of enrollment actions.
+      </p>
+      
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold text-gray-800">Overview</h2>
+        <p className="mt-2 text-gray-600">
+          The Card Loyalty Pay With Points Enrollment (CLPWPE) API enables you to manage the enrollment and un-enrollment of customers in the Pay with Points program, facilitating seamless integration between your app and Chase’s loyalty rewards infrastructure.
+        </p>
+      </div>
+
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold text-gray-800">API Specification (YAML)</h2>
+        <pre className="mt-4 p-4 bg-gray-100 rounded-md overflow-x-auto text-sm text-gray-800">
+          <code>{chaseApiSpec}</code>
+        </pre>
+      </div>
+    </div>
+  );
+};
+
+export default ChaseApiComponent;

@@ -1,0 +1,8 @@
+[
+  {
+    "id": "wh_001",
+    "endpoint_url": "https://gateway.sovereign.app/webhook/v1/events",
+    "events": ["transaction.settled", "security.alert"],
+    "status": "ACTIVE"
+  }
+]

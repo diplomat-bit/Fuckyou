@@ -1,0 +1,888 @@
+---
+openapi: 3.0.0
+info:
+  title: Master Integration & Diagnostics API
+  description: >-
+    OpenAPI 3.0.0 specification for the Master Integration & Diagnostics API. This API enables AI agents,
+    automated orchestrators, and system administrators to trigger real-time health checks,
+    retrieve consolidated diagnostic reports, analyze dependency graphs, and securely manage
+    credentials and operations for external providers (including Citibank Sovereign Ledger, Alpaca Brokerage,
+    Modern Treasury, Plaid, Azure Gov Compliance, GCP Cloud Engines, Stripe, Tax Liens, and Sovereign ID).
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: Local and Production Gateway
+paths:
+  /diagnostics/health-check:
+    post:
+      summary: Trigger a real-time health check
+      description: >-
+        Executes diagnostic checks across specified integration providers or the entire system tree.
+        AI agents can use this to verify connectivity, latency, and compliance status.
+      operationId: triggerHealthCheck
+      tags:
+        - Diagnostics
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthCheckRequest'
+      responses:
+        '200':
+          description: Health check executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /diagnostics/reports:
+    get:
+      summary: Retrieve consolidated diagnostic reports
+      description: Fetches historical or cached diagnostic reports with filtering options.
+      operationId: getDiagnosticReports
+      tags:
+        - Diagnostics
+      parameters:
+        - name: provider
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter reports by integration provider (e.g., citi, alpaca, modern-treasury, azure, gcp, plaid)
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [HEALTHY, DEGRADED, CRITICAL, UNKNOWN]
+          description: Filter reports by overall status
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of reports to return
+      responses:
+        '200':
+          description: List of consolidated diagnostic reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiagnosticReport'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /diagnostics/reports/{reportId}:
+    get:
+      summary: Get a specific diagnostic report
+      description: Retrieves detailed telemetry, logs, and dependency graph analysis for a specific diagnostic run.
+      operationId: getDiagnosticReportById
+      tags:
+        - Diagnostics
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the diagnostic report
+      responses:
+        '200':
+          description: Detailed diagnostic report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiagnosticReport'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Report not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /diagnostics/credentials:
+    get:
+      summary: List configured integration providers
+      description: Retrieves a list of integration providers and their credential status (without exposing secrets).
+      operationId: listCredentials
+      tags:
+        - Diagnostics
+      responses:
+        '200':
+          description: List of integration providers and credential metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProviderCredentialMetadata'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Configure or update provider credentials
+      description: Securely registers or updates credentials for an integration provider (e.g., API keys, OAuth tokens, mTLS certificates).
+      operationId: updateCredentials
+      tags:
+        - Diagnostics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCredentialsRequest'
+      responses:
+        '200':
+          description: Credentials updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CredentialUpdateResponse'
+        '400':
+          description: Invalid request payload
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /diagnostics/credentials/{providerId}:
+    delete:
+      summary: Revoke or delete provider credentials
+      description: Removes credentials for a specific provider, triggering immediate revocation protocols.
+      operationId: deleteCredentials
+      tags:
+        - Diagnostics
+      parameters:
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The provider identifier (e.g., citi, alpaca, stripe, plaid)
+      responses:
+        '204':
+          description: Credentials successfully deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Provider not found
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /diagnostics/status:
+    get:
+      summary: Get overall system status
+      description: Returns a high-level summary of the entire system tree's health status.
+      operationId: getSystemStatus
+      tags:
+        - Diagnostics
+      responses:
+        '200':
+          description: Overall system status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStatus'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ACQUISITIONS ORCHESTRATOR
+  /acquisitions:
+    get:
+      summary: List all corporate acquisitions
+      description: Retrieves a list of active and historical corporate acquisitions.
+      operationId: listAcquisitions
+      tags:
+        - Acquisitions
+      responses:
+        '200':
+          description: List of acquisitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Acquisition'
+    post:
+      summary: Initiate a new corporate acquisition
+      description: Starts the workflow for a new corporate acquisition, including due diligence and ledger setup.
+      operationId: createAcquisition
+      tags:
+        - Acquisitions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcquisitionInput'
+      responses:
+        '201':
+          description: Acquisition initiated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Acquisition'
+
+  # AI AGENT FACTORY
+  /ai/agent:
+    post:
+      summary: Spawn or execute an AI Agent
+      description: Spawns a specialized AI agent (e.g., compliance auditor, financial forecaster) or executes a prompt.
+      operationId: executeAiAgent
+      tags:
+        - AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiAgentRequest'
+      responses:
+        '200':
+          description: AI Agent execution response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgentResponse'
+
+  # ALPACA BROKERAGE
+  /alpaca/orders:
+    get:
+      summary: List Alpaca brokerage orders
+      description: Retrieves orders from the Alpaca Brokerage API.
+      operationId: listAlpacaOrders
+      tags:
+        - Alpaca
+      responses:
+        '200':
+          description: List of Alpaca orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+    post:
+      summary: Place an Alpaca brokerage order
+      description: Places a new equity or crypto order via Alpaca.
+      operationId: placeAlpacaOrder
+      tags:
+        - Alpaca
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlpacaOrderInput'
+      responses:
+        '201':
+          description: Order placed successfully
+
+  # ALPACA COLLATERAL
+  /alpaca/collateral:
+    get:
+      summary: Get collateral status
+      description: Retrieves collateral and margin requirements from Alpaca.
+      operationId: getAlpacaCollateral
+      tags:
+        - Alpaca
+      responses:
+        '200':
+          description: Collateral status details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlpacaCollateralStatus'
+
+  # AZURE CLOUD & GOV COMPLIANCE
+  /azure/compliance:
+    get:
+      summary: Get Azure Gov Compliance status
+      description: Audits Azure subscriptions against FedRAMP and DoD Impact Level frameworks.
+      operationId: getAzureCompliance
+      tags:
+        - Azure
+      responses:
+        '200':
+          description: Compliance audit report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AzureComplianceReport'
+
+  # CITIBANK SOVEREIGN LEDGER
+  /citi/ledger:
+    get:
+      summary: Query Citibank Sovereign Ledger
+      description: Retrieves real-time ledger balances and transaction history from the Citibank Sovereign Ledger Bridge.
+      operationId: queryCitiLedger
+      tags:
+        - Citibank
+      responses:
+        '200':
+          description: Sovereign ledger state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitiLedgerState'
+    post:
+      summary: Post transaction to Citibank Sovereign Ledger
+      description: Initiates a sovereign-grade ledger transaction.
+      operationId: postCitiTransaction
+      tags:
+        - Citibank
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CitiTransactionInput'
+      responses:
+        '201':
+          description: Transaction posted successfully
+
+  # CRYPTO STRATEGY
+  /crypto/strategy:
+    post:
+      summary: Validate and execute crypto strategy
+      description: Validates a crypto trading strategy against compliance rules and executes it.
+      operationId: executeCryptoStrategy
+      tags:
+        - Crypto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CryptoStrategyInput'
+      responses:
+        '200':
+          description: Strategy execution results
+
+  # FINANCIAL-GRADE API (FAPI)
+  /fapi/conformance:
+    get:
+      summary: Check FAPI conformance status
+      description: Verifies that the API endpoints conform to Financial-grade API (FAPI) security profiles.
+      operationId: checkFapiConformance
+      tags:
+        - FAPI
+      responses:
+        '200':
+          description: FAPI conformance report
+
+  # GOVERNMENT GATEWAY
+  /government/gateway:
+    post:
+      summary: Submit regulatory report
+      description: Submits compliance and financial reports to the Government Gateway.
+      operationId: submitGovReport
+      tags:
+        - Government Gateway
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Report submitted successfully
+
+  # MODERN TREASURY
+  /modern-treasury/payments:
+    get:
+      summary: List Modern Treasury payments
+      description: Retrieves payment orders from Modern Treasury.
+      operationId: listModernTreasuryPayments
+      tags:
+        - Modern Treasury
+      responses:
+        '200':
+          description: List of payment orders
+    post:
+      summary: Create Modern Treasury payment
+      description: Initiates a payment order (ACH, Wire, RTP) via Modern Treasury.
+      operationId: createModernTreasuryPayment
+      tags:
+        - Modern Treasury
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Payment initiated successfully
+
+  # PLAID
+  /plaid/link-token:
+    post:
+      summary: Create Plaid Link Token
+      description: Generates a link token to initialize the Plaid Link flow.
+      operationId: createPlaidLinkToken
+      tags:
+        - Plaid
+      responses:
+        '200':
+          description: Plaid link token response
+
+  # REAL ESTATE
+  /real-estate/assets:
+    get:
+      summary: List tokenized real estate assets
+      description: Retrieves all real estate assets currently managed or tokenized.
+      operationId: listRealEstateAssets
+      tags:
+        - Real Estate
+      responses:
+        '200':
+          description: List of real estate assets
+
+  # SOVEREIGN ID
+  /sovereign/identity:
+    post:
+      summary: Verify Sovereign ID
+      description: Verifies a sovereign identity using zero-knowledge proofs and secure elements.
+      operationId: verifySovereignIdentity
+      tags:
+        - Sovereign ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Identity verification result
+
+  # STRIPE
+  /stripe/charges:
+    post:
+      summary: Create Stripe charge
+      description: Processes a payment charge via Stripe.
+      operationId: createStripeCharge
+      tags:
+        - Stripe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Charge processed successfully
+
+  # TAX LIENS
+  /tax-liens:
+    get:
+      summary: List tax liens portfolio
+      description: Retrieves the portfolio of tax liens and associated properties.
+      operationId: listTaxLiens
+      tags:
+        - Tax Liens
+      responses:
+        '200':
+          description: Tax liens portfolio list
+
+  # TQQQ STRATEGY
+  /tqqq/strategy:
+    post:
+      summary: Run TQQQ Strategy simulation
+      description: Runs a simulation or executes a rebalancing order for the TQQQ leveraged strategy.
+      operationId: runTqqqStrategy
+      tags:
+        - TQQQ Strategy
+      responses:
+        '200':
+          description: TQQQ strategy execution report
+
+  # AUDIT TRAIL
+  /audit/logs:
+    get:
+      summary: Retrieve compliance audit logs
+      description: Fetches immutable audit logs for regulatory compliance.
+      operationId: getAuditLogs
+      tags:
+        - Audit
+      responses:
+        '200':
+          description: List of audit logs
+
+  # WEBHOOKS
+  /webhooks/receiver:
+    post:
+      summary: Receive external webhook events
+      description: Endpoint to receive incoming webhooks from Stripe, Plaid, Alpaca, or Modern Treasury.
+      operationId: receiveWebhook
+      tags:
+        - Webhooks
+      responses:
+        '200':
+          description: Webhook processed successfully
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Diagnostics-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HealthCheckRequest:
+      type: object
+      properties:
+        providers:
+          type: array
+          items:
+            type: string
+          description: Specific providers to check. If empty, all configured providers are checked.
+          example: ["citi", "alpaca", "modern-treasury", "azure-gov", "gcp-engine", "plaid"]
+        deepCheck:
+          type: boolean
+          default: false
+          description: Whether to perform deep end-to-end transaction simulation checks.
+        timeoutMs:
+          type: integer
+          default: 5000
+          description: Timeout for the diagnostic checks in milliseconds.
+    HealthCheckResponse:
+      type: object
+      properties:
+        reportId:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        overallStatus:
+          $ref: '#/components/schemas/StatusEnum'
+        durationMs:
+          type: integer
+        results:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ProviderCheckResult'
+    StatusEnum:
+      type: string
+      enum: [HEALTHY, DEGRADED, CRITICAL, UNKNOWN]
+    ProviderCheckResult:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        latencyMs:
+          type: integer
+        message:
+          type: string
+        endpointTested:
+          type: string
+        error:
+          type: string
+    DiagnosticReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        overallStatus:
+          $ref: '#/components/schemas/StatusEnum'
+        systemMetrics:
+          $ref: '#/components/schemas/SystemMetrics'
+        dependencyGraph:
+          $ref: '#/components/schemas/DependencyGraph'
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogEntry'
+    SystemMetrics:
+      type: object
+      properties:
+        cpuUsagePercent:
+          type: number
+        memoryUsageBytes:
+          type: integer
+        activeConnections:
+          type: integer
+    DependencyGraph:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependencyNode'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependencyEdge'
+    DependencyNode:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+          enum: [SERVICE, DATABASE, EXTERNAL_API, GATEWAY]
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+    DependencyEdge:
+      type: object
+      properties:
+        source:
+          type: string
+        target:
+          type: string
+        relation:
+          type: string
+    LogEntry:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        level:
+          type: string
+          enum: [INFO, WARN, ERROR, DEBUG]
+        service:
+          type: string
+        message:
+          type: string
+    ProviderCredentialMetadata:
+      type: object
+      properties:
+        providerId:
+          type: string
+          example: "citi"
+        providerName:
+          type: string
+          example: "Citibank Sovereign Ledger Bridge"
+        configured:
+          type: boolean
+        lastUpdated:
+          type: string
+          format: date-time
+        authType:
+          type: string
+          enum: [MTLS, API_KEY, OAUTH2, JWT]
+    UpdateCredentialsRequest:
+      type: object
+      required:
+        - providerId
+        - authType
+      properties:
+        providerId:
+          type: string
+          example: "alpaca"
+        authType:
+          type: string
+          enum: [MTLS, API_KEY, OAUTH2, JWT]
+        apiKey:
+          type: string
+          description: API Key or Client Secret (write-only)
+        apiSecret:
+          type: string
+          description: API Secret or Private Key (write-only)
+        certificatePem:
+          type: string
+          description: PEM-encoded client certificate for mTLS (write-only)
+        privateKeyPem:
+          type: string
+          description: PEM-encoded private key for mTLS (write-only)
+    CredentialUpdateResponse:
+      type: object
+      properties:
+        providerId:
+          type: string
+        status:
+          type: string
+          enum: [SUCCESS, FAILED]
+        message:
+          type: string
+    SystemStatus:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        uptimeSeconds:
+          type: integer
+        version:
+          type: string
+        activeAlertsCount:
+          type: integer
+
+    # NEW SCHEMAS FOR INTEGRATIONS
+    Acquisition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        targetCompany:
+          type: string
+        status:
+          type: string
+          enum: [DUE_DILIGENCE, SIGNED, COMPLETED, ABORTED]
+        valuation:
+          type: number
+        ledgerSyncStatus:
+          type: string
+    AcquisitionInput:
+      type: object
+      required:
+        - targetCompany
+        - valuation
+      properties:
+        targetCompany:
+          type: string
+        valuation:
+          type: number
+    AiAgentRequest:
+      type: object
+      required:
+        - agentType
+        - prompt
+      properties:
+        agentType:
+          type: string
+          example: "compliance-auditor"
+        prompt:
+          type: string
+    AiAgentResponse:
+      type: object
+      properties:
+        agentId:
+          type: string
+        response:
+          type: string
+        confidenceScore:
+          type: number
+    AlpacaOrderInput:
+      type: object
+      required:
+        - symbol
+        - qty
+        - side
+        - type
+        - time_in_force
+      properties:
+        symbol:
+          type: string
+        qty:
+          type: number
+        side:
+          type: string
+          enum: [buy, sell]
+        type:
+          type: string
+          enum: [market, limit, stop, stop_limit]
+        time_in_force:
+          type: string
+          enum: [day, gtc, opg, cls, ioc, fok]
+    AlpacaCollateralStatus:
+      type: object
+      properties:
+        equity:
+          type: number
+        marginBalance:
+          type: number
+        maintenanceMargin:
+          type: number
+        collateralRatio:
+          type: number
+    AzureComplianceReport:
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+        fedrampStatus:
+          type: string
+        nonCompliantResources:
+          type: array
+          items:
+            type: string
+    CitiLedgerState:
+      type: object
+      properties:
+        ledgerId:
+          type: string
+        balance:
+          type: number
+        currency:
+          type: string
+        lastBlockIndex:
+          type: integer
+    CitiTransactionInput:
+      type: object
+      required:
+        - amount
+        - currency
+        - destinationLedgerId
+      properties:
+        amount:
+          type: number
+        currency:
+          type: string
+        destinationLedgerId:
+          type: string
+    CryptoStrategyInput:
+      type: object
+      required:
+        - strategyName
+        - assets
+        - allocationPercentages
+      properties:
+        strategyName:
+          type: string
+        assets:
+          type: array
+          items:
+            type: string
+        allocationPercentages:
+          type: array
+          items:
+            type: number
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unauthorized access to diagnostics endpoint"
+    InternalServerError:
+      description: Internal server error during diagnostic execution
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Failed to compile diagnostic report"
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []

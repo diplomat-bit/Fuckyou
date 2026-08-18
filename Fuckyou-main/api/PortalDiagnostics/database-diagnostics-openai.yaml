@@ -1,0 +1,394 @@
+openapi: 3.0.3
+info:
+  title: Portal Diagnostics & Database Engine API
+  description: >
+    Comprehensive OpenAPI specification for the Portal Diagnostics and Database Diagnostic endpoints.
+    This API orchestrates health checks, performance monitoring, security scanning, log analysis,
+    network diagnostics, authentication verification, and system load reporting across the entire ecosystem.
+  version: 1.1.0
+servers:
+  - url: /api/diagnostics
+    description: Local development and production gateway
+paths:
+  /database/health:
+    get:
+      summary: Get database health status
+      description: Performs real-time ping, connection pool validation, and read/write latency checks.
+      tags:
+        - Database Diagnostics
+      responses:
+        '200':
+          description: Database is healthy and fully operational
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStatus'
+        '500':
+          description: Database is degraded or offline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /database/metrics:
+    get:
+      summary: Get database performance metrics
+      description: Retrieves detailed metrics including query execution times, transaction rates, and cache hit ratios.
+      tags:
+        - Database Diagnostics
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Performance metrics successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiagnosticReport'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /database/load:
+    get:
+      summary: Get current database and system load
+      description: Returns CPU usage, memory consumption, active connections, and thread pool utilization.
+      tags:
+        - Database Diagnostics
+      responses:
+        '200':
+          description: System load data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemLoad'
+
+  /auth/validate:
+    post:
+      summary: Run authentication diagnostics
+      description: Validates token verification pipelines, session stores, and identity provider connectivity.
+      tags:
+        - Auth Diagnostics
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                testToken:
+                  type: string
+                  description: A dummy or expired token to test validation logic
+              required:
+                - testToken
+      responses:
+        '200':
+          description: Auth diagnostics completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providerConnected:
+                    type: boolean
+                  tokenValidationLatencyMs:
+                    type: number
+                  sessionStoreStatus:
+                    type: string
+
+  /integrations/status:
+    get:
+      summary: Check external integrations and bridges
+      description: Verifies connectivity to external APIs like Citibank, Alpaca, Modern Treasury, and Stripe.
+      tags:
+        - Integration Diagnostics
+      responses:
+        '200':
+          description: Integration status report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  citibank:
+                    $ref: '#/components/schemas/IntegrationStatus'
+                  alpaca:
+                    $ref: '#/components/schemas/IntegrationStatus'
+                  modernTreasury:
+                    $ref: '#/components/schemas/IntegrationStatus'
+                  stripe:
+                    $ref: '#/components/schemas/IntegrationStatus'
+
+  /network/ping:
+    get:
+      summary: Run network diagnostics
+      description: Measures latency, packet loss, and DNS resolution times to critical endpoints.
+      tags:
+        - Network Diagnostics
+      responses:
+        '200':
+          description: Network diagnostics report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dnsResolutionTimeMs:
+                    type: number
+                  packetLossPercentage:
+                    type: number
+                  gatewayLatencyMs:
+                    type: number
+
+  /security/scan:
+    post:
+      summary: Trigger security scanner
+      description: Initiates an on-demand security scan of configurations, open ports, and dependency vulnerabilities.
+      tags:
+        - Security Diagnostics
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '202':
+          description: Security scan initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scanId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [queued, running]
+                  estimatedDurationSeconds:
+                    type: integer
+
+  /logs/analyze:
+    post:
+      summary: Analyze system logs for anomalies
+      description: Scans recent log files for error patterns, stack traces, and potential security threats.
+      tags:
+        - Log Diagnostics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                timeRangeMinutes:
+                  type: integer
+                  default: 60
+                severityFilter:
+                  type: string
+                  enum: [INFO, WARN, ERROR, FATAL]
+                  default: ERROR
+      responses:
+        '200':
+          description: Log analysis report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  anomaliesFound:
+                    type: integer
+                  criticalErrors:
+                    type: array
+                    items:
+                      type: string
+                  recommendations:
+                    type: array
+                    items:
+                      type: string
+
+  /telemetry/collect:
+    post:
+      summary: Collect and aggregate telemetry data
+      description: Receives client-side or microservice telemetry payloads for centralized aggregation.
+      tags:
+        - Telemetry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelemetryPayload'
+      responses:
+        '200':
+          description: Telemetry data accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  processedEvents:
+                    type: integer
+                  status:
+                    type: string
+
+  /orchestrate/run-all:
+    post:
+      summary: Run full diagnostics orchestration suite
+      description: Triggers all diagnostic services sequentially or in parallel and compiles a master report.
+      tags:
+        - Orchestration
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Master diagnostic report compiled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MasterDiagnosticReport'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Diagnostics-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    SystemStatus:
+      type: object
+      required:
+        - status
+        - latency
+        - timestamp
+      properties:
+        status:
+          type: string
+          enum: [online, offline, degraded]
+        latency:
+          type: number
+          description: Latency in milliseconds
+        timestamp:
+          type: string
+          format: date-time
+    DiagnosticReport:
+      type: object
+      required:
+        - reportId
+        - metrics
+        - timestamp
+      properties:
+        reportId:
+          type: string
+          format: uuid
+        metrics:
+          type: object
+          properties:
+            queryExecutionTime:
+              type: number
+              description: Average query execution time in milliseconds
+            transactionRate:
+              type: number
+              description: Transactions per second
+            errorRate:
+              type: number
+              description: Percentage of failed transactions
+            cacheHitRatio:
+              type: number
+              description: Database cache hit ratio percentage
+        timestamp:
+          type: string
+          format: date-time
+    SystemLoad:
+      type: object
+      required:
+        - cpuUsage
+        - memoryUsage
+        - activeConnections
+      properties:
+        cpuUsage:
+          type: number
+          description: CPU usage percentage (0-100)
+        memoryUsage:
+          type: number
+          description: Memory usage percentage (0-100)
+        activeConnections:
+          type: integer
+          description: Number of active database connections
+        idleConnections:
+          type: integer
+        threadPoolQueueSize:
+          type: integer
+    IntegrationStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [connected, disconnected, degraded]
+        latencyMs:
+          type: number
+        lastChecked:
+          type: string
+          format: date-time
+    TelemetryPayload:
+      type: object
+      required:
+        - source
+        - events
+      properties:
+        source:
+          type: string
+        events:
+          type: array
+          items:
+            type: object
+            properties:
+              eventType:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+              payload:
+                type: object
+    MasterDiagnosticReport:
+      type: object
+      properties:
+        orchestrationId:
+          type: string
+          format: uuid
+        overallStatus:
+          type: string
+          enum: [healthy, warning, critical]
+        database:
+          $ref: '#/components/schemas/SystemStatus'
+        load:
+          $ref: '#/components/schemas/SystemLoad'
+        networkLatencyMs:
+          type: number
+        securityAlertsCount:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: string

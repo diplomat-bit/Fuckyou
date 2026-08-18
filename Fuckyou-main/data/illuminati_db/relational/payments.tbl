@@ -1,0 +1,18 @@
+[
+  {
+    "id": "pay_001",
+    "amount": 150000000,
+    "currency": "USD",
+    "direction": "CREDIT",
+    "status": "SETTLED",
+    "reference": "REF-QUANTUM-991"
+  },
+  {
+    "id": "pay_002",
+    "amount": 75000000,
+    "currency": "EUR",
+    "direction": "DEBIT",
+    "status": "SETTLED",
+    "reference": "REF-MERIDIAN-442"
+  }
+]
