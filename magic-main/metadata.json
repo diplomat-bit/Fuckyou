@@ -1,0 +1,9 @@
+{
+  "name": "Copy of Sovereign AI Banking Nexus",
+  "description": "A next-generation bankwing dashboard providing AI-driven insights and advanced financial management tools for personal and corporate clients.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

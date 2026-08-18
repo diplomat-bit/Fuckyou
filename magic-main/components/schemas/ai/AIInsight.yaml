@@ -1,0 +1,62 @@
+---
+type: object
+description: >-
+  A contextual, AI-generated insight or recommendation provided to the user.
+  Represents a piece of intelligence, an anomaly, or a suggestion derived from
+  analyzing the user's financial data, market trends, or security events.
+required:
+  - id
+  - title
+  - description
+  - category
+  - severity
+  - timestamp
+properties:
+  id:
+    type: string
+    description: Unique identifier for the AI insight.
+    example: insight-spending-alert-001
+  title:
+    type: string
+    description: A concise, human-readable title for the insight.
+    example: High Dining Spend Alert
+  description:
+    type: string
+    description: A detailed explanation of the insight, providing context and potential impact.
+    example: >-
+      Your dining expenses this month are 35% higher than your average,
+      potentially impacting your budget by $150.
+  category:
+    type: string
+    description: The functional category of the insight, helping to classify its nature.
+    enum:
+      - spending
+      - budget
+      - investing
+      - saving
+      - security
+      - compliance
+      - corporate_treasury
+      - sustainability
+      - financial_goals
+    example: spending
+  severity:
+    type: string
+    description: The calculated severity level of the insight, indicating its potential impact.
+    enum:
+      - low
+      - medium
+      - high
+      - critical
+    example: medium
+  actionableRecommendation:
+    type: string
+    description: A specific, actionable recommendation for the user to consider based on the insight.
+    example: >-
+      Consider utilizing the 'Budget Optimizer' tool to adjust your dining
+      budget or explore meal prep options.
+  timestamp:
+    type: string
+    format: date-time
+    description: The exact UTC timestamp when the insight was generated.
+    example: '2024-07-22T11:45:00Z'

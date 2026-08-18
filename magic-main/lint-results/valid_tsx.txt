@@ -1,0 +1,7 @@
+./components/FinancialGoalsView.tsx
+./components/APIIntegrationView.tsx
+./components/AIAdStudioView.tsx
+./components/PrivateEquityLounge.tsx
+./components/AlgoTradingLab.tsx
+./components/AIAdvisorView.tsx
+./components/OpenBankingView.tsx
