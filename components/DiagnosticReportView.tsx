@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DiagnosticReport, SystemStatus } from '../api/PortalDiagnostics/types/DiagnosticReport';
-import { useDiagnostics } from '../api/PortalDiagnostics/context/DiagnosticsContext';
+import { useDiagnostics } from './api/PortalDiagnostics/context/DiagnosticsContext';
 
 export const DiagnosticReportView: React.FC = () => {
   const { report, loading, error, refreshDiagnostics } = useDiagnostics();
