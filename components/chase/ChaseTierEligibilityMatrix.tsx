@@ -630,7 +630,7 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
         JSON.stringify(
           {
             enrollment: {
-              enrollmentStatusName: enrollmentAction === 'AUTOENROLL' ? 'AUTOENROLLED' : 'ENROLLED',
+              enrollmentStatusName: enrollmentAction === 'AUTOENROLL' ? 'AUTOENROLLED' : 'ENROLL',
               enrollmentStatusDate: new Date().toISOString().split('T')[0]
             },
             product: {
@@ -691,7 +691,8 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
               onClick={() => {
                 setActiveTraceId(generateTraceId());
               }}
-              className="p-2 hover:bg-slate-800 text-slate-300 rounded-lg transition-colors title='Cycle Trace ID'"
+              className="p-2 hover:bg-slate-800 text-slate-300 rounded-lg transition-colors"
+              title="Cycle Trace ID"
             >
               <RefreshCw className="h-4 w-4" />
             </button>
@@ -850,4 +851,121 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
 
           <div className="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
             <span>UUID Ref:</span>
-            <span className="text
+            <span className="text-cyan-500">{activeProfile.accountReferenceUuid.slice(0, 8)}...</span>
+          </div>
+        </div>
+
+        {/* Evaluation Matrix */}
+        <div className="lg:col-span-8 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-md shadow-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Layers className="h-5 w-5 text-indigo-400" />
+              Product Eligibility Matrix
+            </h3>
+            <div className="flex gap-2">
+              <span className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-400">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Eligible
+              </span>
+              <span className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-400">
+                <span className="h-2 w-2 rounded-full bg-red-500" /> Restricted
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {matrixComparisonData.map((item) => (
+              <button
+                key={item.meta.rpc}
+                onClick={() => setSelectedRpc(item.meta.rpc)}
+                className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                  selectedRpc === item.meta.rpc
+                    ? 'bg-slate-800 border-cyan-500/50 shadow-lg'
+                    : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.meta.accentColor}`}>
+                    <CreditCard className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-xs font-bold text-slate-200">{item.meta.displayName}</div>
+                    <div className="text-[10px] text-slate-500">{item.meta.category}</div>
+                  </div>
+                </div>
+                {item.outcome.isEligibleForManualEnroll ? (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                ) : (
+                  <XCircle className="h-5 w-5 text-red-500" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* API SIMULATOR OUTPUT */}
+      <div className="max-w-7xl mx-auto bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Terminal className="h-5 w-5 text-cyan-400" />
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">API Response Simulation</h3>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleCopyTrace}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-300 transition-colors"
+            >
+              {copiedTraceId ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copiedTraceId ? 'COPIED' : 'COPY TRACE'}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 space-y-3">
+            <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
+              <div className="text-[10px] text-slate-400 uppercase font-bold mb-2">Action Controls</div>
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  disabled={isExecutingApi || !currentEvaluation.isEligibleForManualEnroll}
+                  onClick={() => handleSimulateApiCall('AUTOENROLL')}
+                  className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-all"
+                >
+                  AUTO-ENROLL
+                </button>
+                <button
+                  disabled={isExecutingApi || !currentEvaluation.isEligibleForManualEnroll}
+                  onClick={() => handleSimulateApiCall('ENROLL')}
+                  className="w-full py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-all"
+                >
+                  MANUAL ENROLL
+                </button>
+                <button
+                  disabled={isExecutingApi}
+                  onClick={() => handleSimulateApiCall('UNENROLL')}
+                  className="w-full py-2 bg-red-900/30 hover:bg-red-900/50 border border-red-900/50 text-red-400 text-xs font-bold rounded-lg transition-all"
+                >
+                  UN-ENROLL
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-2">
+            <div className="bg-black rounded-xl border border-slate-800 p-4 font-mono text-xs overflow-x-auto">
+              {isExecutingApi ? (
+                <div className="flex items-center gap-2 text-slate-500 animate-pulse">
+                  <Activity className="h-4 w-4" /> Executing CLPWPE Request...
+                </div>
+              ) : (
+                <pre className="text-emerald-400">
+                  {apiResponseJson || '// Awaiting API Request...'}
+                </pre>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
