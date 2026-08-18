@@ -18,7 +18,7 @@ interface VisaTransaction {
   merchantName: string;
   mcc: string;
   country: string;
-  status: 'Approved' | 'Declined' | 'Flagged';
+  status: 'Approved' | 'Declined' | 'Flagged',
   riskScore: number;
   fraudAnalysis: {
     decision: 'APPROVE' | 'DECLINE' | 'FLAG';
