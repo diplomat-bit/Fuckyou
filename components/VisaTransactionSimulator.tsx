@@ -43,7 +43,7 @@ export default function VisaTransactionSimulator() {
   const [expiry, setExpiry] = useState('12/27');
   const [cvv, setCvv] = useState('382');
   const [amount, setAmount] = useState('1250.00');
-  const [merchantName: string, setMerchantName] = useState('Sovereign Luxury Goods LLC');
+  const [merchantName, setMerchantName] = useState('Sovereign Luxury Goods LLC');
   const [mcc, setMcc] = useState('5944'); // Precious Stones and Jewelry
   const [country, setCountry] = useState('US');
   const [ipAddress, setIpAddress] = useState('192.168.1.105');
