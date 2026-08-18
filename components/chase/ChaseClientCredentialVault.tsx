@@ -151,6 +151,7 @@ const sha256Base64Url = async (plain: string): Promise<string> => {
 
 export const ChaseClientCredentialVault: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'vault' | 'pkce' | 'headers' | 'simulator' | 'envExport'>('vault');
+
   const [credentials, setCredentials] = useState<ChaseApiCredentials>({
     clientId: 'sandbox_jpm_chase_pwp_client_094fbc8a',
     clientSecret: 'sec_live_99f0e1d823ba4c81a2e389d41b',
@@ -167,6 +168,7 @@ export const ChaseClientCredentialVault: React.FC = () => {
 
   const [showSecret, setShowSecret] = useState<boolean>(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
   const [pkceState, setPkceState] = useState<PkcePair>({
     codeVerifier: '',
     codeChallenge: '',
@@ -175,6 +177,7 @@ export const ChaseClientCredentialVault: React.FC = () => {
     timestamp: '',
   });
   const [pkceVerifierLength, setPkceVerifierLength] = useState<number>(64);
+
   const [tokenResponse, setTokenResponse] = useState<GeneratedTokenState>({
     accessToken: '',
     tokenType: 'Bearer',
@@ -184,6 +187,7 @@ export const ChaseClientCredentialVault: React.FC = () => {
     status: 'idle',
   });
   const [secondsRemaining, setSecondsRemaining] = useState<number>(0);
+
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
