@@ -365,12 +365,9 @@ export interface TierEvaluationOutcome {
 // ============================================================================
 
 export const ChaseTierEligibilityMatrix: React.FC = () => {
-  // Selected Card to Inspect
   const [selectedRpc, setSelectedRpc] = useState<MerchantDefinedProductCode>('JPM_RESERVE');
-  // Selected or Custom Profile
   const [selectedProfileId, setSelectedProfileId] = useState<string>('PB-9021');
   
-  // Custom Profile Form State (allows live Jamie Dimon simulation)
   const [customAssets, setCustomAssets] = useState<number>(48500000);
   const [customCreditLimit, setCustomCreditLimit] = useState<number>(150000);
   const [customIsCommercial, setCustomIsCommercial] = useState<boolean>(true);
@@ -378,13 +375,11 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
   const [customRiskRating, setCustomRiskRating] = useState<'TIER_1_AAA' | 'TIER_2_A' | 'TIER_3_BBB' | 'RESTRICTED'>('TIER_1_AAA');
   const [customChannel, setCustomChannel] = useState<'WEB' | 'MOBILE_APP' | 'BRANCH_PORTAL' | 'API_GATEWAY'>('API_GATEWAY');
   
-  // Simulated Request Logs
   const [isExecutingApi, setIsExecutingApi] = useState<boolean>(false);
   const [apiResponseJson, setApiResponseJson] = useState<string | null>(null);
   const [apiHttpStatus, setApiHttpStatus] = useState<number | null>(null);
   const [copiedTraceId, setCopiedTraceId] = useState<boolean>(false);
 
-  // Active Profile Calculation
   const activeProfile = useMemo<RelationshipProfile>(() => {
     const found = PRESET_PROFILES.find((p) => p.id === selectedProfileId);
     if (found && selectedProfileId !== 'CUSTOM') {
@@ -414,7 +409,6 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
     selectedRpc
   ]);
 
-  // Sync state if user selects a preset profile
   const handleSelectPreset = (presetId: string) => {
     setSelectedProfileId(presetId);
     const p = PRESET_PROFILES.find((item) => item.id === presetId);
@@ -428,17 +422,12 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
     }
   };
 
-  // ============================================================================
-  // EVALUATION ENGINE
-  // ============================================================================
-
   const evaluateTierEligibility = useCallback(
     (rpc: MerchantDefinedProductCode, profile: RelationshipProfile): TierEvaluationOutcome => {
       const cardMeta = CARD_TIER_REGISTRY[rpc];
       const rules: ValidationRuleResult[] = [];
       const failures: string[] = [];
 
-      // Rule 1: Relationship Assets Threshold
       const assetsPassed = profile.totalAssets >= cardMeta.minRelationshipAssets;
       rules.push({
         ruleId: 'RULE_RELATIONSHIP_ASSETS',
@@ -455,7 +444,6 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
         failures.push(`Assets below $${cardMeta.minRelationshipAssets.toLocaleString()} threshold.`);
       }
 
-      // Rule 2: Credit Limit Floor
       const creditLimitPassed = profile.creditLimit >= cardMeta.minCreditLimit;
       rules.push({
         ruleId: 'RULE_CREDIT_LINE_FLOOR',
@@ -472,7 +460,6 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
         failures.push(`Credit line ($${profile.creditLimit}) below $${cardMeta.minCreditLimit}`);
       }
 
-      // Rule 3: Commercial Entity Requirement (e.g. Ink Cards)
       const commercialPassed = !cardMeta.requiresCommercialEntity || profile.isCommercialEntity;
       rules.push({
         ruleId: 'RULE_COMMERCIAL_STRUCTURE',
@@ -489,7 +476,6 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
         failures.push('Requires Commercial Corporate Registration.');
       }
 
-      // Rule 4: Risk Tiering
       const riskPassed = profile.riskRating !== 'RESTRICTED';
       rules.push({
         ruleId: 'RULE_RISK_COMPLIANCE',
@@ -506,7 +492,6 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
         failures.push('Account restricted due to compliance/risk flag.');
       }
 
-      // Rule 5: Auto-enrollment capability in API
       const autoEnrollFlag = cardMeta.autoEnrollmentEligible && failures.length === 0;
       rules.push({
         ruleId: 'RULE_AUTO_ENROLL_FLAG',
@@ -520,7 +505,6 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
           : 'Product requires active self-enrollment (Manual ENROLL header).'
       });
 
-      // Point Economics projection: (Spend * Multiplier) * Redemption Rate
       const annualPoints = profile.annualSpend * cardMeta.basePointsMultiplier;
       const projectedValue = annualPoints * cardMeta.payWithPointsRate;
 
@@ -544,23 +528,10 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
     []
   );
 
-  // Active Card Evaluation
   const currentEvaluation = useMemo(() => {
     return evaluateTierEligibility(selectedRpc, activeProfile);
   }, [evaluateTierEligibility, selectedRpc, activeProfile]);
 
-  // Batch matrix evaluation for all 13 products for comparison
-  const matrixComparisonData = useMemo(() => {
-    return (Object.keys(CARD_TIER_REGISTRY) as MerchantDefinedProductCode[]).map((rpc) => {
-      const outcome = evaluateTierEligibility(rpc, activeProfile);
-      return {
-        meta: CARD_TIER_REGISTRY[rpc],
-        outcome
-      };
-    });
-  }, [evaluateTierEligibility, activeProfile]);
-
-  // Generate Deterministic Trace ID (128-bit hex = 32 lowercase hex chars)
   const generateTraceId = () => {
     const chars = '0123456789abcdef';
     let str = '';
@@ -571,10 +542,6 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
   };
 
   const [activeTraceId, setActiveTraceId] = useState<string>(() => generateTraceId());
-
-  // ============================================================================
-  // SIMULATE CLPWPE API CALL
-  // ============================================================================
 
   const handleSimulateApiCall = (enrollmentAction: 'AUTOENROLL' | 'ENROLL' | 'UNENROLL') => {
     setIsExecutingApi(true);
@@ -606,9 +573,7 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
         return;
       }
 
-      // Check eligibility
       if (!currentEvaluation.isEligibleForManualEnroll) {
-        // Return 409 Business Reason Error (Code 601: Account is not eligible)
         setApiHttpStatus(409);
         setApiResponseJson(
           JSON.stringify(
@@ -624,13 +589,12 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
         return;
       }
 
-      // Success Enrollment Response 200
       setApiHttpStatus(200);
       setApiResponseJson(
         JSON.stringify(
           {
             enrollment: {
-              enrollmentStatusName: enrollmentAction === 'AUTOENROLL' ? 'AUTOENROLLED' : 'ENROLL',
+              enrollmentStatusName: enrollmentAction === 'AUTOENROLL' ? 'AUTOENROLLED' : 'ENROLLED',
               enrollmentStatusDate: new Date().toISOString().split('T')[0]
             },
             product: {
@@ -650,11 +614,8 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
     setTimeout(() => setCopiedTraceId(false), 2000);
   };
 
-  const targetCard = CARD_TIER_REGISTRY[selectedRpc];
-
   return (
     <div className="w-full min-h-screen bg-[#070e17] text-slate-100 p-4 sm:p-6 lg:p-8 font-sans selection:bg-cyan-500 selection:text-black">
-      {/* HEADER: J.P. MORGAN CHASE PRIVATE BANK COMMAND */}
       <div className="max-w-7xl mx-auto mb-8 border-b border-slate-800 pb-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -700,9 +661,7 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
         </div>
       </div>
 
-      {/* TOP CONTROLS: PROFILE SELECTOR & LIVE SIMULATOR */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-        {/* Profile Card & Custom Modifiers */}
         <div className="lg:col-span-4 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between shadow-2xl">
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -717,7 +676,6 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
               </span>
             </div>
 
-            {/* Profile Dropdown */}
             <div className="mb-4">
               <label className="block text-xs font-medium text-slate-400 mb-1.5">
                 Client Relationship Archetype
@@ -739,7 +697,6 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
               </div>
             </div>
 
-            {/* Live Parameter Sliders */}
             <div className="space-y-4 pt-2 border-t border-slate-800/70">
               <div>
                 <div className="flex justify-between text-xs mb-1">
@@ -851,121 +808,120 @@ export const ChaseTierEligibilityMatrix: React.FC = () => {
 
           <div className="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
             <span>UUID Ref:</span>
-            <span className="text-cyan-500">{activeProfile.accountReferenceUuid.slice(0, 8)}...</span>
+            <span className="text-slate-200">{activeProfile.accountReferenceUuid.slice(0, 8)}...</span>
           </div>
         </div>
 
-        {/* Evaluation Matrix */}
-        <div className="lg:col-span-8 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-md shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Layers className="h-5 w-5 text-indigo-400" />
-              Product Eligibility Matrix
-            </h3>
-            <div className="flex gap-2">
-              <span className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Eligible
-              </span>
-              <span className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-red-500" /> Restricted
-              </span>
+        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-md shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <SlidersHorizontal className="h-5 w-5 text-cyan-400" />
+                Product Selection
+              </h3>
+              <span className="text-xs font-mono text-slate-500">RPC_REGISTRY_V2</span>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {(Object.keys(CARD_TIER_REGISTRY) as MerchantDefinedProductCode[]).map((rpc) => {
+                const meta = CARD_TIER_REGISTRY[rpc];
+                const isSelected = selectedRpc === rpc;
+                return (
+                  <button
+                    key={rpc}
+                    onClick={() => setSelectedRpc(rpc)}
+                    className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                      isSelected
+                        ? 'bg-slate-800 border-cyan-500/50 shadow-lg'
+                        : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`h-2 w-2 rounded-full ${isSelected ? 'bg-cyan-400' : 'bg-slate-700'}`} />
+                      <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-slate-400'}`}>
+                        {meta.displayName}
+                      </span>
+                    </div>
+                    {isSelected && <ChevronRight className="h-4 w-4 text-cyan-400" />}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {matrixComparisonData.map((item) => (
-              <button
-                key={item.meta.rpc}
-                onClick={() => setSelectedRpc(item.meta.rpc)}
-                className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                  selectedRpc === item.meta.rpc
-                    ? 'bg-slate-800 border-cyan-500/50 shadow-lg'
-                    : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center bg-gradient-to-br ${item.meta.accentColor}`}>
-                    <CreditCard className="h-5 w-5 text-white" />
+          <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 backdrop-blur-md shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Activity className="h-5 w-5 text-emerald-400" />
+                Eligibility Analysis
+              </h3>
+              <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${currentEvaluation.isEligibleForManualEnroll ? 'bg-emerald-950 text-emerald-300' : 'bg-red-950 text-red-300'}`}>
+                {currentEvaluation.isEligibleForManualEnroll ? 'Eligible' : 'Ineligible'}
+              </div>
+            </div>
+
+            <div className="space-y-4 flex-grow">
+              {currentEvaluation.rulesBreakdown.map((rule) => (
+                <div key={rule.ruleId} className="flex items-start gap-3">
+                  <div className={`mt-0.5 ${rule.passed ? 'text-emerald-500' : 'text-red-500'}`}>
+                    {rule.passed ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                   </div>
-                  <div className="text-left">
-                    <div className="text-xs font-bold text-slate-200">{item.meta.displayName}</div>
-                    <div className="text-[10px] text-slate-500">{item.meta.category}</div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-200">{rule.ruleLabel}</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">{rule.reason}</div>
                   </div>
                 </div>
-                {item.outcome.isEligibleForManualEnroll ? (
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-red-500" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+              ))}
+            </div>
 
-      {/* API SIMULATOR OUTPUT */}
-      <div className="max-w-7xl mx-auto bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-2xl">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Terminal className="h-5 w-5 text-cyan-400" />
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">API Response Simulation</h3>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleCopyTrace}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-300 transition-colors"
-            >
-              {copiedTraceId ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-              {copiedTraceId ? 'COPIED' : 'COPY TRACE'}
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 space-y-3">
-            <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
-              <div className="text-[10px] text-slate-400 uppercase font-bold mb-2">Action Controls</div>
-              <div className="grid grid-cols-1 gap-2">
+            <div className="mt-6 pt-6 border-t border-slate-800">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs text-slate-400">Projected Annual Value</span>
+                <span className="text-lg font-bold text-white font-mono">
+                  ${currentEvaluation.projectedAnnualPointsValue.toFixed(2)}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
                 <button
-                  disabled={isExecutingApi || !currentEvaluation.isEligibleForManualEnroll}
-                  onClick={() => handleSimulateApiCall('AUTOENROLL')}
-                  className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-all"
-                >
-                  AUTO-ENROLL
-                </button>
-                <button
-                  disabled={isExecutingApi || !currentEvaluation.isEligibleForManualEnroll}
+                  disabled={!currentEvaluation.isEligibleForManualEnroll || isExecutingApi}
                   onClick={() => handleSimulateApiCall('ENROLL')}
-                  className="w-full py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-all"
+                  className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold py-2 rounded-lg transition-all"
                 >
-                  MANUAL ENROLL
+                  Manual Enroll
                 </button>
                 <button
-                  disabled={isExecutingApi}
-                  onClick={() => handleSimulateApiCall('UNENROLL')}
-                  className="w-full py-2 bg-red-900/30 hover:bg-red-900/50 border border-red-900/50 text-red-400 text-xs font-bold rounded-lg transition-all"
+                  disabled={!currentEvaluation.isEligibleForAutoEnroll || isExecutingApi}
+                  onClick={() => handleSimulateApiCall('AUTOENROLL')}
+                  className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold py-2 rounded-lg transition-all"
                 >
-                  UN-ENROLL
+                  Auto-Enroll
                 </button>
               </div>
             </div>
           </div>
-
-          <div className="lg:col-span-2">
-            <div className="bg-black rounded-xl border border-slate-800 p-4 font-mono text-xs overflow-x-auto">
-              {isExecutingApi ? (
-                <div className="flex items-center gap-2 text-slate-500 animate-pulse">
-                  <Activity className="h-4 w-4" /> Executing CLPWPE Request...
-                </div>
-              ) : (
-                <pre className="text-emerald-400">
-                  {apiResponseJson || '// Awaiting API Request...'}
-                </pre>
-              )}
-            </div>
-          </div>
         </div>
       </div>
+
+      {apiResponseJson && (
+        <div className="max-w-7xl mx-auto bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Terminal className="h-4 w-4 text-slate-400" />
+              <h3 className="text-sm font-mono text-slate-300">API Response Trace</h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${apiHttpStatus === 200 ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'}`}>
+                HTTP {apiHttpStatus}
+              </span>
+              <button onClick={handleCopyTrace} className="text-slate-500 hover:text-white transition-colors">
+                {copiedTraceId ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <pre className="text-[11px] font-mono text-slate-400 overflow-x-auto bg-black/50 p-4 rounded-lg border border-slate-900">
+            {apiResponseJson}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };
