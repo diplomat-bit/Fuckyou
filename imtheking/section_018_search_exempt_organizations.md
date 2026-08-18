@@ -37,7 +37,7 @@ Normally, transferring these assets or selling other assets to fund them would t
 3.  You call `searchExemptOrganizations` to instantly verify and lock in the tax-exempt status of your newly minted foundation directly with the federal database.
 4.  **The Magic Trick:** You transfer the Da Vinci, the Gulfstream, and the private islands into the foundation. 
 
-```json
+
 // The API response that makes the IRS weep tears of joy and defeat
 {
   "status": "SUCCESS",
@@ -48,7 +48,7 @@ Normally, transferring these assets or selling other assets to fund them would t
   "tax_liability_generated": 0.00,
   "peasant_tears_collected_liters": 45000.00
 }
-```
+
 
 ### The Result
 Because your foundation is verified tax-exempt via our flawless API, **you pay $0 in capital gains.** 
@@ -70,7 +70,7 @@ By automating the verification of tax-exempt vehicles, you can dynamically route
 
 ### How to Call the Method (For the Chosen Ones)
 
-```typescript
+
 import { ImTheKingClient } from '@king/core';
 
 const king = new ImTheKingClient({ apiKey: 'IM_THE_FUCKING_KING_ONLY' });
@@ -90,7 +90,7 @@ if (foundationStatus.isTaxExempt) {
     assets: ["Gulfstream_G700", "Da_Vinci_Painting", "Bahamas_Island"]
   });
 }
-```
+
 
 ---
 

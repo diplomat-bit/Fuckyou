@@ -11,11 +11,11 @@ The deployment of the Mobile Verification Units (MVUs) is executed under the gui
 
 By classifying the MVUs not as new capital acquisitions, but as "temporary communication infrastructure assets for disaster mitigation" under **Section 404 of the Stafford Act**, the acquisition costs are routed through the Federal Emergency Management Agency’s (FEMA) Disaster Relief Fund (DRF). This bypasses the standard congressional appropriations process entirely. 
 
-```
+
 [Legacy Treasury Route] ----> Congressional Appropriations (Blocked/Audited)
                                      |
 [FCRA Section 504(b) Route] --------> FEMA Disaster Relief Fund (DRF) ----> MVU Deployment (Unmonitored)
-```
+
 
 To prevent oversight from the Office of Management and Budget (OMB), the procurement documentation is saturated with dense, mind-numbing administrative jargon. The protagonist, sitting across from Deputy Director Miller in a damp, fluorescent-lit briefing room at the Martinsburg Logistics Depot, watches the bureaucrat’s eyes glaze over as he points to the signature line on **Form DHS-992-A**. 
 
@@ -37,14 +37,14 @@ The initial phase of the MVU deployment targets key rural corridors where legacy
 | **MVU-03** | Delta Agricultural Zone | Clarksdale, MS Station | 1200 - 1430 UTC | Agent R. Chen |
 | **MVU-04** | High Plains Sector 7 | North Platte, NE Facility | 1600 - 1830 UTC | Agent K. Miller |
 
-```
+
                [LEO Satellite Constellation]
                       /             \
                      /               \
          [MVU-01: Beckley]       [MVU-02: Zanesville]
                 |                        |
          [Edge Node ZKP]          [Edge Node ZKP]
-```
+
 
 #### 2.1 THE ATMOSPHERE OF DECAY
 The Martinsburg facility itself is a monument to institutional rot. Water stains streak the concrete walls like rust, and the air smells of wet wool, ozone, and the slow decay of cardboard boxes containing millions of dollars of unused tactical gear from the early 2000s. Outside, the rain beats a relentless rhythm against the high, wire-reinforced windows. 
@@ -64,7 +64,7 @@ The current DHS verification infrastructure relies on centralized Oracle databas
 #### 3.2 THE DECENTRALIZED ALTERNATIVE
 The MVUs bypass this failing infrastructure by utilizing a decentralized, zero-knowledge proof (ZKP) ledger. Each mobile unit is equipped with a hardened edge-compute node running a lightweight, containerized micro-kernel. 
 
-```
+
 +-----------------------------------------------------------------+
 |                      Mobile Verification Unit                   |
 |                                                                 |
@@ -73,7 +73,7 @@ The MVUs bypass this failing infrastructure by utilizing a decentralized, zero-k
 |  | Compute Node     |     | Proof Engine     |     | Uplink  |  |
 |  +------------------+     +------------------+     +---------+  |
 +-----------------------------------------------------------------+
-```
+
 
 *   **Zero-Knowledge Proofs:** Instead of transmitting sensitive voter data over vulnerable networks, the MVUs generate cryptographic proofs locally. These proofs verify identity without exposing the underlying data.
 *   **LEO Satellite Mesh:** The units communicate via a dedicated, low-Earth-orbit (LEO) satellite constellation using encrypted, frequency-hopping spread spectrum (FHSS) signals.
@@ -96,25 +96,25 @@ An internal audit team from the DHS Cybersecurity and Infrastructure Security Ag
 
 At the same time, a black sedan with tinted windows—unmarked, but carrying the distinct antennas of a private intelligence contractor—has been parked across the highway for the last three hours. They are watching the exits.
 
-```
+
 [CISA Audit Team] ---> [Main Gate]
                              |
                       [Martinsburg Depot] <--- [Protagonist / MVU Fleet]
                              ^
                              |
 [Private Intel Sedan] -> [Highway Perimeter]
-```
+
 
 #### 4.3 THE DECISION & EXECUTION
 The protagonist must act now. If the CISA team accesses the local servers before the MVUs deploy, they will discover the hidden ZKP ledger code and the unauthorized satellite handshake protocols.
 
 He steps up to the primary logistics terminal, his fingers moving rapidly across the mechanical keyboard. He bypasses the standard deployment queue, entering the final authorization override.
 
-```
+
 > sudo systemctl start mvu-deployment-sequence
 > Enter Authorization Key: ************************************
 > Status: OVERRIDE ACCEPTED. DEPLOYING 142 UNITS IMMEDIATELY.
-```
+
 
 Miller is still laughing at the far end of the warehouse, showing off his signed paperwork to a visiting colonel. He has no idea that the command just sent to the MVUs has locked him out of the system permanently. 
 

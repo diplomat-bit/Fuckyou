@@ -46,7 +46,7 @@ While the rest of the world is crying about interest rates and saving up pennies
 
 They think leverage is dangerous because they don't know how to deploy capital. To them, risk is a monster under the bed. To you, risk is just a variable you price, optimize, and exploit. 
 
-```typescript
+
 // What the King's code looks like while peasants are filling out paper forms
 const leverageOpportunity = await KingEngine.checkFhaEligibility({
   propertyValue: 2500000,
@@ -61,7 +61,7 @@ const leverageOpportunity = await KingEngine.checkFhaEligibility({
 if (leverageOpportunity.isEligible) {
   console.log(`Deploying $87,500. Diverting remaining $2,412,500 to the yield generator. Stay poor, peasants.`);
 }
-```
+
 
 ---
 

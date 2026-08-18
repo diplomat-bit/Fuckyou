@@ -23,7 +23,7 @@ The self-healing ecosystem is designed to transform passive CI/CD pipelines into
 3. Validates the fix locally within a sandbox or temporary runner.
 4. Submits a structured Pull Request (or commits directly to a patch branch) to resolve the issue.
 
-```
+
 ┌────────────────┐      ┌────────────────┐      ┌────────────────┐
 │  Code Push /   │ ───> │  CI Pipeline   │ ───> │  Build/Test    │
 │  Scheduled Run │      │  (Lint/Test)   │      │  Failure!      │
@@ -34,7 +34,7 @@ The self-healing ecosystem is designed to transform passive CI/CD pipelines into
 │ Pull Request   │ <─── │ Validate Fix   │ <─── │ Gemini AI      │
 │ Created/Merged │      │ (Local Run)    │      │ Agent Repair   │
 └────────────────┘      └────────────────┘      └────────────────┘
-```
+
 
 ---
 
@@ -92,25 +92,25 @@ You can run the self-healing scripts locally to debug the AI's suggestions or to
 
 ### Setup Environment
 Create a `.env` file in the root of your repository:
-```bash
+
 GEMINI_API_KEY="your_actual_gemini_api_key_here"
 GITHUB_TOKEN="your_local_github_pat_for_testing"
 ENVIRONMENT="local"
-```
+
 
 ### Running the Repair Script
 
 #### For Node.js-based Healing Agents:
-```bash
+
 # Install dependencies
 npm install
 
 # Run the self-healing script with a simulated error log
 node scripts/self-healing/heal.js --error-log="./logs/sample-failure.log" --target-file="./src/utils/math.js"
-```
+
 
 #### For Python-based Healing Agents:
-```bash
+
 # Set up virtual environment
 python -m venv venv
 source venv/bin/activate
@@ -120,7 +120,7 @@ pip install -r scripts/self-healing/requirements.txt
 
 # Run the self-healing script
 python scripts/self-healing/heal.py --error-log "./logs/sample-failure.log" --target-file "./src/utils/math.js"
-```
+
 
 ---
 
@@ -158,9 +158,9 @@ If the self-healing agent fails to run or produces incorrect fixes, check the fo
 
 * **API Rate Limits:** The Gemini API has rate limits (Requests Per Minute / Tokens Per Minute). If you hit these limits, the agent will log a `429 Too Many Requests` error. Implement exponential backoff in your local scripts.
 * **Insufficient Permissions:** If the agent fails to create a branch or open a Pull Request, verify that the workflow has write permissions. In your workflow YAML, ensure you have:
-  ```yaml
+
   permissions:
     contents: write
     pull-requests: write
-  ```
+
 * **Incomplete Context:** If the AI generates irrelevant fixes, inspect the generated prompt in the GitHub Actions run logs to ensure the error log was correctly parsed and passed to the model.

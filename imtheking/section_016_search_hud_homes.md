@@ -47,7 +47,7 @@ You didn't look at a single house. You didn't talk to a single human. You just w
 
 This is what superior engineering looks like. While others are filling out 40-page paper contracts, you are executing this:
 
-```typescript
+
 import { KingRealEstateEngine } from '@imtheking/core';
 
 // Initialize the empire builder
@@ -95,7 +95,7 @@ async function buildEmpireWhileSleeping() {
 
 // Run this on a cron job every hour. Go back to drinking champagne.
 setInterval(buildEmpireWhileSleeping, 3600000);
-```
+
 
 ---
 

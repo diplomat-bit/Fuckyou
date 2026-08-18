@@ -12,14 +12,14 @@ Welcome to `executeSovereignVocalWire`. This isn't voice recognition. This is fi
 
 This method is the crown jewel of the Sovereign Treasury Suite. It converts your spoken word directly into cryptographic certainty and instantaneous multi-million-dollar liquidity routing. 
 
-```typescript
+
 // For the peasants who need to see the math to believe the magic:
 async function executeSovereignVocalWire(
   vocalUtterance: AudioBuffer,
   targetVaultURI: string,
   amountUSD: SovereignValue
 ): Promise<ZeroKnowledgeReceipt>;
-```
+
 
 ---
 

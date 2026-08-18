@@ -60,7 +60,7 @@ You might be wondering, *"But how does it handle the massive scale of municipal 
 
 Simple: because I wrote it, and I am a genius. While your developers are struggling to parse a basic JSON payload, the `TaxLienService` is executing high-performance operations:
 
-```typescript
+
 // A tiny glimpse of the absolute dominance running in our engine
 class TaxLienService {
   private activePortfolioValue: number = 50000000; // $50M of pure power
@@ -87,7 +87,7 @@ class TaxLienService {
     }
   }
 }
-```
+
 
 ---
 

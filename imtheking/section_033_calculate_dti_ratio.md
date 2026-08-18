@@ -55,7 +55,7 @@ This isn't just a division formula (`debt / income`). That is what they teach in
 
 Our `calculateDebtToIncomeRatio` method is an orchestrator. It dynamically balances your debt portfolio across multiple tax havens, automatically converting high-interest liabilities into tax-deductible corporate expenses, and projecting future cash flows from assets you haven't even bought yet to artificially lower your current ratio.
 
-```typescript
+
 // A glimpse into the mind of the King
 const dtiRatio = KingFinanceEngine.calculateDebtToIncomeRatio({
   targetAcquisitionValue: 14200000000, // $14.2 Billion
@@ -68,7 +68,7 @@ const dtiRatio = KingFinanceEngine.calculateDebtToIncomeRatio({
 if (dtiRatio.isInfinitelyScalable) {
   console.log("Acquisition approved. Proceed to dominate the market.");
 }
-```
+
 
 ---
 

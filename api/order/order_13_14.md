@@ -38,7 +38,7 @@ The threat was closing in. If Vance didn't sign the grant amendment within the n
 
 The core vulnerability of the current municipal transit infrastructure lay in its absolute dependence on centralized Global Positioning System (GPS) signals. It was a systemic failure point that the federal government maintained as a kill-switch.
 
-```
+
 [Centralized GPS Architecture (Vulnerable)]
    GPS Satellites (L1 Band: 1575.42 MHz) â”€â”€> [Unencrypted Receiver] â”€â”€> [Spoofing/Jamming Vulnerability]
                                                                                    â”‚
@@ -50,7 +50,7 @@ The core vulnerability of the current municipal transit infrastructure lay in it
      Cooperative Ranging                              Cooperative Ranging
             â”‚                                                â”‚
             â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€> [Local Mesh Node] <â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
+
 
 #### 1. The Centralized GPS Failure Mode
 Civilian GPS operates primarily on the L1 frequency (1575.42 MHz). Because these signals originate from satellites over 20,000 kilometers in orbit, their signal strength at the earth's surface is incredibly weakâ€”approximately -160 dBW. 
@@ -71,7 +71,7 @@ EO-SEC-013 replaces centralized satellite dependency with a localized, cooperati
 
 To secure the low-altitude aerial corridors for the autonomous drone network, EO-SEC-014 establishes a dynamic, decentralized airspace management protocol that operates beneath the active radar floor of traditional air traffic control.
 
-```
+
 [FAA Controlled Airspace (Class G Boundary)]
 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ [150m Radar Floor]
 [EO-SEC-014 Transit Corridor (0 - 120m)]
@@ -80,7 +80,7 @@ To secure the low-altitude aerial corridors for the autonomous drone network, EO
    [Optical Flow]                                [Optical Flow]
          â”‚                                             â”‚
          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€> [Dynamic Obstacle Avoidance] <â”€â”€â”˜
-```
+
 
 #### 1. Regulatory Exploitation of FAA Part 107.73
 The Federal Aviation Administration claims jurisdiction over all navigable airspace in the United States. However, under FAA Part 107 and the provisions governing municipal utility easements, the physical space immediately adjacent to public transit lines (within 150 feet of the centerline of municipal railways and roadways) can be classified as a "critical infrastructure transit corridor."
@@ -123,13 +123,13 @@ He stood up, slinging the satchel over his shoulder. As he walked out of the off
 
 In the hallway, Vane pulled out his phone. He opened the encrypted terminal interface and entered the authorization codes from the signed document, linking the municipal grant's unique federal identifier to the deployment script.
 
-```
+
 [SYSTEM COMMAND]
 > Initialize EO-SEC-013 / EO-SEC-014
 > Federal Grant ID: US-FTA-5307-MTA-0942
 > Deploying P2P Mesh Protocol to Autonomous Fleet...
 > Status: ACTIVE (Federal Preemption Shield Engaged)
-```
+
 
 The screen flashed green. 
 
@@ -143,7 +143,7 @@ Vane didn't look back. He stepped out into the cold, driving rain, the leather s
 
 To operationalize the decentralized transit and airspace protocols, the following NestJS module provides the complete, production-grade API architecture. It implements real-time peer-to-peer ranging, cooperative SLAM synchronization, FAA Part 107.73 corridor validation, and federal preemption enforcement.
 
-```typescript
+
 import { 
   Module, 
   Controller, 

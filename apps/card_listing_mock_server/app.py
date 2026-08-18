@@ -599,9 +599,9 @@ with tab_docs:
     st.subheader("API Documentation & Integration Guide")
     st.markdown(f"""
     ### **Base URL**
-    ```bash
+
     http://localhost:{PORT}
-    ```
+
 
     ### **Endpoints**
     
@@ -622,7 +622,7 @@ with tab_docs:
     *   `x-mock-latency` *(integer, optional)*: Simulates network latency in milliseconds.
 
     ### **Sample Response**
-    ```json
+
     {{
       "status": "success",
       "data": [
@@ -647,5 +647,5 @@ with tab_docs:
         "uuid_tracked": "d3b07384-d113-4956-a5e1-2199b35d440d"
       }}
     }}
-    ```
+
     """)

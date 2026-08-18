@@ -34,10 +34,10 @@ How does The Ledger of Truth work? It’s so simple it will make your local CPA 
 
 We didn't just add a third column; we added a **Universal Observer**. 
 
-```
+
 [ DEBIT ]  <--->  [ THE LEDGER OF TRUTH ]  <--->  [ CREDIT ]
                       (The Third Entry)
-```
+
 
 When you execute a transaction on our platform, three things happen simultaneously:
 1. **The Debit:** Your account is debited.

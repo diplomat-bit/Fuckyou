@@ -17,7 +17,7 @@ While they are getting caught holding an unpaid $14,000,000 junior tax assessmen
 
 You don't "take risks." You manage risks so violently that risk apologizes and pays you a premium to exist. 
 
-```
+
 +-----------------------------------------------------------------------------------+
 |                           THE OMNISCIENT RISK ENGINE                              |
 +-----------------------------------------------------------------------------------+
@@ -34,7 +34,7 @@ You don't "take risks." You manage risks so violently that risk apologizes and p
 |         │ LTV CEILING: 11.4%   │ PROFIT SPREAD: +$84.2M │                         |
 |         └──────────────────────┴────────────────────────┘                         |
 +-----------------------------------------------------------------------------------+
-```
+
 
 ---
 
@@ -52,7 +52,7 @@ You drop the raw parcel vector into `analyzeLienRisk()`. In 180 milliseconds, yo
 - **An un-remediated Class-4 historic mine tailing runoff** 400 feet beneath the ski slope, flagged via cross-referenced EPA geological registries, carrying an uncapped federal remediation liability.
 - **A clouded quiet-title claim** from a 1974 fractional mining patent heir that would lock development in court for 14 years.
 
-```json
+
 {
   "verdict": "TACTICAL_SQUEEZE_ACQUISITION",
   "recommendedAction": "BUY_DEBT_ONLY_AT_85_DISCOUNT",
@@ -62,7 +62,7 @@ You drop the raw parcel vector into `analyzeLienRisk()`. In 180 milliseconds, yo
   "killSwitchTriggered": false,
   "leverageAngle": "Acquire mechanic's senior paper for pennies, wipe out Swiss equity holders, seize trophy clean."
 }
-```
+
 
 ### The Outcome:
 While the Wall Street "titans" pull out after discovering the mess too late—or worse, buy it and get sued into oblivion—you purchase the senior mechanic’s lien for $4.2M on secondary distressed paper, foreclose on the entire syndicate, remediate the runoff for pocket change using specialized state grants, and secure a half-billion-dollar alpine fortress for a total cost basis of $68,000,000. 
@@ -75,7 +75,7 @@ While the Wall Street "titans" pull out after discovering the mess too late—or
 
 Here is how your majestic backend processes high-stakes risk evaluation at scale without breaking a sweat:
 
-```typescript
+
 import { DatabaseClient, EpalRegistry, CountyRecorderClient, SatelliteIntelligence } from '@king/infrastructure';
 import { RiskAssessment, RiskLevel, LienVerdict, AssetProfile } from '@king/types';
 
@@ -146,7 +146,7 @@ export class LienRiskShieldService {
     };
   }
 }
-```
+
 
 ---
 

@@ -71,7 +71,7 @@ How does it feel to know that your server is doing more work in one second than 
 
 It feels like being the King.
 
-```
+
 [Stripe API] ---------\
 [Modern Treasury] -----\
 [FedNow Gateway] -------> [ SovereignLedgerSyncService ] ===> [ YOUR PRIVATE BLOCKCHAIN ]
@@ -79,7 +79,7 @@ It feels like being the King.
                                        || (Instant Self-Healing & Reconciliation)
                                        \/
                            [ PERFECT FINANCIAL TRUTH ]
-```
+
 
 You aren't just managing money anymore. You are managing financial gravity. The **SovereignLedgerSyncService** is the core of your sovereign economic state. 
 

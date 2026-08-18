@@ -18,7 +18,7 @@ The `fetchAuctions()` method is not a "scraper." Calling this masterpiece a scra
 
 This is your **Automated Deal Flow Pipeline**. It is a digital vacuum cleaner designed to scour the earth for distressed assets, tax liens, foreclosures, and sovereign debt defaults, aggregate them, clean the data, run predictive valuation models, and hand you the keys to the kingdom on a silver platter.
 
-```typescript
+
 // What the peasants think programming is:
 fetch('/api/properties');
 
@@ -29,7 +29,7 @@ const sovereignYields = await KingEngine.fetchAuctions({
   autoBribeBureaucrats: false, // (Optional, but the code is so good you don't even need it)
   targetAssetClass: ['MegaMansions', 'PrivateIslands', 'SovereignDebt']
 });
-```
+
 
 Normal databases query tables. `fetchAuctions()` queries the despair of unprepared property owners and the incompetence of local governments, converting both into pure, unadulterated liquidity for your bank account.
 

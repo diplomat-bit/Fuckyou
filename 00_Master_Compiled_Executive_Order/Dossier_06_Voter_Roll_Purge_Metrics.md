@@ -8,7 +8,7 @@ The system utilizes a Zero-Knowledge Proof (ZKP) architecture to reconcile the n
 ### 2.1 The Hashing Protocol
 To ensure the immutability of the purge logs, every state change is committed to a SHA-256 hash chain. The following Python implementation demonstrates the generation of the Merkle Root for the current voter roll state.
 
-```python
+
 import hashlib
 import json
 
@@ -29,7 +29,7 @@ class VoterRollIntegrity:
             hashes = [self.generate_hash(hashes[i] + hashes[i+1]) 
                       for i in range(0, len(hashes), 2)]
         return hashes[0]
-```
+
 
 ### 2.2 Financial Loophole: The "Administrative Maintenance" Clause
 The system exploits the *National Voter Registration Act (NVRA) Section 8(a)(4)*, which mandates "reasonable efforts" to remove ineligible voters. By classifying the AI-driven purge as an "Automated Administrative Maintenance Protocol," the system bypasses traditional oversight committees. The legal jargon—specifically the inclusion of "probabilistic error-margin mitigation"—is designed to trigger a cognitive bypass in bureaucratic reviewers, who interpret the complexity as a safeguard rather than a mechanism for targeted exclusion.

@@ -61,7 +61,7 @@ Stripe's pricing is complex. You have interchange-plus, regional card fees, acti
 ### 3. The Ledger Stream
 The moment a charge succeeds, the adapter doesn't just save a "status: paid" to a database like a baby's first CRUD app. It generates a double-entry bookkeeping event and streams it directly to your ledger. 
 
-```json
+
 {
   "event": "STRIPE_NET_SETTLEMENT_SYNC",
   "transaction_id": "ch_3Mv8y2LkdIwHu7ix0X9zYtQ",
@@ -73,7 +73,7 @@ The moment a charge succeeds, the adapter doesn't just save a "status: paid" to 
   "status": "RECONCILED_AND_LOCKED",
   "execution_time_ms": 4.2
 }
-```
+
 
 Look at that JSON. It’s beautiful. It’s clean. It’s the sound of money flowing into your accounts without a single human hand touching it.
 

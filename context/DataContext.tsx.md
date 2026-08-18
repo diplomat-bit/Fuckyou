@@ -9,12 +9,12 @@ In the universe of Demo Bank, components are like living beings. They are born, 
 
 The story begins with a single line:
 
-```tsx
+
 import { createContext } from 'react';
 import { IDataContext } from '../context/DataContext';
 
 export const DataContext = createContext<IDataContext | undefined>(undefined);
-```
+
 
 This is the creation of a magical contract. It defines a space, a context, and declares the *type* of knowledge it will hold (`IDataContext`). `IDataContext` is the blueprint of the soul, listing every piece of information that will be shared: `transactions`, `assets`, `budgets`, `financialGoals`, and so much more.
 
@@ -26,7 +26,7 @@ The `DataProvider` component is the guardian of this sacred context. It is a pow
 
 Inside the `DataProvider`, we see the application's memories being held in the state:
 
-```tsx
+
 import React, { useState } from 'react';
 import { Transaction, Asset, BudgetCategory } from '../types';
 import { MOCK_TRANSACTIONS, MOCK_ASSETS, MOCK_BUDGETS } from '../constants';
@@ -35,7 +35,7 @@ const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTION
 const [assets] = useState<Asset[]>(MOCK_ASSETS);
 const [budgets, setBudgets] = useState<BudgetCategory[]>(MOCK_BUDGETS);
 // ... and many more
-```
+
 
 Each `useState` hook is a vessel containing a piece of the world's story. It starts with `MOCK_DATA`, the primordial memories the application is born with, and provides a function (`setTransactions`, `setBudgets`) to alter that memory over time.
 
@@ -53,9 +53,9 @@ The `DataProvider` does more than just hold data; it defines the actions, the *v
 
 At the very end, the `DataProvider` gives its greatest gift:
 
-```tsx
+
 <DataContext.Provider value={value}>{children}</DataContext.Provider>
-```
+
 
 It takes all its memories (`transactions`, `assets`) and all its sacred functions (`addTransaction`, `pitchBusinessPlan`) and bundles them into a single `value` object. It then makes this `value` available to every single component wrapped within it (the `{children}`).
 

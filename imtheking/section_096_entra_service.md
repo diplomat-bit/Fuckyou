@@ -65,7 +65,7 @@ While your competitors are holding emergency post-mortem meetings because their 
 
 Let's look at the sheer architectural superiority of this service.
 
-```
+
 +-----------------------------------------------------------------------+
 |                           THE KING'S ENGINE                           |
 |                                                                       |
@@ -86,7 +86,7 @@ Let's look at the sheer architectural superiority of this service.
          v                        v                        v
 [ Swiss Alps Bunker ]    [ Autonomous Yacht ]    [ Orbital Satellite ]
   (Auto-Rotated)           (Auto-Rotated)           (Auto-Rotated)
-```
+
 
 ### Why Client Assertion JWTs Make You a God
 Most developers authenticate their apps to Azure using a "Client Secret"—a stupid, static password that they copy-paste into a `dotenv` file and accidentally commit to a public GitHub repository within three weeks. 

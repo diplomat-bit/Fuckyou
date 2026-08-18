@@ -25,7 +25,7 @@ Vance had found the loophole. Section 805(b) allowed for the "preemptive deploym
 
 By defining "operational latency" as a systemic threat to market integrity, Vance had legally justified the integration of an automated, real-time state-transition engine directly into the clearinghouses' core routing architecture.
 
-```
+
 [Dodd-Frank Title VIII, Sec. 805(b)]
        â”‚
        â–¼
@@ -42,7 +42,7 @@ By defining "operational latency" as a systemic threat to market integrity, Vanc
 [EO-SEC-004: Critical Infrastructure]
        â”‚
        â””â”€â–º Automated Node Redundancy (Unstoppable Peer-to-Peer Network)
-```
+
 
 "I've appended the technical specifications under Appendix G-4," Vance said, his fingers dancing across the mechanical keyboard. "Itâ€™s labeled as *Passive Telemetry Loop for Real-Time Liquidity Risk Mitigation*. It simply ensures that if a clearinghouse experiences a localized network disruption, the transaction state is preserved across all participating nodes."
 
@@ -62,13 +62,13 @@ During the settlement gap, high-frequency trading firms and prime brokerages eng
 
 The system Vance was deploying in EO-SEC-003 eliminated this latency entirely. It replaced probabilistic finality with *deterministic finality*. 
 
-```
+
 LEGACY CLEARING (Fedwire/ACH):
 [Transaction Initiated] â”€â”€â–º [Batching (Hours)] â”€â”€â–º [Intermediary Routing] â”€â”€â–º [Settlement Gap (Front-Running Window)] â”€â”€â–º [Probabilistic Finality]
 
 THE NEW SYSTEM (EO-SEC-003):
 [Transaction Initiated] â”€â”€â–º [Deterministic BFT Consensus (Milliseconds)] â”€â”€â–º [Instantaneous State Transition] â”€â”€â–º [Absolute Finality]
-```
+
 
 Using a real-time, non-probabilistic consensus mechanism, every transaction was validated and finalized across the network in milliseconds. There was no batching, no intermediary routing, and no settlement gap. The front-running algorithms would find nothing but empty air; the arbitrage window would be permanently closed. 
 
@@ -103,13 +103,13 @@ If they isolated Node-09 before the commit was finalized, the deployment would f
 
 He had less than two minutes. 
 
-```
+
 [Node-09 (Vance's Terminal)] â”€â”€â”€(BGP Route Hijack / Partition)â”€â”€â”€Xâ”€â”€â”€â–º [External DFMU Nodes]
              â”‚                                                                 â–²
              â–¼                                                                 â”‚
      [Genesis Block Commit] â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
      (Must complete before partition is absolute)
-```
+
 
 Vance opened a hidden terminal window, bypassing the standard administrative GUI. He needed to force the genesis block commit through an alternative routing path before the primary fiber loop was completely severed.
 
@@ -162,7 +162,7 @@ The old world was still running on its slow, corrupt, batch-processed time. But 
 
 To operationalize the mandates of **EO-SEC-003** and **EO-SEC-004**, the following NestJS API architecture has been deployed across all DFMU nodes. This ensures real-time BFT consensus, automated multi-path fallback routing, and zero-latency deterministic finality.
 
-```typescript
+
 import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus, UseGuards, Injectable } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Observable, of, Subject } from 'rxjs';

@@ -7,9 +7,9 @@ This is the inner sanctum, the conversation chamber where the user, "The Visiona
 
 At the heart of the sanctum lies the altar, a `useRef` hook holding the sacred `Chat` instance from the `@google/genai` library.
 
-```tsx
+
 const chatRef = useRef<Chat | null>(null);
-```
+
 
 Using a `ref` is a crucial architectural decision. It ensures that the connection to the AI, the conversation itself, persists across re-renders. The conversation has memory. It doesn't start anew every time the user interacts with the UI. This is what allows for a true, stateful dialogue.
 

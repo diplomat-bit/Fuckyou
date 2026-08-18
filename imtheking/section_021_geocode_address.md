@@ -16,14 +16,14 @@ Welcome to **`geocodeAddress`**. This isn't a geocoder. It is a spatial translat
 
 The `geocodeAddress` method takes any physical address on Earth and translates it into raw, unadulterated latitude and longitude coordinates with millimeter-level precision. 
 
-```typescript
+
 // How the King commands space-time:
 const coordinates = await KingEngine.geocodeAddress({
   address: "The Secret Penthouse, Billionaire's Row, NYC",
   accuracy: "sub_atomic", // Because standard GPS is for losers
   bypassCivilianNoise: true
 });
-```
+
 
 While standard APIs return a vague bounding box that covers an entire zip code, `geocodeAddress` pierces through the noise. It doesn't just find the building; it finds the exact structural center of gravity of your destination. 
 

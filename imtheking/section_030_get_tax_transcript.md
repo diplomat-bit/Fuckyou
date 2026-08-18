@@ -30,14 +30,14 @@ You don’t scramble anyone. You don’t even put down your wine glass.
 
 With one hand, you open your terminal and execute:
 
-```typescript
+
 const truth = await KingEngine.getTaxTranscript({
   taxpayerId: "XX-XXX6789",
   taxYear: 2023,
   bypassBureaucracy: true, // Obviously
   securityLevel: "Sovereign"
 });
-```
+
 
 In exactly **0.4 seconds**, `getTaxTranscript` bypasses the bureaucratic red tape, queries the federal database, and pulls the raw, unalterable IRS tax transcripts directly from the government's own servers. 
 
@@ -69,7 +69,7 @@ That is not underwriting. That is **financial deity mode**.
 
 This is how simple it is to wield absolute authority:
 
-```typescript
+
 import { KingEngine } from '@imtheking/core';
 
 async function verifySovereignWealth(borrowerId: string) {
@@ -96,7 +96,7 @@ async function verifySovereignWealth(borrowerId: string) {
     console.error("Even the IRS couldn't handle this request: ", error);
   }
 }
-```
+
 
 ## SUMMARY
 

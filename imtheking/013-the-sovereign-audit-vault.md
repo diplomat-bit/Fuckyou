@@ -61,7 +61,7 @@ If you're using the Sovereign Audit Vault, the system detects the physical destr
 
 Let’s take a moment to laugh at the absolute garbage fire that is the rest of the tech industry.
 
-```
+
 +----------------------------------+----------------------------------+
 | THE SOVEREIGN AUDIT VAULT        | THE "OTHER" GUYS (AWS, GCP, etc) |
 +----------------------------------+----------------------------------+
@@ -70,7 +70,7 @@ Let’s take a moment to laugh at the absolute garbage fire that is the rest of 
 | Survives nuclear apocalypse      | Goes down if a squirrel sneezes  |
 | Makes you look like a god        | Makes you look like an easy target|
 +----------------------------------+----------------------------------+
-```
+
 
 ### Exhibit A: Amazon S3 (Simple Storage Service)
 "Simple" is the keyword here. It’s simple because it was designed for simpletons. Every three weeks, some intern at a Fortune 500 company misconfigures an S3 bucket, leaving 50 million social security numbers completely open to the public internet. Why? Because their IAM policy console looks like a cockpit of a Boeing 747 designed by a colorblind toddler. 

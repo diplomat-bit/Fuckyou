@@ -40,7 +40,7 @@ He is living in 1998. You are living in the year 3000. You own him.
 
 Behold the sheer, unadulterated elegance of the King's bridge. No bloat. No hesitation. Just pure, real-time financial dominance.
 
-```typescript
+
 import { AlpacaClient } from '@alpacahq/alpaca-trade-api';
 import { ModernTreasury } from 'modern-treasury';
 
@@ -86,7 +86,7 @@ export async function syncToLedger(trade: SyncPayload): Promise<void> {
 
   console.log(`[SYSTEM STATUS]: Balance sheet updated. You remain the undisputed King of Finance.`);
 }
-```
+
 
 ---
 

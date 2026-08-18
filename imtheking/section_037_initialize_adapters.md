@@ -16,7 +16,7 @@ Most county auction websites look like they were coded by a blind middle-schoole
 
 `initializeAdapters` doesn't care about their feelings.
 
-```typescript
+
 // A glimpse into the throne room
 await kingEngine.initializeAdapters({
   counties: ["miami-dade", "maricopa", "harris", "cook", "los-angeles", ...95_others],
@@ -25,7 +25,7 @@ await kingEngine.initializeAdapters({
   autoSolveCaptcha: true,
   failoverStrategy: "aggressive-retry"
 });
-```
+
 
 With a single asynchronous invocation, this method:
 1. **Spawns 100+ Isolated Adapter Instances:** Each adapter is custom-tailored to bypass, scrape, and bid on specific county platforms (RealForeclose, GrantStreet, Bid4Assets, custom legacy county portals, you name it).

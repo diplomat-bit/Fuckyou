@@ -55,7 +55,7 @@ While your competitors are still waiting for a notary in Zurich to wake up and s
 
 Here is a glimpse of what absolute architectural perfection looks like. We don't do "if-else" chains of human judgment. We do math.
 
-```typescript
+
 import { verifyProof } from '@imtheking/cryptography-god-mode';
 
 /**
@@ -101,7 +101,7 @@ export async function verifyProof(
   // We have absolutely zero liability, and 100% compliance.
   return true;
 }
-```
+
 
 ---
 

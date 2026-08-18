@@ -52,7 +52,7 @@ The `validateTransaction` method doesn't ask for permission. It doesn't negotiat
 
 If a bad actor even *attempts* to send dirty capital into your server, `validateTransaction` doesn't just block it—it blacklists their entire network, flags their IP, and leaves them crying in the digital dust.
 
-```typescript
+
 // A glimpse into the mind of the King
 const validation = await KingServer.validateTransaction({
   amount: 4200000000, // $4.2 Billion
@@ -68,7 +68,7 @@ if (validation.isCryptographicallySecure) {
   // Nice try, peasants.
   KingServer.blacklistAndMock(validation.counterparty);
 }
-```
+
 
 ---
 

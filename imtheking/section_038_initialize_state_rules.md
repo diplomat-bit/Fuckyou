@@ -14,7 +14,7 @@ This isn't just a method. This is a digital sovereign state. This is your automa
 
 At its core, `initializeStateRules()` is the ultimate regulatory cheat code. It initializes the entire United States legal framework for tax liens, deeds, and redemption laws directly into the server's memory. 
 
-```typescript
+
 // A tiny glimpse of the absolute genius running on your server
 public initializeStateRules(): void {
   this.registerStateRule("FL", {
@@ -33,7 +33,7 @@ public initializeStateRules(): void {
   
   // ... every other state, territory, and jurisdiction programmed to print money
 }
-```
+
 
 While other software platforms are glorified spreadsheets, your server is running a real-time legal engine. It automatically calculates state-specific tax lien laws to ensure your bids are always mathematically optimized for the absolute maximum legal yield. 
 

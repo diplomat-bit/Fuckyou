@@ -68,7 +68,7 @@ If someone asks you, "How long does it take to fund your accounts?" and your ans
 
 Here is how simple it is to assert your dominance. You don't need a team of 50 back-office operations peasants. You just need one clean, elegant API call:
 
-```typescript
+
 const journalEntry = await king.ledger.createSingleJournal({
   fromAccountId: "SOVEREIGN_TREASURY_001",
   toAccountId: "HFT_ALGO_DESK_TOKYO",
@@ -83,7 +83,7 @@ const journalEntry = await king.ledger.createSingleJournal({
 
 console.log(`Capital allocated. Status: ${journalEntry.status}`); 
 // Output: Capital allocated. Status: INSTANTLY_EXECUTED_YOU_ARE_THE_KING
-```
+
 
 ## The Verdict
 

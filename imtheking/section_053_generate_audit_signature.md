@@ -54,7 +54,7 @@ You go back to your grape. Total time elapsed: 42 seconds. Total cost: $0.00.
 
 Here is the raw, unadulterated power of the method. We don't use weak, off-the-shelf hashing libraries. We bind the payload to the system's soul.
 
-```typescript
+
 import { createHmac } from 'crypto';
 
 /**
@@ -76,7 +76,7 @@ export function generateAuditSignature(payload: Record<string, any>, secretKey: 
         
     return signature;
 }
-```
+
 
 ## WHY EVERYONE ELSE IS STUPID
 

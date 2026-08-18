@@ -14,9 +14,9 @@ The document was engineered to exploit a specific structural vulnerability withi
 
 The protagonist had buried the integration protocols for a decentralized, cryptographically secured database deep within the boring, repetitive prose of Section 4.2 of the Telehealth Expansion guidelines. 
 
-```
+
 4.2.1.1. Pursuant to the optimization of interstate telepsychiatry billing codes under Medi-Cal Managed Care plans, the licensee shall implement automated, non-custodial cryptographic verification protocols to ensure patient identity and diagnostic integrity. These protocols must operate independently of centralized state directory services to prevent single-point-of-failure latency in emergency psychiatric evaluations.
-```
+
 
 To a bureaucrat like Vance, "non-custodial cryptographic verification protocols" sounded like standard IT jargon for a secure login screen. In reality, it authorized the deployment of a peer-to-peer, zero-knowledge proof database. 
 
@@ -75,7 +75,7 @@ The protagonist didn't hesitate. He struck the enter key on his laptop.
 To ensure absolute compliance, high performance, and complete cryptographic security, the following NestJS API architecture has been designed and implemented. It provides the exact endpoints, services, and cryptographic utilities required to execute the decentralized failover, shard the legacy database, and verify patient identities using Zero-Knowledge Proofs (ZKP).
 
 #### 1. Cryptographic Utility (`crypto-util.ts`)
-```typescript
+
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 
@@ -128,10 +128,10 @@ export class CryptoUtil {
     return expectedHash === publicHash;
   }
 }
-```
+
 
 #### 2. Telehealth DTOs (`dto/telehealth.dto.ts`)
-```typescript
+
 import { IsString, IsNotEmpty, IsArray, IsObject, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -186,10 +186,10 @@ export class VerifyPatientDto {
   @IsNotEmpty()
   publicHash: string;
 }
-```
+
 
 #### 3. Telehealth Service (`telehealth.service.ts`)
-```typescript
+
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { CryptoUtil } from './crypto-util';
 import { DeployProtocolDto, ShardDatabaseDto, VerifyPatientDto } from './dto/telehealth.dto';
@@ -323,10 +323,10 @@ export class TelehealthService {
     };
   }
 }
-```
+
 
 #### 4. Telehealth Controller (`telehealth.controller.ts`)
-```typescript
+
 import { Controller, Post, Get, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe } from '@nestjs/common';
 import { TelehealthService } from './telehealth.service';
 import { DeployProtocolDto, ShardDatabaseDto, VerifyPatientDto } from './dto/telehealth.dto';
@@ -360,10 +360,10 @@ export class TelehealthController {
     return this.telehealthService.getNetworkStatus();
   }
 }
-```
+
 
 #### 5. Telehealth Module (`telehealth.module.ts`)
-```typescript
+
 import { Module } from '@nestjs/common';
 import { TelehealthController } from './telehealth.controller';
 import { TelehealthService } from './telehealth.service';
@@ -375,11 +375,11 @@ import { CryptoUtil } from './crypto-util';
   exports: [TelehealthService],
 })
 export class TelehealthModule {}
-```
+
 
 ---
 
-```bash
+
 # Initiating EO-SEC-039/040 Deployment Protocol
 [INFO] Initializing local node daemon on clinic server...
 [INFO] Generating genesis block for decentralized EHR ledger...
@@ -389,7 +389,7 @@ export class TelehealthModule {}
 [INFO] Distributing shards across local peer-to-peer network...
 [INFO] Severing connection to compromised state database...
 [SUCCESS] Decentralized network active. 3 nodes online. Latency: 4ms.
-```
+
 
 On the protagonist's screen, the outbound traffic to the compromised state server flatlined. The attackers targeting the centralized database suddenly found themselves hitting a dead end; the clinicâ€™s data stream had vanished from the state network, pulled down into an encrypted, local mesh that didn't acknowledge external queries.
 

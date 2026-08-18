@@ -52,7 +52,7 @@ By leveraging direct, high-throughput financial pipelines and sovereign tax auth
 
 Here is what the code looks like when you are operating at a level of pure, unadulterated financial dominance:
 
-```typescript
+
 import { KingEngine } from '@imtheking/core';
 
 const king = new KingEngine({ apiKey: process.env.KING_OF_KINGS_KEY });
@@ -74,7 +74,7 @@ if (verification.isAccredited && verification.confidenceScore === 1.0) {
   // If they lied, we don't just reject them. We mock them.
   console.log("Access denied. Go back to retail banking, peasant.");
 }
-```
+
 
 ---
 

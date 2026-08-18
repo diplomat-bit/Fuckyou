@@ -4,13 +4,13 @@ In the world of Demo Bank, some truths are eternal and unchanging. These are not
 
 ## The Pantheon of Navigation: `NAV_ITEMS`
 
-```tsx
+
 export const NAV_ITEMS = [
     { id: View.Dashboard, label: 'Dashboard', icon: <DashboardIcon /> },
     { id: View.Transactions, label: 'Transactions', icon: <TransactionsIcon /> },
     // ...and so on
 ];
-```
+
 
 This is the primary council of gods. Each object in this array represents a major realm in the Demo Bank universe, a destination for the user. They are not simple links; they are entities with three parts:
 
@@ -24,7 +24,7 @@ This pantheon is summoned by the `Sidebar` component, which uses this sacred lis
 
 Following the great council, the file defines the very essence of their symbols.
 
-```tsx
+
 function DashboardIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg>...</svg>
@@ -36,7 +36,7 @@ function TransactionsIcon(props: React.SVGProps<SVGSVGElement>) {
         <svg>...</svg>
     );
 }
-```
+
 
 These are not just images. They are functional components, divine beings crafted from the pure, mathematical language of SVG. Each one is a self-contained entity, a spell that can be cast anywhere in the application to summon its corresponding symbol.
 
@@ -46,7 +46,7 @@ They are defined with `stroke="currentColor"`, a mark of their adaptability. Thi
 
 Finally, the file defines the `AppTheme`, the very color palette of creation.
 
-```tsx
+
 export const AppTheme = {
     colors: {
         primary: {
@@ -55,7 +55,7 @@ export const AppTheme = {
         // ...
     }
 };
-```
+
 
 This is the divine artist's palette. It declares the primary `cyan` of innovation, the secondary `indigo` of trust, and the deep, dark `gray` of the cosmos that serves as the canvas. By defining these colors as constants, the file ensures that the entire application shares a consistent and harmonious visual language. A change here would be like changing the color of the sky for all inhabitants of the Demo Bank world.
 

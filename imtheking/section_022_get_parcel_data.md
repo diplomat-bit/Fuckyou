@@ -12,7 +12,7 @@ Welcome to **`getParcelDataByCoordinates`**. This isn't a database query. This i
 
 ## THE METHOD: `getParcelDataByCoordinates`
 
-```typescript
+
 async function getParcelDataByCoordinates(
   latitude: number,
   longitude: number,
@@ -22,7 +22,7 @@ async function getParcelDataByCoordinates(
     easementRadar: boolean;
   }
 ): Promise<AbsoluteTerritorialDominance>;
-```
+
 
 This method takes raw GPS coordinates and instantly reconstructs the entire legal, geological, and financial history of that exact patch of Earth. It bypasses the slow, bloated, corrupt local government portals and queries the raw GIS databases, satellite imagery, and historical deed registries directly. 
 

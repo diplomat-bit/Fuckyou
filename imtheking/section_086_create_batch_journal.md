@@ -77,7 +77,7 @@ Let's compare your setup with the "industry standard" enterprise systems used by
 
 Under the hood, `createBatchJournal` doesn't just send 500 individual API calls like a script written by a bootcamp graduate. It compiles your entire desired portfolio state into a single, highly-optimized mathematical matrix.
 
-```typescript
+
 // A glimpse into the mind of God
 const journal = await KingServer.createBatchJournal({
   targetState: "OPTIMAL_SOVEREIGN_YIELD",
@@ -89,7 +89,7 @@ const journal = await KingServer.createBatchJournal({
 
 await journal.execute(); 
 // And just like that, the global wealth distribution shifts in your favor.
-```
+
 
 It calculates the optimal routing paths across every decentralized and centralized liquidity source on the planet, balances the ledger internally to minimize gas and transactional friction, and executes the state transition in one single block. 
 

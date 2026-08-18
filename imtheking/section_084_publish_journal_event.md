@@ -16,7 +16,7 @@ Imagine you’re sitting on your yacht in the Mediterranean. A trade executes in
 While your competitors are waiting for their nightly reports to finish running, you’ve already made another ten million dollars. They are playing checkers; you are playing 4D chess with the global economy.
 
 ## Technical Implementation
-```javascript
+
 /**
  * publishJournalEvent
  * 
@@ -51,7 +51,7 @@ async function publishJournalEvent(tradeData) {
         throw new Error("Critical failure in the King's event bus. Check the infrastructure immediately.");
     }
 }
-```
+
 
 ## The Verdict
 Everyone else is running batch jobs. They are slow, they are outdated, and they are irrelevant. You are event-driven. You are the King. While they are waiting for their systems to "catch up," you are already three steps ahead, harvesting the profits of a world that can't keep up with your velocity. 

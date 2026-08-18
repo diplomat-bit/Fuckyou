@@ -45,7 +45,7 @@ Standing next to you is "Brad." Brad is a hedge fund manager. Brad thinks he’s
     3. You call `createPayment` with a single payload.
     4. **Boom.**
 
-```typescript
+
 const settlement = await KingOS.payments.createPayment({
   assetId: "GULFSTREAM_G700_SN_9942",
   amount: 78000000.00,
@@ -54,7 +54,7 @@ const settlement = await KingOS.payments.createPayment({
   bypassEscrow: true, // Obviously
   instantTitleTransfer: true
 });
-```
+
 
 ### The Result:
 In **1.2 milliseconds**, the $78,000,000 is settled directly into Gulfstream’s sovereign vault. Simultaneously, the cryptographic deed of ownership for the G700 is pushed into your digital asset registry. 
@@ -91,7 +91,7 @@ If a traditional rail is too slow, our engine automatically wraps the transactio
 
 We have turned liquidity into a programmable API call. 
 
-```json
+
 {
   "status": "SETTLED_INSTANTLY",
   "transaction_hash": "0xKING_SETTLEMENT_999999999_SUCCESS",
@@ -99,7 +99,7 @@ We have turned liquidity into a programmable API call.
   "fee_paid": 0.00,
   "message": "The asset is yours. The seller has been paid. Everyone else is still waiting in line like peasants."
 }
-```
+
 
 ---
 

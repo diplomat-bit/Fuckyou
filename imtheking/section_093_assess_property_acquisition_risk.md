@@ -12,7 +12,7 @@ This is not underwriting. Underwriting is for banks that get bailed out by taxpa
 
 This is your automated underwriting decision engine. It doesn't sleep, it doesn't take bribes, and it doesn't care about "market sentiment." It ingests raw spatial data, calculates proximity to critical infrastructure, cross-references geopolitical stability vectors, and spits out a definitive, unarguable decision: **APPROVE**, **MANUAL_UNDERWRITING** (for when the deal is so weirdly lucrative it needs your personal touch), or **REJECT** (for garbage deals that peasants buy).
 
-```typescript
+
 interface SpatialRiskProfile {
   propertyId: string;
   coordinates: [latitude: number, longitude: number];
@@ -38,7 +38,7 @@ interface UnderwritingDecision {
 public async assessPropertyAcquisitionRisk(
   profile: SpatialRiskProfile
 ): Promise<UnderwritingDecision>;
-```
+
 
 ---
 

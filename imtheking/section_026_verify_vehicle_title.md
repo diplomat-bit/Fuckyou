@@ -22,7 +22,7 @@ In the old days, you’d have to hire a team of five high-priced forensic automo
 
 With our system? You fire up your terminal. You call `verifyVehicleTitle()`.
 
-```typescript
+
 const assetVerification = await KingEngine.verifyVehicleTitle({
   vin: "3705GT",
   assetType: "HISTORIC_CLASSIC",
@@ -35,7 +35,7 @@ const assetVerification = await KingEngine.verifyVehicleTitle({
   bypassPeasantRegistries: true,
   deepSearchSovereignLiens: true
 });
-```
+
 
 Within **0.4 milliseconds**, the server does what no human could do in a lifetime:
 
@@ -44,7 +44,7 @@ Within **0.4 milliseconds**, the server does what no human could do in a lifetim
 3. **The Metallurgy & DNA Match:** It pulls the original factory build sheets from Maranello's locked archives to verify that the engine block currently in the car is the exact one that left the factory in 1962, not a replica cast in a Polish foundry last Tuesday.
 
 The server returns: 
-```json
+
 {
   "status": "ABSOLUTE_PROVENANCE_VERIFIED",
   "confidenceScore": "100.00%",
@@ -52,7 +52,7 @@ The server returns:
   "isSalvage": false,
   "message": "The asset is pure. Send the wire, King."
 }
-```
+
 
 You sip your champagne, tap your screen once to authorize the $48M wire, and go back to enjoying your night. The duke is left wondering how you knew more about his family's car than he did. 
 

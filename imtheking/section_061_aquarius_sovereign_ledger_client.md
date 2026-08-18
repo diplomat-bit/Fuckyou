@@ -12,7 +12,7 @@ While the rest of the world is begging courts, lawyers, and legacy banks to vali
 
 Let’s look at how the plebeians handle their "wealth" versus how a true Sovereign operates.
 
-```
+
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ THE PEASANT METHOD (Slow, Expensive, Pathetic)                          │
 │                                                                         │
@@ -29,7 +29,7 @@ Let’s look at how the plebeians handle their "wealth" versus how a true Sovere
 │                                                                         │
 │  No Lawyers. No Courts. No Bureaucracy. Just Immutable Mathematical Law.│
 └─────────────────────────────────────────────────────────────────────────┘
-```
+
 
 If your ownership of an asset requires a government official to sign off on it, **you don't actually own it.** You are just leasing it from the state until they decide to change the rules. The `AquariusSovereignLedgerClient` cuts the umbilical cord to the legacy world. You trust cryptography. You trust the Merkle tree. You trust yourself.
 
@@ -57,7 +57,7 @@ You open your laptop. You initialize the `AquariusSovereignLedgerClient`.
 2. **The Equity & Land Swap:** The tech mogul transfers 100% of the holding company that owns the archipelago to you. You record the equity transfer and the land deeds directly onto your private ledger.
 3. **The Cryptographic Seal:** The `AquariusSovereignLedgerClient` generates a Merkle-hashed proof of the entire transaction. It is cryptographically anchored across your private, globally distributed validator nodes.
 
-```typescript
+
 import { AquariusSovereignLedgerClient } from '@aquarius/sovereign-ledger';
 
 const kingLedger = new AquariusSovereignLedgerClient({
@@ -82,7 +82,7 @@ const transaction = await kingLedger.commitTransaction({
 
 console.log(`Transaction Cryptographically Sealed. Merkle Root: ${transaction.merkleRoot}`);
 // Output: Transaction Cryptographically Sealed. Merkle Root: 0x8f3b9a... (Unstoppable, Unalterable, Absolute)
-```
+
 
 Within **4 milliseconds**, the transaction is finalized. The G7 nation has their liquidity, you have their gold reserves locked in your private vault, and you own the archipelago. 
 

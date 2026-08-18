@@ -48,7 +48,7 @@ You just foreclosed on a billionaire. Why? Because you had the adapter, and he h
 
 The `GrantStreetAdapter` is a masterpiece of financial engineering. It doesn't just scrape websites; it integrates directly with Grant Street's institutional APIs and auction protocols.
 
-```
+
 +-----------------------------------------------------------------+
 |                      THE KING'S CORE ENGINE                     |
 +-----------------------------------------------------------------+
@@ -69,7 +69,7 @@ The `GrantStreetAdapter` is a masterpiece of financial engineering. It doesn't j
 |     LienHub Auction Engine    |               |   TaxScribe Portfolio System  |
 |  (Multi-Million Tax Portfolios)               |  (Guaranteed Government Debt) |
 +-------------------------------+               +-------------------------------+
-```
+
 
 ### Key Features:
 * **Sub-Millisecond Bid Execution:** When an auction is closing, milliseconds matter. The adapter snipes bids at the absolute last microsecond, locking out competitors and securing the highest possible yields.

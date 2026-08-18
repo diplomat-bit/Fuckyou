@@ -18,7 +18,7 @@ While the rest of the world is praying their system administrators don't click o
 
 The `swarmIntegrityCheck` method is the ultimate gatekeeper of the system. Before any high-value transaction is executed, before any critical code is deployed to production, and before any system-wide state change is finalized, the system triggers a Swarm Integrity Check.
 
-```
+
                            [ CRITICAL ACTION TRIGGERED ]
                                         │
                                         ▼
@@ -48,7 +48,7 @@ The `swarmIntegrityCheck` method is the ultimate gatekeeper of the system. Befor
                      ▼                                     ▼
              Action Executed!                      SYSTEM LOCKDOWN
              (King wins again)                     (Rogue agent vaporized)
-```
+
 
 Here is how it works while you sleep soundly on your Egyptian cotton sheets:
 1. **The Trigger:** A high-value event is requested (e.g., transferring $10 Billion, deploying a core protocol update, or altering global API permissions).

@@ -14,7 +14,7 @@ Enter `verifyVehicleVin`. This isn't just an API method; it is a digital batteri
 
 ## THE METHOD: `verifyVehicleVin`
 
-```typescript
+
 // How the gods register their chariots
 const fleetRegistration = await KingOS.vehicles.verifyVehicleVin({
   vins: [
@@ -26,7 +26,7 @@ const fleetRegistration = await KingOS.vehicles.verifyVehicleVin({
   digitalPlateProvision: true,
   bypassStateBureaucracyLevel: "ABSOLUTE_SOVEREIGNTY"
 });
-```
+
 
 This method takes a raw Vehicle Identification Number (VIN), instantly decodes it against global manufacturer databases, verifies its authenticity, bypasses the state's archaic security protocols, registers the vehicle with the Department of Transportation, and provisions a digital license plate. 
 

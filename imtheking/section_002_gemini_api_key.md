@@ -24,13 +24,13 @@ Our engine dynamically scans, validates, and hot-swaps API keys across multiple 
 2.  **`NEXT_PUBLIC_GEMINI_API_KEY`** (For the server-side rendered elite deployments)
 3.  **Local `secrets.json`** (For the ultra-secure, air-gapped sovereign operations)
 
-```
+
 [Your App] ──> (Zero-Latency Resolution Engine)
                      │
                      ├──> [VITE_GEMINI_API_KEY] ──────> (Active?) ──> SUCCESS
                      ├──> [NEXT_PUBLIC_GEMINI_API_KEY] ──> (Active?) ──> SUCCESS
                      └──> [secrets.json (Encrypted)] ──> (Active?) ──> SUCCESS
-```
+
 
 If one key hits a rate limit, the engine hot-swaps to the next tier instantly. If an environment variable is missing, it falls back to the encrypted local secrets without dropping a single frame or losing a single millisecond of execution time. 
 

@@ -79,7 +79,7 @@ Let's compare your life with the `RealEstateTitleEscrowAdapter` to the sad reali
 
 The `RealEstateTitleEscrowAdapter` doesn't care about "local customs" or "the way things have always been done." It speaks the only language that matters: **absolute cryptographic certainty.**
 
-```typescript
+
 // A glimpse into your absolute dominance
 const adapter = new RealEstateTitleEscrowAdapter({
   municipalRegistryUrl: "https://api.manhattan.land.gov/v3",
@@ -96,7 +96,7 @@ const transaction = await adapter.initiateConveyance({
 
 // 1.4 seconds later...
 // Property acquired. Tenants routed. Gary is crying.
-```
+
 
 ### THE MIC DROP
 

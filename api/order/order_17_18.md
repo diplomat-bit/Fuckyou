@@ -20,7 +20,7 @@ He pulled up his terminal, his fingers moving across the mechanical keyboard wit
 
 ### II. THE LEGAL MECHANISM: EO-SEC-017 (TELECOMMUNICATIONS MODERNIZATION)
 
-```
+
 ================================================================================
 REGULATORY COMPLIANCE FILING: FCC-USF-2026-SEC017
 AUTHORITY: COMMUNICATIONS ACT OF 1934, 47 U.S.C. § 254(h) (UNIVERSAL SERVICE)
@@ -36,7 +36,7 @@ telecommunications carriers (ETCs) receiving Universal Service Fund (USF)
 subsidies for rural loop-unbundling shall implement the standardized diagnostic 
 transport layer defined in Annex 12 (Hardware-Bound State Verification) to 
 ensure continuous service delivery under degraded physical plant conditions..."
-```
+
 
 Vance looked up as the heavy steel door at the end of the aisle groaned open. Assistant Director Miller stepped through, his Italian leather shoes clicking sharply on the grease-stained concrete. Miller was adjusting his silk tie, his face flushed with the self-important energy of a career bureaucrat who had never held a soldering iron in his life.
 
@@ -70,7 +70,7 @@ Once the heavy door clicked shut, Vance returned to his terminal. He pulled up t
 
 The current system was fundamentally broken. The entire state government, from emergency services to financial clearinghouses, relied on centralized fiber-optic backbones. These networks were incredibly vulnerable to physical interception. 
 
-```
+
 LEGACY FIBER-OPTIC INTERCEPTION VULNERABILITY:
 [Central Office] ---> (Single-Mode Fiber) ---> [Macrobending Tap] ---> [Attacker]
                                          ---> [Target Node]
@@ -78,13 +78,13 @@ LEGACY FIBER-OPTIC INTERCEPTION VULNERABILITY:
 * Detection: Standard Optical Time-Domain Reflectometers (OTDR) can be bypassed 
   if the tap is placed close to a splice tray or if the signal loss is kept 
   below the noise floor of legacy monitoring software.
-```
+
 
 Any adversary with a two-hundred-dollar macrobending clip-on coupler could bend a fiber patch cable inside a utility vault, leak a fraction of the light, and copy every packet of unencrypted data passing through the line without breaking the physical glass or triggering an alarm. The legacy encryption protocols were useless because the key exchange mechanisms relied on centralized certificate authorities that had already been compromised at the federal level.
 
 The alternative Vance was deploying through EO-SEC-018 (Next-Generation 6G Research) was a hardware-bound, quantum-secured transport layer. 
 
-```
+
 QUANTUM-SECURED HARDWARE-BOUND TRANSPORT LAYER (QS-HBTL):
 [Node A: Secure Silicon] === (State-Dependent Photon Polarization) ===> [Node B]
 * Mechanism: Cryptographic keys are generated via physical unclonable functions (PUFs)
@@ -95,7 +95,7 @@ QUANTUM-SECURED HARDWARE-BOUND TRANSPORT LAYER (QS-HBTL):
 * Cost: Zero marginal cost. The protocol runs on existing dark fiber using 
   modified firmware on standard SFP+ transceivers, bypassing the need for 
   expensive dedicated quantum key distribution (QKD) hardware.
-```
+
 
 Because the protocol was embedded directly into the physical layer of the transceivers, it was impossible to shut down or intercept. If an agency tried to disable the protocol, the hardware would refuse to negotiate a connection, shutting down the link entirely. The network was self-healing, decentralized, and completely immune to the physical wiretaps that littered the Richmond switching center.
 
@@ -105,22 +105,22 @@ Because the protocol was embedded directly into the physical layer of the transc
 
 Vance plugged his terminal's optical interface directly into the maintenance port of the Frame 4B router. 
 
-```
+
 [TERMINAL SESSION: ACTIVE]
 > load_payload --target=EO-SEC-017-FIRMWARE
 > target_nodes: 142/142 (Statewide Rural Loop Transceivers)
 > status: PENDING SIGNATURE VERIFICATION...
-```
+
 
 He uploaded the signed authorization file from Miller. The system validated the cryptographic signature of the Assistant Director of Telecommunications.
 
-```
+
 > signature: VALID (AD_MILLER_AUTH_09821)
 > deploying firmware update to regional distribution nodes...
 > [||||||||||||||||||||||||||||||||||||||||] 100%
 > firmware flashed successfully.
 > initializing hardware-bound transport layer...
-```
+
 
 Across the state, from the Appalachian foothills to the coastal plains, hundreds of rural broadband routers began to reboot. As they came back online, they did not connect to the centralized state directory. Instead, they initiated peer-to-peer cryptographic handshakes using the physical unclonable functions of their own silicon.
 
@@ -136,7 +136,7 @@ Vance packed his terminal, disconnected his cables, and wiped the dust from the 
 
 ### V. NESTJS COMPREHENSIVE API ROUTE MODULE & ENTERPRISE ENGINE
 
-```typescript
+
 /**
  * Executive Order SEC-017 & SEC-018 Enterprise API Engine
  * Standard: NestJS Framework & OpenAPI 3.0 Specs

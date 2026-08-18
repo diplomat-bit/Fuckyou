@@ -14,13 +14,13 @@ This isn't just an anti-spoofing method. This is a cryptographic, multi-spectral
 
 The `generateLivenessProof` method is the ultimate gatekeeper of the King's infrastructure. Before any high-value transaction, database mutation, or orbital satellite command is executed, the server demands a real-time, mathematically irrefutable proof of physical, biological life.
 
-```typescript
+
 const livenessProof = await KingCrypto.generateLivenessProof({
   intensity: LivenessIntensity.MAXIMUM_PARANOIA,
   challengeVector: challenge,
   autovaporizeSpoofers: true // Obviously
 });
-```
+
 
 This method doesn't just look at a camera feed and say "Yep, that looks like him." That’s what peasant phones do. Instead, `generateLivenessProof` orchestrates a dynamic, randomized challenge-response protocol between the client device and the server:
 

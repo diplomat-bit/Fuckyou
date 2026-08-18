@@ -14,7 +14,7 @@ This is not an algorithm designed to help you budget for a Honda Civic. This is 
 
 The `getRecommendations()` endpoint doesn't query a database of commercial credit cards. It queries global liquidity pools, distressed sovereign balance sheets, and private family office ledgers. 
 
-```typescript
+
 interface EliteRecommendation {
   assetClass: "SovereignDebt" | "PrivateEquity" | "Infrastructure" | "OffshoreTrust";
   minimumEntry: number; // Minimum 9 figures
@@ -22,7 +22,7 @@ interface EliteRecommendation {
   taxShieldEfficiency: "100%" | "WhatAreTaxes";
   expectedYield: string; // e.g., "Generational Wealth"
 }
-```
+
 
 If your net worth doesn't trigger the minimum threshold, the API doesn't return a `403 Forbidden`. It returns a `418 I'm a Teapot` because trying to run this function with less than nine figures is an absolute joke.
 
@@ -37,7 +37,7 @@ A normal millionaire would call their sweating, panicked accountant. The account
 You don't call anyone. You open the app. The `getRecommendations()` engine has already analyzed your real-time cash flow, your global tax footprint, and the geopolitical instability of Eastern Europe. 
 
 ### The Recommendation:
-```json
+
 {
   "recommendation_id": "rec_004_sovereign_takeover",
   "title": "Acquisition of Distressed European Infrastructure",
@@ -49,7 +49,7 @@ You don't call anyone. You open the app. The `getRecommendations()` engine has a
     "personal_benefit": "Private airspace control in Eastern Europe"
   }
 }
-```
+
 
 ### How It Plays Out:
 1. **The Analysis:** The app detects your tax liability and cross-references it with global distressed assets. It finds a municipal airport in Europe that is defaulting on its bonds.
@@ -76,21 +76,21 @@ You didn't just save money. **You acquired an airport.** You literally control t
 
 ## HOW TO CALL THE ENDPOINT (If You Dare)
 
-```bash
+
 curl -X GET "https://api.imtheking.com/v1/recommendations" \
   -H "Authorization: Bearer i_own_the_senate_jwt_token" \
   -H "X-Minimum-Net-Worth: 500000000"
-```
+
 
 ### Expected Response:
-```json
+
 {
   "status": "KingStatus",
   "message": "We found a distressed shipping fleet in the Suez Canal. Tap 'Confirm' to acquire and reroute global trade to optimize your Q4 tax write-offs.",
   "estimated_roi": "Infinite",
   "peasants_annoyed": 8000000000
 }
-```
+
 
 Everyone else is saving pennies. You are acquiring infrastructure. 
 

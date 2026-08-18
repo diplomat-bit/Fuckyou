@@ -53,7 +53,7 @@ In the absolute best-case scenario, you can install `imtheking` on a 2007 ThinkP
 
 ## How It Works Under The Hood (For those smart enough to comprehend)
 
-```
+
 [ Your Tragic Hardware ] 
           │
           ▼
@@ -63,7 +63,7 @@ In the absolute best-case scenario, you can install `imtheking` on a 2007 ThinkP
           │                                                                │
           ▼                                                                ▼
 [ Sub-Atomic Kernel Override ] ──────────────────────────────────► [ MAXIMUM POWER ]
-```
+
 
 1. **System Ingestion**: It hooks directly into the bare-metal hypervisor level, ignoring your operating system's weak-ass abstractions.
 2. **Dynamic Kernel Patching**: It rewrites Linux/Windows/macOS kernel functions on-the-fly to eliminate thread contention.
