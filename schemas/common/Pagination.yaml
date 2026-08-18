@@ -1,0 +1,35 @@
+---
+type: object
+description: >-
+  A standard pagination object containing metadata about the list of results, using offset-based pagination.
+  This object is typically included in responses that return a collection of resources.
+properties:
+  limit:
+    type: integer
+    format: int32
+    description: The maximum number of items to return in a single page.
+    example: 20
+    minimum: 1
+  offset:
+    type: integer
+    format: int32
+    description: The number of items to skip before starting to collect the result set.
+    example: 0
+    minimum: 0
+  total:
+    type: integer
+    format: int64
+    description: The total number of items available.
+    example: 100
+    minimum: 0
+  nextOffset:
+    type: integer
+    format: int32
+    description: The offset to use for the next page of results. This field may be omitted if there are no more results.
+    example: 20
+    minimum: 0
+required:
+  - limit
+  - offset
+  - total
+---

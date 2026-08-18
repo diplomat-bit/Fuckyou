@@ -1,25 +1,42 @@
+
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#030712" />
-    <meta name="description" content="Sovereign OS - Elite Financial & Intelligence Orchestration Portal" />
+    <link rel="preload" href="/assets/IMG_5610-ZCjg0wqf.webp" as="image" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sovereign OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
-
-    <!-- External SDKs -->
-    <script async src="https://js.stripe.com/v3/buy-button.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  </head>
-  <body class="bg-gray-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white min-h-screen overflow-x-hidden">
+<link rel="stylesheet" href="/index.css">
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.2.3",
+    "react/": "https://esm.sh/react@19.2.3/",
+    "react-dom": "https://esm.sh/react-dom@19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@19.2.3/",
+    "recharts": "https://esm.sh/recharts@2.12.0?external=react,react-dom",
+    "@google/genai": "https://esm.sh/@google/genai@1.31.0",
+    "@heroicons/react/outline": "https://esm.sh/@heroicons/react@1.0.6/outline?external=react",
+    "uuid": "https://esm.sh/uuid@9.0.1",
+    "@tanstack/react-query": "https://esm.sh/@tanstack/react-query@5.17.19?external=react,react-dom",
+    "@heroicons/react/": "https://esm.sh/@heroicons/react@2.1.1/",
+    "path": "https://esm.sh/path@^0.12.7",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "fs": "https://esm.sh/fs@^0.0.1-security",
+    "react-icons/": "https://esm.sh/react-icons@^5.5.0/",
+    "axios": "https://esm.sh/axios@^1.13.2",
+    "@sentry/react": "https://esm.sh/@sentry/react@8.35.0"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/assets/index-CwQLVUuC.js"></script>
+</head>
+  <body class="bg-gray-950 text-white">
     <div id="app"></div>
-    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

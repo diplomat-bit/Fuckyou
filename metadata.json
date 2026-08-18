@@ -1,22 +1,9 @@
 {
-  "name": "Remix Oko",
-  "description": "Imported from GitHub: diplomat-bit/Oko",
+  "name": "Copy of Sovereign AI Banking Nexus",
+  "description": "A next-generation bankwing dashboard providing AI-driven insights and advanced financial management tools for personal and corporate clients.",
   "requestFramePermissions": [
     "camera",
     "microphone",
-    "geolocation",
-    "identity-credentials-get",
-    "clipboard-read",
-    "clipboard-write",
-    "payment"
-  ],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ],
-  "protocol_handlers": [
-    {
-      "protocol": "web+aquarius",
-      "url": "/?portal=%s"
-    }
+    "geolocation"
   ]
 }
