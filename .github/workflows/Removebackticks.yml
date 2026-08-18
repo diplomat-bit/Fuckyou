@@ -1,0 +1,55 @@
+# .github/workflows/cleanup-fences.yml
+
+name: Perpetual Code Fence Cleaner
+
+on:
+  # This runs the workflow on a schedule. The cron syntax "*/5 * * * *" means "every 5 minutes".
+  schedule:
+    - cron: '*/5 * * * *'
+
+  # This also allows you to run it manually from the Actions tab whenever you want.
+  workflow_dispatch:
+
+jobs:
+  remove-code-fences:
+    runs-on: ubuntu-latest
+    
+    # Give the job permissions to write content back to the repository.
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Scan and Remove All Code Fences
+        run: |
+          echo "Scanning all files in the repository for markdown code fences..."
+          
+          # Use `find` to locate all files in the current directory (`.`) that are of type file (`-type f`).
+          # For each file found, execute `sed -i` to perform an in-place replacement.
+          # The regular expressions handle both the opening and closing fences.
+          #   - `s/^ *```.*$//g`: Finds lines starting with optional spaces, followed by ``` and anything to the end of the line, and replaces them with nothing.
+          #   - `s/^ *```$//g`: Finds lines starting with optional spaces and just ```, and replaces them with nothing.
+          # The `-E` flag enables extended regular expressions, though not strictly needed here, it's good practice.
+          find . -type f -not -path './.git/*' -print0 | xargs -0 sed -i -E 's/^ *```.*$//g; s/^ *```$//g'
+
+          echo "Scan complete. Fences have been removed if found."
+
+      - name: Commit and Push Changes
+        run: |
+          # Configure git with a bot user identity.
+          git config --global user.name "Code Fence Cleaner Bot"
+          git config --global user.email "github-actions-bot@users.noreply.github.com"
+          
+          # Use `git status --porcelain` to see if there are any changes.
+          # If the output is not empty, then there are changes to commit.
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Changes detected. Committing the cleaned files..."
+            git add .
+            git commit -m "chore(bot): Automatically remove markdown code fences"
+            git push
+            echo "Cleaned files have been pushed to the repository."
+          else
+            echo "No files needed cleaning. No changes to commit."
+          fi
