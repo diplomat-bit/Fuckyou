@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group/radio-group';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -42,26 +43,22 @@ export const EppOfferSelector: React.FC<EppOfferSelectorProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <RadioGroup 
+          value={selectedId} 
+          onValueChange={handleSelection}
+          className="space-y-4"
+        >
           {offers.map((offer) => (
             <div 
               key={offer.id}
-              onClick={() => handleSelection(offer.id)}
-              className={`relative flex items-start space-x-3 p-4 rounded-lg border transition-all cursor-pointer ${
+              className={`relative flex items-start space-x-3 p-4 rounded-lg border transition-all ${
                 selectedId === offer.id 
                   ? 'border-primary bg-primary/5 ring-1 ring-primary' 
                   : 'border-slate-200 hover:border-slate-300'
               }`}
             >
-              <div className="mt-1">
-                <input 
-                  type="radio" 
-                  checked={selectedId === offer.id} 
-                  onChange={() => {}}
-                  className="w-4 h-4 text-primary border-slate-300 focus:ring-primary"
-                />
-              </div>
-              <Label className="flex-1 cursor-pointer">
+              <RadioGroupItem value={offer.id} id={offer.id} className="mt-1" />
+              <Label htmlFor={offer.id} className="flex-1 cursor-pointer">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-bold text-lg">{offer.tenureMonths} Months</span>
                   <span className="text-sm font-medium text-slate-600">
@@ -84,7 +81,7 @@ export const EppOfferSelector: React.FC<EppOfferSelectorProps> = ({
               )}
             </div>
           ))}
-        </div>
+        </RadioGroup>
 
         {selectedId && (
           <div className="mt-6 pt-4 border-t border-slate-100">
