@@ -7,7 +7,7 @@
 
 ## SECTION I: CORPORATE ARCHITECTURE & REGULATORY EXPLOIT
 
-```
+
                                  [ CITIBANK DEMO BUSINESS INC. ]
                                   (Delaware Shell / 527 Status)
                                                 |
@@ -20,7 +20,7 @@
                                                 |
                                   [ DECENTRALIZED LEDGER NODE ]
                                   (Automated Treasury Routing)
-```
+
 
 ### 1.1 The 527 Loophole and Regulatory Shielding
 Citibank Demo Business Inc. (CDBI) operates not as a standard commercial enterprise, but as a nested series of political organizations under Section 527 of the Internal Revenue Code. Under current Federal Election Commission (FEC) and Internal Revenue Service (IRS) regulations, a 527 organization is exempt from federal income tax on "exempt function income"—defined as contributions, membership dues, or fundraising proceeds used to influence the selection, nomination, or election of individuals to public office.
@@ -107,7 +107,7 @@ The strategist took the signed document, but his real work was already complete.
 
 Under the table, his left hand was resting on his phone. He had already opened the terminal interface. With a single, blind swipe of his thumb, he authorized the execution of the migration script.
 
-```
+
 [SYSTEM LOG: 22:14:09] - INITIATING PROTOCOL 527-DELTA
 [SYSTEM LOG: 22:14:10] - VERIFYING SIGNATURE HASH: VANCE_H_0992
 [SYSTEM LOG: 22:14:11] - EXECUTING 26 U.S.C. § 527(f)(3) DISSOLUTION CLAUSE
@@ -115,7 +115,7 @@ Under the table, his left hand was resting on his phone. He had already opened t
 [SYSTEM LOG: 22:14:13] - ROUTING FUNDS TO DECENTRALIZED EDGE NODES...
 [SYSTEM LOG: 22:14:15] - SUCCESS: $42,109,482.11 TRANSFERRED.
 [SYSTEM LOG: 22:14:16] - CITIBANK ACCOUNT BALANCE: $0.00
-```
+
 
 The step-by-step execution occurred in milliseconds:
 1.  **The Trigger:** The moment Vance signed the physical document, the strategist’s digital authorization activated the "dissolution of administrative services" clause embedded in the system's smart contract.

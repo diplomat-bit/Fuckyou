@@ -1,6 +1,6 @@
 # SECTION 087: CitiAlpacaBridgeService — The Ultra-High-Speed Commercial-to-Brokerage Liquidity Supercollider
 
-```
+
 ========================================================================================
    ___ ___ _____ ___   _   _     ___   _   ___   _     ___ ___ ___ ___  ___ ___ 
   / __|_ _|_   _|_ _| /_\ | |   | _ \ /_\ / __| /_\   | _ ) _ \_ _|   \/ __| __|
@@ -8,7 +8,7 @@
   \___|___| |_| |___/_/ \_\____||_| /_/ \_\___/_/ \_\ |___/_|_\___|___/|___/___|
 ========================================================================================
              [ THE INSTITUTIONAL CAPITAL HIGHWAY FOR THE TRUE KING ]
-```
+
 
 ---
 
@@ -34,7 +34,7 @@ When a $50M liquidation, royalty payment, or sovereign wire lands in your Citi C
 
 ## 2. THE BILLIONAIRE USE-CASE SCENARIOS
 
-```
+
 +-----------------------------------------------------------------------------------+
 |                           THE GOD-MODE CAPITAL PIPELINE                           |
 |                                                                                   |
@@ -64,7 +64,7 @@ When a $50M liquidation, royalty payment, or sovereign wire lands in your Citi C
 |     Total Elapsed Time: 312 Milliseconds                                          |
 |     Net Profit on Intraday Leg: +$1,420,000.00 USD before noon                    |
 +-----------------------------------------------------------------------------------+
-```
+
 
 ### Scenario Alpha: The 8:31 AM CPI Flash-Crash Scalp
 - **The Context:** You are sipping an espresso on a yacht off the Amalfi Coast. It is 2:31 PM Italian time (8:31 AM Eastern). CPI prints cooler than expected. The entire global market is about to rip violently upward.
@@ -99,7 +99,7 @@ When a $50M liquidation, royalty payment, or sovereign wire lands in your Citi C
 
 Here is the industrial-grade, ultra-resilient engine code that governs the bridge. This service runs on dedicated bare-metal instances right next to the NY4 Equinix datacenter.
 
-```typescript
+
 import { EventEmitter } from 'events';
 import crypto from 'crypto';
 
@@ -261,7 +261,7 @@ export class CitiAlpacaBridgeService extends EventEmitter {
     };
   }
 }
-```
+
 
 ---
 
@@ -289,7 +289,7 @@ The King runs this loop 40 times a year. That is **$6,320,430.00 pure profit** c
 
 ## 6. VERIFICATION TEST SUITE: BLAZING FAST EXECUTION
 
-```typescript
+
 // Test simulation file to prove dominance
 async function runBridgeVerification() {
   const bridge = new CitiAlpacaBridgeService(
@@ -319,7 +319,7 @@ async function runBridgeVerification() {
 }
 
 runBridgeVerification();
-```
+
 
 ---
 

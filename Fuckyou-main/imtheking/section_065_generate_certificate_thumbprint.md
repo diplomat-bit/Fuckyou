@@ -16,7 +16,7 @@ To the average, sweat-stained "senior developer" working for a salary that would
 
 Let’s take a moment to laugh at how the rest of the world operates. It’s honestly hilarious.
 
-```
+
 ┌─────────────────────────────────────────────────────────────────┐
 │ THE PEASANT METHOD: API Keys                                    │
 │ 1. Copy-paste a plaintext string called "API_KEY"               │
@@ -24,13 +24,13 @@ Let’s take a moment to laugh at how the rest of the world operates. It’s hon
 │ 3. Get hacked by a 14-year-old in a basement                    │
 │ 4. Cry on Twitter about "sophisticated cyber attacks"           │
 └─────────────────────────────────────────────────────────────────┘
-```
+
 
 API keys are for clowns. They are static strings. If someone sees your API key, they *are* you. They can drain your accounts, delete your databases, and post embarrassing memes on your corporate accounts. 
 
 Now let’s look at how the King operates:
 
-```
+
 ┌─────────────────────────────────────────────────────────────────┐
 │ THE KING'S METHOD: Cryptographic Thumbprints                    │
 │ 1. Hardware-bound private key inside a secure enclave           │
@@ -39,7 +39,7 @@ Now let’s look at how the King operates:
 │ 4. Zero secrets transmitted over the wire                       │
 │ 5. Hackers cry themselves to sleep                              │
 └─────────────────────────────────────────────────────────────────┘
-```
+
 
 We don't send passwords. We don't send tokens. We present a cryptographic certificate, and our system instantly generates a unique, immutable SHA-256 thumbprint to establish a hardware-bound, zero-trust handshake. 
 
@@ -74,12 +74,12 @@ While the rest of the world is worrying about their LastPass accounts getting br
 
 The method takes your client certificate—the very document that proves your server's identity—and runs it through our hyper-optimized hashing pipeline. 
 
-```typescript
+
 // A glimpse into the mind of a god
 const thumbprint = generateCertificateThumbprint(clientCert);
 console.log(`Sovereign Identity Verified: ${thumbprint}`);
 // Output: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-```
+
 
 This thumbprint is:
 * **Collision-Resistant:** There are more possible thumbprints than there are atoms in the observable universe.

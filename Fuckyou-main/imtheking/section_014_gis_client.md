@@ -22,12 +22,12 @@ Let’s paint a picture. You’re sitting on your 250-foot superyacht anchored o
 ### How THE KING (You) Does It Using the GIS Client:
 You don't book a flight. You don't talk to Giovanni. You open the GIS Client.
 
-```
+
 [SYSTEM ACTIVE] -> INITIALIZING ORBITAL SCAN: TUSCANY, ITALY
 [CONNECTING] -> PARCEL DATABASE v4.12 (EUROPEAN LAND REGISTRY)
 [CONNECTING] -> HYDROLOGICAL FLOW MODELS & WATER RIGHTS LEDGER
 [CONNECTING] -> SPECTRAL SOIL ANALYSIS (SENTINEL-2 SATELLITE)
-```
+
 
 With three clicks, the GIS Client renders a 3D, multi-layered, hyper-spectral visualization of the entire Tuscan region:
 

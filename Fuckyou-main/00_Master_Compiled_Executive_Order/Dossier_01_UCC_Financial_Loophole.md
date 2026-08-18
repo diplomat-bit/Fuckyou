@@ -12,7 +12,7 @@
 
 The global financial system does not run on money; it runs on the presumption of consent. Every transaction routed through the Federal Reserve’s Fedwire Funds Service relies on the implicit waiver of common-law rights by the participating institutions. By exploiting this structural blind spot, the deployment of the decentralized electoral security infrastructure is funded not through public appropriations, but through the unilateral extraction of dormant sovereign credit.
 
-```
+
 [Citibank Fedwire Ledger: $18T Daily Volume]
        │
        ▼ (Standard Route: Implicit Waiver of Rights)
@@ -26,7 +26,7 @@ The global financial system does not run on money; it runs on the presumption of
                                                     │
                                                     ▼
                                     [Electoral Security Infrastructure]
-```
+
 
 #### 1.1 The Legal Mechanism of UCC 1-308
 Under Uniform Commercial Code (UCC) Section 1-308 (formerly UCC 1-207), a party that with explicit reservation of rights performs or promises performance or assents to performance in a manner demanded or offered by the other party does not thereby prejudice the rights reserved. Words such as "without prejudice," "under protest," or the like are sufficient.

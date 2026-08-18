@@ -64,7 +64,7 @@ The `issueBoundToken` method is a masterpiece of cryptographic engineering:
 3. **Asymmetric Verification**: Every subsequent request requires the client to sign an ephemeral challenge (like a timestamp or nonce) using the corresponding private key.
 4. **Zero Trust Execution**: Even if your SSL/TLS layer is completely compromised, the transaction remains 100% secure because the attacker cannot forge the hardware signature.
 
-```
+
 [ Your Elite Device ]                               [ The King's Server ]
          |                                                    |
          | ----- 1. Request Bound Token + Hardware Proof ----> |
@@ -80,7 +80,7 @@ The `issueBoundToken` method is a masterpiece of cryptographic engineering:
          |                                                    |
          | ----- 8. Hacker fails (No physical key) ---------> |
          |                                                    | -- 9. ACCESS DENIED (Peasant Alert)
-```
+
 
 ---
 

@@ -27,7 +27,7 @@ To the untrained eye, the documents were a desert of dry, repetitive administrat
 
 By inserting a highly technical, seemingly benign definition of "interoperable telemetry instrumentation" into the appendix of EO-SEC-044, Vance had effectively reclassified decentralized, peer-to-peer cryptographic routing protocols as "standard diagnostic testing utilities."
 
-```
+
 [42 U.S.C. Â§ 1870(f) Exemption Clause - Draft Amendment]
 Pursuant to the modernization of cyber-physical systems under EO-SEC-043, 
 any device utilizing non-proprietary telemetry instrumentation for the 
@@ -35,7 +35,7 @@ purposes of local diagnostic verification (as defined in Appendix G of
 EO-SEC-044) shall be exempt from centralized Federal Information Security 
 Modernization Act (FISMA) gateway routing requirements, provided that such 
 devices maintain a localized, self-authenticating cryptographic state.
-```
+
 
 To Henderson and the compliance auditors, this paragraph was white noise. It looked like a standard bureaucratic carve-out designed to let researchers test legacy hardware without filing three hundred pages of firewall exception requests. They saw the word "diagnostic" and immediately checked out. 
 
@@ -49,24 +49,24 @@ The current industry standardâ€”the one Henderson was currently selling to 
 
 It was a catastrophic design flaw. 
 
-```
+
 [Centralized IoT Architecture - Vulnerability Vector]
 [Device] ---> [Local Gateway] ---> [DNS Resolution] ---> [Central Cloud Broker] ---> [Auth Database]
                                                                 |
                                                       [Single Point of Failure]
                                                       (Target of Botnet DDoS)
-```
+
 
 If the central brokerâ€™s DNS was hijacked, or if the cloud database was flooded with a distributed denial-of-service (DDoS) attack, the entire system failed closedâ€”or worse, failed open. A Mirai-class botnet could exploit simple Universal Plug and Play (UPnP) vulnerabilities to compromise a single thermostat, use it as a pivot point, and flood the central broker with millions of garbage packets. Once the broker went dark, every connected device became a brick, unable to authenticate its commands.
 
 The alternative Vance had engineered was a decentralized, peer-to-peer security network. 
 
-```
+
 [Decentralized P2P Mesh Architecture - Self-Healing]
 [Device A] <---(Ed25519 Gossip Protocol)---> [Device B] <---> [Device C]
     \                                                              /
      \------------------(Local Consensus Validation)--------------/
-```
+
 
 Instead of relying on a central server, each device on the mesh acted as an independent validation node. Using a lightweight, zero-trust gossip protocol, devices authenticated each other locally using Ed25519 keypairs hardcoded into the firmware's bootloader. 
 
@@ -92,14 +92,14 @@ It wasn't just a standard probe. Vance watched the packet capture window. The so
 
 The physical locks on the gantry frames were clicking because they were being flooded with rapid-fire authentication requests, forcing their microcontrollers into a continuous reboot loop.
 
-```
+
 [PACKET CAPTURE - SUBNET 12 - ACTIVE ATTACK]
 14:32:01.102938 IP 185.220.101.5.1900 > 192.168.12.45.1900: UDP, length 376
 14:32:01.102984 IP 109.201.154.12.2323 > 192.168.12.45.23: Flags [S], seq 2938401
 14:32:01.103012 IP 185.220.101.9.1900 > 192.168.12.46.1900: UDP, length 376
 [WARNING: GATEWAY CPU UTILIZATION AT 98.4%]
 [WARNING: CRYPTOGRAPHIC AUTHENTICATION TIMEOUT - SUBNET 12]
-```
+
 
 The immediate threat was physical. If the botnet successfully compromised the smart locks on the facility's main doors, the electronic access control system would default to its fail-secure state, locking everyone inside the high-voltage testing bay. More importantly, if the attack succeeded while the federal auditors were monitoring, Henderson would panic, scrap the entire project, and hand the security contract over to the defense conglomerate, burying Vance's decentralized protocol forever.
 
@@ -121,13 +121,13 @@ He didn't hesitate. He chose execution.
 
 Vance hit `Enter`.
 
-```
+
 [EXECUTE: /bin/sh -c "mesh-bootstrap --interface=eth1 --secret-key=/etc/sec/node_key.pem"]
 [STATUS: INITIALIZING DECENTRALIZED CONSENSUS MESH...]
 [STATUS: 284 OF 300 NODES ONLINE]
 [STATUS: LOCAL ED25519 AUTHENTICATION ACTIVE]
 [STATUS: ISOLATING COMPROMISED GATEWAY ROUTE...]
-```
+
 
 On the monitors, the red wall of traffic began to fracture. 
 
@@ -163,7 +163,7 @@ And there was absolutely nothing they could do to stop it.
 
 To operationalize the decentralized mesh network, the self-healing gossip protocol, and the Section 11(f) legal exemption validation, the following NestJS API routes and services are implemented. This code represents the production-grade implementation of the CPS-IOT-SEC-043/044 directives.
 
-```typescript
+
 import { Controller, Post, Get, Body, Query, HttpException, HttpStatus, Injectable, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiProperty, ApiBearerAuth } from '@nestjs/swagger';
 import * as crypto from 'crypto';

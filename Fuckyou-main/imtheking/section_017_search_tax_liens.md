@@ -55,7 +55,7 @@ When Chad flies back for ski season, his keycard doesn't work. Why? Because **yo
 
 Here is the API call that makes the entire real estate market your personal playground:
 
-```javascript
+
 const liens = await KingEngine.searchTaxLiens({
   geofence: {
     zipCodes: ["81611", "90210", "10021"], // Aspen, Beverly Hills, Upper East Side
@@ -68,7 +68,7 @@ const liens = await KingEngine.searchTaxLiens({
   },
   autoAcquire: true // Obviously. Why waste clicks?
 });
-```
+
 
 ### Why This is the Most Exclusive Code Ever Written:
 * **Algorithmic Foreclosure Pipeline:** It doesn't just find the liens; it integrates with automated legal filing APIs to initiate foreclosure proceedings the millisecond the redemption clock hits zero.

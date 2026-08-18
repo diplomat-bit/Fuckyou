@@ -33,7 +33,7 @@ You open your interface and speak to the **AILedgerAssistantEngine**:
 4. **The Output:** It doesn't give you a vague answer. It gives you the exact execution blueprint.
 
 ### The Response:
-```
+
 [SYSTEM]: Query complete. 
 
 Sire, your consolidated net worth across all 142 entities is exactly $18,402,911,404.12. 
@@ -45,7 +45,7 @@ By acquiring the Nevada Solar Farm for $150M (structured with 30% equity, 70% de
 4. The solar farm will yield a 12.4% unlevered IRR over the next 15 years.
 
 I have pre-drafted the Letter of Intent (LOI) and wired the escrow deposit. Say "Execute" to finalize.
-```
+
 
 You say *"Execute."* You go back to your drink. You just saved $45 million while your peers are still trying to get their CFO on a Zoom call.
 

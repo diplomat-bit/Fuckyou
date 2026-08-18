@@ -25,11 +25,11 @@ In the old world, this is where the deal stalls. Your legal team panics about GD
 
 But you? You just laugh. You pull out your gold-plated iPad, open your terminal, and generate an API key for them.
 
-```bash
+
 curl -X POST https://api.yourkingdomain.com/v1/compliance/gateways/swiss-consortium-key \
   -H "Authorization: Bearer IM_THE_KING_CONQUER_THE_WORLD" \
   -d '{"scope": "realtime_verification_only", "zkp_enabled": true}'
-```
+
 
 You slide the iPad across the table. 
 
@@ -58,7 +58,7 @@ Most companies treat compliance as a post-mortem activity—they check what went
 
 While legacy systems are running COBOL scripts to generate CSVs, your `complianceRouter` is executing high-performance, asynchronous routing logic:
 
-```typescript
+
 // A glimpse into the mind of a god.
 import { Router } from 'express';
 import { ZKProofGenerator } from '@king/crypto-shield';
@@ -95,7 +95,7 @@ complianceRouter.post('/verify-transaction', async (req, res) => {
 });
 
 export default complianceRouter;
-```
+
 
 ---
 

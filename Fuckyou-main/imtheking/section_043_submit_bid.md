@@ -37,7 +37,7 @@ Behind the scenes, your instance of our server is monitoring the auction pool. I
 
 At exactly **11:59:59.997**—three milliseconds before the auction closes—`submitBid` fires.
 
-```typescript
+
 // The moment their dreams die:
 await KingEngine.submitBid({
   auctionId: "PALM-BEACH-MEGA-MANSION-009",
@@ -45,7 +45,7 @@ await KingEngine.submitBid({
   optimalRate: 17.999, // Calculated to the absolute maximum possible yield
   precisionMs: 1
 });
-```
+
 
 While the hedge fund's request is still bouncing around some bloated Cloudflare proxy, your bid lands like a precision-guided missile. 
 

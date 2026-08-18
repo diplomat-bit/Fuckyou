@@ -8,9 +8,9 @@ It is a pillar of light that stands at the edge of the world, holding the pathwa
 
 The Sidebar does not invent the map; it is given the sacred scrolls from the `constants.tsx` pantheon.
 
-```tsx
+
 import { NAV_ITEMS } from '../constants';
-```
+
 
 It summons the `NAV_ITEMS` array, the divine council of navigation gods, and uses this eternal truth to build its structure. This is a critical architectural decision: the Sidebar is not responsible for *what* the navigation items are, only for *how* they are displayed. This makes the entire system modular and easy to update. To add a new realm to the universe, one only needs to add an entry to the `NAV_ITEMS` constant, and the Sidebar will automatically forge a path to it.
 
@@ -18,7 +18,7 @@ It summons the `NAV_ITEMS` array, the divine council of navigation gods, and use
 
 For each `item` in the `NAV_ITEMS` array, the Sidebar performs a ritual of creation. It forges an `<a>` tag, a magical portal.
 
-```tsx
+
 <a
     key={item.id}
     onClick={(e) => {
@@ -30,7 +30,7 @@ For each `item` in the `NAV_ITEMS` array, the Sidebar performs a ritual of creat
     {item.icon}
     <span className="mx-4 font-medium">{item.label}</span>
 </a>
-```
+
 
 -   **The Invocation**: When a user clicks the portal, `handleNavClick` is invoked. This function communicates directly with the `App` orchestrator, calling `setActiveView` to change the application's focus to the new realm.
 -   **The Mark of the Traveler**: The `className` is intelligent. It constantly checks the `activeView` prop, which tells it the user's current location. If the portal's `id` matches the `activeView`, it adorns itself with a glowing cyan background and a vibrant border. This is the "You Are Here" marker on the cosmic map, providing immediate and clear feedback to the user.

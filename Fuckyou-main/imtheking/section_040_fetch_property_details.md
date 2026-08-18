@@ -46,7 +46,7 @@ A prime parcel of land comes up for bidding.
 
 Within **0.04 seconds**, the method returns the payload:
 
-```json
+
 {
   "parcel_id": "310-4092-001",
   "assessed_value": 1500000,
@@ -56,7 +56,7 @@ Within **0.04 seconds**, the method returns the payload:
   "environmental_hazard_flag": true,
   "notes": "Property is literally underwater 9 months of the year. Home to an endangered species of swamp frog. Building anything here is a federal crime."
 }
-```
+
 
 You let out a soft, aristocratic chuckle. You don't bid a single penny. 
 
@@ -66,7 +66,7 @@ Meanwhile, the very next item on the auction block is a boring, ugly-looking lot
 
 Your `fetchPropertyDetails` runs:
 
-```json
+
 {
   "parcel_id": "310-4092-002",
   "assessed_value": 50000,
@@ -75,7 +75,7 @@ Your `fetchPropertyDetails` runs:
   "zoning_description": "Mixed-Use High-Density. Approved for up to 25 stories.",
   "notes": "Shed is worthless, but the land is zoned for a luxury condo tower. Adjacent parcels were recently acquired by Disney."
 }
-```
+
 
 You bid the minimum starting price of $15,000. No one else bids because they are blind. 
 

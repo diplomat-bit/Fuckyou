@@ -31,7 +31,7 @@ You smile. You don't open a spreadsheet. You don't call an analyst. Analysts are
 
 Instead, you ping the King's server. You pass a raw, classified satellite feed of your rival's private shipyard in Rotterdam into `analyzeImage`.
 
-```typescript
+
 import { kingServer } from '@imtheking/core';
 
 const reality = await kingServer.analyzeImage({
@@ -41,7 +41,7 @@ const reality = await kingServer.analyzeImage({
 });
 
 console.log(reality.actionableIntel);
-```
+
 
 ### What the King's AI Does in 42 Milliseconds:
 
@@ -52,7 +52,7 @@ console.log(reality.actionableIntel);
 
 ### The Output on Your Screen:
 
-```json
+
 {
   "status": "SUCCESS_WE_OWN_THEM",
   "analysis": {
@@ -67,7 +67,7 @@ console.log(reality.actionableIntel);
     "insultToTarget": "Send their CEO a toy boat that sinks in water to his personal address."
   }
 }
-```
+
 
 While the rest of the world is waiting for the quarterly earnings call like a bunch of blind sheep, you’ve already shorted their stock to the ground, bought up their distressed debt for pennies on the dollar, and forced them into a hostile takeover. 
 

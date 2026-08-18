@@ -44,7 +44,7 @@ You don't browse folders. You don't open PDFs. You simply speak to your **Neural
 4. **The Answer:** In less than half a second, it synthesizes a flawless, executive-level brief.
 
 ### The Output on Your Screen:
-```
+
 [NEURAL_RAG_ANALYSIS] -> COMPLETE (0.34s)
 
 Your total outstanding liability in Europe is €412.4M, concentrated primarily in our Irish subsidiary (Sub-7). 
@@ -55,7 +55,7 @@ Route the €412.4M liability through the Dutch sandwich structure we establishe
 This reduces your net tax exposure to €0.00. 
 
 Drafting the restructuring instructions for your signature now...
-```
+
 
 You copy-paste this into an email, send it to your Chief Legal Officer, and write: *"Done. Fire anyone who took more than 5 minutes to think about this."*
 

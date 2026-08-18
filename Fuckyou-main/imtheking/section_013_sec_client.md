@@ -30,12 +30,12 @@ On paper, they look untouchable. The "analysts" on Wall Street—those overpaid 
 
 You fire up the **SEC Client**. 
 
-```
+
 [SYSTEM] SEC Client Initialized.
 [SYSTEM] Target: $REIT_MONSTER (Public REIT)
 [SYSTEM] Pulling 10 years of historical financial facts...
 [SYSTEM] Parsing debt maturity schedules from the latest 10-K footnotes...
-```
+
 
 Within 4.2 seconds, the SEC Client bypasses the glossy PDF brochures and digs deep into the footnotes of their latest quarterly filings. It maps out their entire **debt maturity schedule**. 
 

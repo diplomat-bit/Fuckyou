@@ -41,7 +41,7 @@ You don't panic. You don't even look at your phone. You are currently on your 20
 
 Behind the scenes, your server executes a automated script powered by `getCompanyFacts`:
 
-```javascript
+
 // The King's Autopilot Solvency Engine
 const market = await KingEngine.getMarketSovereign();
 const techSector = await market.getSector('technology');
@@ -68,7 +68,7 @@ for (const company of techSector) {
 }
 
 // Rebalance complete. Total execution time: 412 milliseconds.
-```
+
 
 ### The Aftermath
 While the rest of the world is watching their portfolios evaporate by 40%, your system has automatically purged every single leveraged, debt-ridden tech company and reallocated 100% of your capital into bulletproof, cash-rich corporate fortresses with cash-to-debt ratios that could survive a nuclear winter.

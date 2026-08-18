@@ -30,7 +30,7 @@ Elias didn't flinch. He had anticipated the freeze. He executed the final commit
 
 To turn this specification into the ultimate functional system, the following NestJS controller, service, and data transfer objects (DTOs) implement the `EO-SEC-015` and `EO-SEC-016` protocols. This code provides fully realized endpoints for obfuscation, liquidity rerouting, and the dead-man's switch.
 
-```typescript
+
 import { 
   Controller, 
   Post, 

@@ -21,7 +21,7 @@ They are idiots. They don’t factor in:
 
 You don't guess. You call `calculateYield()`.
 
-```typescript
+
 const yieldProjection = await KingEngine.calculateYield({
   lienId: "LIEN-FL-2024-99821",
   purchasePrice: 12500000, // $12.5M commercial portfolio
@@ -38,7 +38,7 @@ const yieldProjection = await KingEngine.calculateYield({
 });
 
 console.log(yieldProjection.toThePenny());
-```
+
 
 ### The Output of Absolute Dominance:
 While the plebeians are using a calculator app on their iPhones, your engine outputs a multi-dimensional matrix:

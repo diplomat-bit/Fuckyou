@@ -18,7 +18,7 @@ No forms. No phone calls. No manual intervention. Just pure, programmatic domina
 
 The `executeCitiToAlpacaIso20022Wire` method is the crown jewel of our funding engine. It bypasses the slow, bloated consumer banking interfaces and speaks directly to the global financial system's native tongue: **ISO 20022 XML**.
 
-```
+
 +------------------------+      pacs.008 XML      +------------------------+
 |   Citi Treasury Core   |  ===================>  |  Alpaca Clearing Node  |
 |  (Your Infinite Vault) |   [Instant Settlement] |  (Your Trading Engine) |
@@ -26,7 +26,7 @@ The `executeCitiToAlpacaIso20022Wire` method is the crown jewel of our funding e
             ^                                                 |
             |                                                 |
             +=========== executeCitiToAlpacaIso20022Wire =====+
-```
+
 
 ### Why This Makes Everyone Else Look Like Idiots:
 1. **The `pacs.008` Payload:** Most "fintech" apps use outdated NACHA ACH files (which take 3 days to settle) or standard Fedwire templates that require manual approval. We generate a cryptographically signed, schema-validated `pacs.008.001.08` Real-Time Payment (RTP) or Fedwire XML payload on the fly.
@@ -55,7 +55,7 @@ To seize this block, you need **$850,000,000 USD** in cleared buying power in yo
 * **3:59:52 PM:** The script invokes `executeCitiToAlpacaIso20022Wire(850000000.00)`.
 * **3:59:53 PM:** The server instantly compiles the following ISO 20022 payload:
 
-```xml
+
 <?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
   <FIToFICstmrCdtTrf>
@@ -82,7 +82,7 @@ To seize this block, you need **$850,000,000 USD** in cleared buying power in yo
     </CdtTrfTxInf>
   </FIToFICstmrCdtTrf>
 </Document>
-```
+
 
 * **3:59:54 PM:** The payload is transmitted via Citi's ultra-low-latency API.
 * **3:59:56 PM:** The Federal Reserve's FedNow/Fedwire service processes the XML.
@@ -98,7 +98,7 @@ On Monday morning, you buy the rival hedge fund manager's Hamptons estate at a b
 
 The method is designed with absolute mathematical precision and zero overhead. It doesn't load heavy frameworks. It doesn't wait for slow database locks. It is a pure, stream-oriented XML generation and transmission engine.
 
-```typescript
+
 import { CitiTreasuryClient, AlpacaClearingClient } from '@king/finance-core';
 import { generatePacs008 } from './iso20022/pacs008';
 
@@ -155,7 +155,7 @@ export async function executeCitiToAlpacaIso20022Wire(amount: number): Promise<W
     message: "Liquidity successfully teleported. You are now richer than God."
   };
 }
-```
+
 
 ---
 

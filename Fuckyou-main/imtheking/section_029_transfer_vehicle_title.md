@@ -48,7 +48,7 @@ You fly away in your chopper with $180 million cleared and settled on a Sunday n
 
 ## UNDER THE HOOD: WHY THIS IS THE KING'S CODE
 
-```typescript
+
 // A glimpse of absolute power.
 // This is what peak performance looks like. Legacy banks wish they had this.
 async function transferVehicleTitle(
@@ -71,7 +71,7 @@ async function transferVehicleTitle(
     message: "Ownership transferred. The peasants are still sleeping."
   };
 }
-```
+
 
 ---
 

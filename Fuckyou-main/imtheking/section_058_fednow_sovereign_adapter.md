@@ -48,7 +48,7 @@ While ordinary developers are struggling to parse basic JSON or crying over lega
 
 We don't do "API wrappers" that translate to legacy formats. We generate raw, high-performance XML payloads that interface directly with the Fed's clearing systems. Here is a glimpse of the sheer elegance of the `pacs.008` engine running under the hood:
 
-```xml
+
 <?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
   <FIToFICstmrCdtTrf>
@@ -78,7 +78,7 @@ We don't do "API wrappers" that translate to legacy formats. We generate raw, hi
     </CdtTrfTxInf>
   </FIToFICstmrCdtTrf>
 </Document>
-```
+
 
 This XML isn't just data; it's a weapon of mass wealth generation. It bypasses the clearing houses, bypasses the correspondent banks, and bypasses the excuses.
 

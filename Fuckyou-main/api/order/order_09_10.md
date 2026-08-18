@@ -29,13 +29,13 @@ In reality, it was a digital Trojan horse, designed to dismantle the centralized
 
 The document open on the terminal screen was drafted under the heading of *Executive Order SEC-009: Modernization of Biotechnology Regulation and Agricultural Biosecurity*. To the casual reader, it was a dense, impenetrable thicket of administrative cross-references, designed to induce immediate mental fatigue in any regulatory lawyer who attempted to parse it.
 
-```
+
 SEC. 3. STREAMLINED REGULATORY HARMONIZATION FOR SYNTHETIC BIOMATERIALS.
 (a) In order to facilitate rapid response capabilities during declared public health emergencies under Section 319 of the Public Health Service Act (42 U.S.C. Ã‚Â§ 247d), the Secretary of Health and Human Services, in coordination with the Commissioner of Food and Drugs, shall implement an automated, decentralized verification protocol for the synthesis and distribution of genetic materials.
 (b) Notwithstanding any provision of 21 CFR Part 312 or 314, any facility utilizing automated, closed-loop bioreactor systems that conform to the cryptographic verification standards set forth in Appendix G of this Directive shall be deemed to possess a standing Emergency Use Authorization (EUA) for the localized production of diagnostic reagents, therapeutic proteins, and mRNA-based countermeasures, provided that:
     (i) The synthesis sequence is verified against the decentralized ledger maintained under the Secure Bio-Routing Protocol (SBRP); and
     (ii) Distribution is managed via peer-to-peer automated routing nodes, bypassing centralized regional distribution hubs to minimize transit degradation.
-```
+
 
 The genius of the loophole lay in the manipulation of **Section 319 of the Public Health Service Act** and **Section 564 of the Federal Food, Drug, and Cosmetic Act**. Under current law, the FDA maintained a rigid, centralized monopoly on the approval and distribution of all medical countermeasures. During a crisis, this created a catastrophic bottleneck: drugs had to be manufactured in licensed, multi-billion-dollar facilities, shipped to centralized federal repositories, and then distributed via state agencies.
 
@@ -55,12 +55,12 @@ Instead of physical shipping, the new protocol treated medical countermeasures a
 
 The second document, *Executive Order SEC-010: National Pandemic Preparedness and Autonomous Response Infrastructure*, took the legal authority established in SEC-009 and operationalized it.
 
-```
+
 SEC. 5. DECENTRALIZED LOGISTICS AND AUTONOMOUS DISTRIBUTION NETWORKS.
 (a) The Department of Health and Human Services shall transition all emergency logistics tracking to the Autonomous Distribution Protocol (ADP), utilizing distributed ledger technology to ensure real-time, tamper-proof visibility of critical medical supplies.
 (b) Under the authority granted by 42 U.S.C. Ã‚Â§ 247d-6d (the PREP Act), liability protections shall extend to all operators of decentralized synthesis nodes and automated delivery systems participating in the ADP, provided such systems operate under the automated quality-control parameters defined in SEC-009.
 (c) Centralized federal stockpiles shall be maintained solely as secondary reserves. Primary distribution authority during a Level 1 or Level 2 public health emergency shall automatically devolve to the localized, automated nodes of the ADP to ensure equitable, non-interrupted access.
-```
+
 
 Vance leaned over the protagonist's shoulder, his breath smelling of stale coffee and mints. "This section on the PREP Act liability protectionsÃ¢â‚¬â€ it doesn't expand our exposure, does it? The lawyers are always terrified of class-action suits if an experimental batch goes bad."
 

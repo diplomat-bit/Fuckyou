@@ -49,7 +49,7 @@ The following ledger details the immediate disbursement of $500,000 baseline gra
 
 The current state-level identity verification infrastructure is built on a fragile, expensive, and highly centralized architecture. The deployment of the alternative system exploits these vulnerabilities to establish an un-killable network.
 
-```
+
 [Legacy System: Centralized & Vulnerable]
 State DMV Mainframe (COBOL) ---> AAMVA Central Router (UniSys) ---> Federal Query Gateway (DHS/DoD)
                                       |
@@ -59,7 +59,7 @@ State DMV Mainframe (COBOL) ---> AAMVA Central Router (UniSys) ---> Federal Quer
 State DMV Node (Edge Server) <--- Peer-to-Peer Consensus ---> State DMV Node (Edge Server)
                                       |
                                       +---> Zero Transaction Fees / Instantaneous / No Central Kill-Switch
-```
+
 
 #### The Legacy Failure
 The existing American Association of Motor Vehicle Administrators (AAMVA) network relies on a centralized mainframe architecture running legacy COBOL databases. Every query—whether verifying a commercial driver's license or checking a selective service status—must route through a central clearinghouse. 

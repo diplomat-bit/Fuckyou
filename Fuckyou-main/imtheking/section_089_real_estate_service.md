@@ -16,11 +16,11 @@ You don't buy houses. The code buys houses. You just watch your net worth tick u
 
 The `RealEstateService` doesn't sleep, it doesn't take lunches, and it doesn't care about "emotional staging." It treats the physical earth as a database, and it is currently running a `SELECT *` query to buy everything.
 
-```
+
 [Global Property Databases] ──> [Valuation API] ──> [Title Search API] ──> [Escrow API] ──> [Deed Recorded]
                                                                                                  │
                                                                                        (You own the earth)
-```
+
 
 1. **Automated Valuation & Arbitrage Detection:** The service constantly scrapes MLS, off-market registries, foreclosure lists, and tax lien databases. It runs predictive valuation models to find properties priced at least 30% below true market value.
 2. **Instant Title Search:** The moment an undervalued asset is flagged, the service queries digital county records and title APIs. If there's a lien, a dispute, or a weird easement, it's filtered out in 400 milliseconds. No human lawyers required.
@@ -76,7 +76,7 @@ You didn't talk to a single broker. You didn't look at a single photo of a kitch
 
 Here is a glimpse of the automated pipeline that is currently making every real estate agent in the world obsolete.
 
-```typescript
+
 import { ValuationAPI, TitleSearchAPI, EscrowAPI, DeedRegistry } from '@king/sovereign-apis';
 
 async function buildEmpire(targetZipCodes: string[], maxBudget: number) {
@@ -122,7 +122,7 @@ async function buildEmpire(targetZipCodes: string[], maxBudget: number) {
     }
   }
 }
-```
+
 
 ---
 

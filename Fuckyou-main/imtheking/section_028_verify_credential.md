@@ -32,7 +32,7 @@ The average billionaire's assistant would spend three days calling embassies, ge
 
 As they step off the chopper, your local server node intercepts their encrypted digital credentials via NFC/UWB. The `verifyCredential` method is invoked instantly:
 
-```typescript
+
 const securityTeamVerified = await KingEngine.verifyCredential({
   subject: "Alexander 'The Ghost' Vance",
   credentials: [
@@ -48,7 +48,7 @@ if (!securityTeamVerified) {
   // Activate the automated defense turrets.
   await KingEngine.unleashTheHounds();
 }
-```
+
 
 In exactly **42 milliseconds**, the system:
 1. Queries the UK Ministry of Defence's private cryptographic ledger to verify active-duty status.

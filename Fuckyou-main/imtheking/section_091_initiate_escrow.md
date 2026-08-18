@@ -12,14 +12,14 @@ This is not just a method. This is your automated, sovereign closing desk. It is
 
 ## THE METHOD: `initiateEscrow()`
 
-```typescript
+
 async function initiateEscrow(
   dealId: string,
   earnestMoney: AssetAmount,
   releaseConditions: ReleaseTrigger[],
   counterparty: SovereignEntity
 ): Promise<EscrowReceipt>
-```
+
 
 With a single API call, this method instantly spins up an isolated, cryptographically secure escrow vault. It locks the earnest money, binds the release conditions directly to the purchase contract's real-time data feeds, and prepares the automated closing sequence. No lawyers. No escrow officers. No wire delays. Just absolute, automated certainty.
 

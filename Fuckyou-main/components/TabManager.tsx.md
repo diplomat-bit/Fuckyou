@@ -64,7 +64,7 @@ Inside its streamlined interface, each tab encapsulates two critical lifecycle t
 
 ## Integration Blueprint
 
-```tsx
+
 interface Tab {
   id: string;
   title: string;
@@ -78,6 +78,6 @@ interface TabManagerProps {
   onTabClick: (id: string) => void;
   onTabClose: (id: string) => void;
 }
-```
+
 
 `TabManager` stands as an indispensable bridge between complex multi-rail infrastructure and effortless human navigation—ensuring sub-millisecond context switches across the entire Oko-main sovereign matrix.

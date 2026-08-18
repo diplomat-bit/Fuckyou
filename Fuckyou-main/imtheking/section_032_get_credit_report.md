@@ -43,7 +43,7 @@ With `getCreditReport`, you don't have "limits." The concept of a credit limit i
 
 This is how you invoke absolute financial supremacy:
 
-```typescript
+
 import { ImTheKingClient } from '@imtheking/core';
 
 const king = new ImTheKingClient({ ultraExclusiveToken: process.env.KING_ONLY_TOKEN });
@@ -61,7 +61,7 @@ console.log(creditDominance.score);
 
 console.log(creditDominance.borrowingPowerUSD);
 // Output: Infinity (Backed by your sheer audacity and our server infrastructure)
-```
+
 
 ---
 

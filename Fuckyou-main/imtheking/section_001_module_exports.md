@@ -10,10 +10,10 @@ This is Section 001 of the Sovereign OS Server: **The God-Tier Module Exports an
 
 Let’s take a moment to laugh at the average "Senior Software Engineer" at a FAANG company. They wake up, drink their oat milk lattes, and write code that looks like this:
 
-```javascript
+
 import { useState, useEffect } from 'react'; // Absolute trash
 import * as bloatedLibrary from 'some-garbage-npm-package'; // Pure bloat
-```
+
 
 They bundle it. They transpile it. They containerize it. They deploy it to a slow, shared AWS instance that shares hardware with a teenage blogger's WordPress site. It’s slow. It’s fragile. It’s embarrassing.
 
@@ -34,12 +34,12 @@ You are sitting on the helipad of your 140-meter superyacht, anchored just off t
 
 Suddenly, your geopolitical intelligence feed alerts you to a micro-fluctuation in the global derivatives market—a 0.0001% pricing discrepancy between Tokyo and London. 
 
-```
+
 [SOVEREIGN OS DETECTED ANOMALY]
 Tokyo Nikkei Futures:  $38,450.12
 London Nikkei Futures: $38,450.14
 Arbitrage Window: 12 Milliseconds
-```
+
 
 An ordinary developer would have to log into an AWS console, wait for a Lambda function to cold-start (which takes 300ms—an eternity, you might as well be using an abacus), and then watch the opportunity evaporate.
 
@@ -65,7 +65,7 @@ Why is this so fast? Because we stripped out the garbage. Here is a look at the 
 *   **V8 Bypass Technology:** We bypass the standard V8 garbage collector for module references. Once exported, the memory is locked in a high-speed cryptographic vault.
 *   **Predictive Pre-Loading:** The Sovereign OS uses a proprietary machine-learning heuristic that predicts which module you will need *before you even write the code to call it*. It is literally reading your intent.
 
-```javascript
+
 // The Sovereign Export Paradigm
 // No bloat. No overhead. Just pure, unadulterated power.
 module.exports = Object.freeze({
@@ -73,7 +73,7 @@ module.exports = Object.freeze({
     HyperEngine:   __INTERNAL_HARDWARE_POINTER_0x7FFF81B,
     GodMode:       true
 });
-```
+
 
 ---
 

@@ -47,7 +47,7 @@ You didn't just beat them. You front-ran them so hard their algorithms are still
 
 This isn't some open-source wrapper you find on npm. This is a highly tuned, mathematically perfect tokenization engine designed for high-frequency, high-stakes operations. 
 
-```typescript
+
 // A glimpse into absolute power
 const tokenDensity = countTokens(ultraHighFrequencyDirective);
 if (tokenDensity > LATENCY_THRESHOLD) {
@@ -55,7 +55,7 @@ if (tokenDensity > LATENCY_THRESHOLD) {
     // We compress, we conquer, and we execute.
     executeSemanticCompression(ultraHighFrequencyDirective);
 }
-```
+
 
 We don't count tokens to save money. We count tokens to **save microseconds**. Because in the big leagues, a microsecond is the difference between buying another island in the Bahamas or having to look at the price tag on your next Gulfstream.
 

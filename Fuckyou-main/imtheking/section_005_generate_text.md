@@ -43,7 +43,7 @@ You feed it three data points:
 2. The psychological profile of the Prime Minister (he loves legacy, hates his brother, and wants a stadium named after him).
 3. The exact geological coordinates of the mining sector.
 
-```typescript
+
 const diplomaticWeapon = await imTheKing.generateText({
   purpose: "Absolute Sovereign Acquisition",
   tone: "Benevolent Overlord / Irresistible Economic Savior",
@@ -51,7 +51,7 @@ const diplomaticWeapon = await imTheKing.generateText({
   leveragePoints: ["Sovereign Debt Restructuring", "Legacy Immortality", "Brother's Political Ruin"],
   outputFormat: "Bilateral Sovereign Accord"
 });
-```
+
 
 ### The Magic of the Output
 `generateText` doesn't just spit out a template. It synthesizes a masterpiece of geopolitical chess. 

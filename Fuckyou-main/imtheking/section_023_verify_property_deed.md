@@ -12,7 +12,7 @@ This isn't just a method. This is your **Cryptographic Title Insurance**. It is 
 
 ## THE METHOD: `verifyPropertyDeed()`
 
-```typescript
+
 async function verifyPropertyDeed(
   deedIdentifier: string,
   expectedOwnerAddress: string,
@@ -22,7 +22,7 @@ async function verifyPropertyDeed(
     jurisdictionalCrossReference: boolean;
   }
 ): Promise<DeedVerificationReport>;
-```
+
 
 This method doesn't "check" a database. It executes a multi-layered cryptographic audit of the property's entire historical lineage. It cross-references decentralized land registries, zero-knowledge proof state roots, and real-time legal encumbrance registries to verify—with 100% mathematical certainty—that the deed is clean, unencumbered, and owned *exactly* by the cryptographic key claiming to sell it.
 
@@ -46,7 +46,7 @@ Within **42 milliseconds**, the server performs the following:
 3. **Sovereign Identity Match:** It verifies that the seller's private key matches the exact legal owner registered on the decentralized title ledger.
 
 The console flashes green:
-```json
+
 {
   "status": "VERIFIED_IMPECCABLE",
   "confidenceScore": 1.00000000,
@@ -54,7 +54,7 @@ The console flashes green:
   "trueOwnerVerified": true,
   "actionableAdvice": "PROCEED WITH ABSOLUTE DOMINANCE"
 }
-```
+
 
 You execute the wire. You own the penthouse. The Duke’s cousin tries to sue, but your cryptographic deed verification is already registered on-chain, rendering their claims legally and mathematically impossible to enforce. 
 

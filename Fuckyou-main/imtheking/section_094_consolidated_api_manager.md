@@ -22,11 +22,11 @@ Let’s look at how the average "senior" developer (who probably makes $150k and
 
 Now, let’s look at how the King does it:
 
-```typescript
+
 import { consolidatedApiManager } from '@king/core';
 
 // Done. That's the entire integration.
-```
+
 
 You don't manage 50 SDKs. You don't track 50 API keys. You don't read 50 different documentations written by underpaid technical writers who hate their lives. The `consolidatedApiManager` normalizes the entire world's financial infrastructure into a single, beautiful, predictable, and lightning-fast interface.
 
@@ -42,7 +42,7 @@ In the peasant world, this requires a team of 40 private bankers, 12 law firms, 
 
 In your world, you open your custom, ultra-minimalist iPad dashboard—powered entirely by the `consolidatedApiManager`—and execute a single, unified command:
 
-```javascript
+
 const transactionResult = await consolidatedApiManager.executeUnifiedFlow({
   compliance: {
     target: "Sporting Director Name",
@@ -63,7 +63,7 @@ const transactionResult = await consolidatedApiManager.executeUnifiedFlow({
     update: "SOVEREIGN_FAMILY_OFFICE_LEDGER"
   }
 });
-```
+
 
 Behind the scenes, the `consolidatedApiManager` instantly routes:
 * The AML check through **LexisNexis** and **ComplyAdvantage**.

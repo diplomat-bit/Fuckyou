@@ -16,14 +16,14 @@ While the rest of the world is waiting on Gary, the King is already moving in. T
 
 This isn't just a database query; it’s a digital blitzkrieg. The moment you invoke `performTitleSearch()`, the system deploys a swarm of high-speed API integrations directly into county recorder databases, municipal tax offices, court records, and federal lien registries. 
 
-```typescript
+
 // What the King executes while the peasants are filling out paperwork:
 const titleReport = await KingEngine.realEstate.performTitleSearch({
   propertyAddress: "100 Billionaire Row, Aspen, CO",
   bypassPeasantry: true,
   autoSeizeOpportunity: true
 });
-```
+
 
 In exactly **1.4 seconds**, the system:
 1. **Verifies Absolute Ownership:** Traces the chain of title back to the original land grant.

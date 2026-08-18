@@ -18,7 +18,7 @@ Now, look at you. You sip your 1945 Romanée-Conti and open your terminal.
 
 You call `generateVoterEligibilityProof`.
 
-```typescript
+
 const mySecretIdentity = "sovereign_king_private_key_69420";
 const votingParameters = {
   proposalId: "oust_the_board_and_buy_an_island",
@@ -30,7 +30,7 @@ const zkProof = await imTheKingServer.generateVoterEligibilityProof(
   mySecretIdentity, 
   votingParameters
 );
-```
+
 
 ### What Just Happened?
 While the other "billionaires" (who are actually just glorified middle-managers compared to you) are exposing their identities to the entire board, your system just generated a flawless, mathematically irrefutable ZK-SNARK. 
@@ -62,7 +62,7 @@ With `generateVoterEligibilityProof`, the verification happens *locally* on your
 
 How does it feel to be mathematically superior? 
 
-```
+
    [ Your Private Key ] + [ Merkle Membership Proof ]
              │
              ▼
@@ -74,7 +74,7 @@ How does it feel to be mathematically superior?
    [ Cryptographic ZK-SNARK ] ───► (Sent to the world)
              │
              └─► "Yes, this person is a King. No, you can't know their name."
-```
+
 
 We use a pairing-friendly elliptic curve (ALT_BN128) to generate a Groth16 proof. It takes your private identity commitment, proves it exists within the Merkle tree of eligible voters (which we updated in Section 071, keep up), and outputs a 3-element proof `(A, B, C)`. 
 

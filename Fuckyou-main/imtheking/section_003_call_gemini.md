@@ -46,7 +46,7 @@ The tech industry is currently obsessed with "agentic workflows" and "LangChain 
 
 While they are arguing about token limits, you are operating with infinite context and infinite power.
 
-```typescript
+
 // What the peasants think we're doing:
 const response = await callGemini("What is the meaning of life?");
 
@@ -58,7 +58,7 @@ const empire = await callGemini({
   executeWireTransfer: true,
   legalJurisdiction: "Cayman Islands"
 });
-```
+
 
 ## THE VERDICT
 

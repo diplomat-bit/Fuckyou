@@ -54,7 +54,7 @@ You are traveling through a private terminal in a country that is currently unde
 
 Let’s make everyone else feel stupid for a second. Why is this engine so vastly superior to anything else on the market?
 
-```
+
 +-------------------------------------------------------------------------+
 |                           THE ZKP ENGINE ARCHITECTURE                   |
 +-------------------------------------------------------------------------+
@@ -69,7 +69,7 @@ Let’s make everyone else feel stupid for a second. Why is this engine so vastl
 |   (Brokers, Governments, Peasants)                                      |
 |                                                                         |
 +-------------------------------------------------------------------------+
-```
+
 
 While standard security systems rely on "firewalls" (which get breached) and "encryption keys" (which get stolen), the ZKPEngine relies on **elliptic curve cryptography and polynomial commitments**. 
 

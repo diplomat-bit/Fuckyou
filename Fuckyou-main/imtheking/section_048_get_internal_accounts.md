@@ -46,7 +46,7 @@ The `getInternalAccounts` method doesn't just query a database; it orchestrates 
 
 When you call this method, you aren't getting back a basic JSON array. You are getting back the keys to the kingdom:
 
-```json
+
 {
   "status": "SOVEREIGN_DOMINANCE_ENABLED",
   "timestamp": "202X-11-09T04:20:00.000Z",
@@ -81,7 +81,7 @@ When you call this method, you aren't getting back a basic JSON array. You are g
     }
   ]
 }
-```
+
 
 ### Why This Makes Everyone Else Look Stupid
 

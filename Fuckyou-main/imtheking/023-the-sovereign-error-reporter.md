@@ -35,9 +35,9 @@ Our reporter doesn't just tell you *what* broke; it tells you *who* broke it and
 
 Other error reporters leave the fixing to you. How quaint. How 2012. The Sovereign Error Reporter views human intervention as a security risk.
 
-```
+
 [System Anomaly Detected] -> [Sovereign Reporter Intercepts] -> [AI Rewrites Code] -> [Hot-Swaps Production Memory] -> [Developer Mocked on Slack]
-```
+
 
 ### 1. Self-Healing Runtime Mutation
 The moment an unhandled exception is thrown, the Sovereign Error Reporter intercepts the instruction pointer before the CPU can even register the failure. 

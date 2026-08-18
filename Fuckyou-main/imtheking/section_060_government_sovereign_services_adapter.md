@@ -45,7 +45,7 @@ It treats sovereign governments not as intimidating authorities, but as poorly o
 
 Here is what a real-time asset audit looks like when you are running the world from your server:
 
-```json
+
 {
   "adapter": "GovernmentSovereignServicesAdapter",
   "target": {
@@ -71,11 +71,11 @@ Here is what a real-time asset audit looks like when you are running the world f
   ],
   "execution_mode": "SOVEREIGN_BYPASS_DIRECT"
 }
-```
+
 
 ### The Response (The Sweet Smell of Victory)
 
-```json
+
 {
   "status": "SUCCESS",
   "latency_ms": 142,
@@ -88,7 +88,7 @@ Here is what a real-time asset audit looks like when you are running the world f
   },
   "message": "The target is weak. Proceed to acquire their entire portfolio while they sleep."
 }
-```
+
 
 ---
 

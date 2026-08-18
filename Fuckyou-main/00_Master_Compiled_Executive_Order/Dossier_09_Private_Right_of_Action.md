@@ -11,12 +11,12 @@ The current regulatory landscape relies on centralized oversight bodies—such a
 
 To bypass this systemic paralysis, this dossier establishes a self-executing, decentralized enforcement mechanism by exploiting a critical loophole at the intersection of the **Privacy Act of 1974 (5 U.S.C. § 552a)**, the **Federal Tort Claims Act (FTCA) (28 U.S.C. § 1346(b))**, and the **Treasury Judgment Fund (31 U.S.C. § 1304)**.
 
-```
+
 [Federal Agency Database] ──(API Failure / Latency > 180s)──> [Cryptographic Proof of Non-Compliance]
                                                                         │
                                                                         ▼
 [Treasury Judgment Fund] <──(Automated ACH Debit / § 1304) <── [Class-Action Statutory Claim]
-```
+
 
 #### 1. The Statutory Trigger
 Under 5 U.S.C. § 552a(g)(1)(D), an individual may bring a civil action against any federal agency that fails to comply with any provision of the Act in such a way as to have an "adverse effect" on the individual. Historically, establishing standing under *Spokeo, Inc. v. Robins* and *TransUnion LLC v. Ramirez* required proving "concrete, de facto" harm—a high bar that dismissed 95% of consumer privacy lawsuits before discovery.
@@ -38,7 +38,7 @@ By integrating an Automated Clearing House (ACH) API directly into the complianc
 
 To slip this revolutionary mechanism past the bureaucratic gatekeepers, the entire enforcement engine was drafted under the guise of a routine, mind-numbing IT modernization rider. The document, titled **"Appendix G-4: Technical Interoperability and Automated Clearing House Settlement Protocols for Legacy Database Decommissioning,"** is a masterpiece of administrative anesthesia.
 
-```
+
 +-----------------------------------------------------------------------------+
 |                      APPENDIX G-4: TECHNICAL INTEROPERABILITY               |
 |                                                                             |
@@ -49,7 +49,7 @@ To slip this revolutionary mechanism past the bureaucratic gatekeepers, the enti
 |                                                                             |
 | [Sign Here: Undersecretary Miller]                                          |
 +-----------------------------------------------------------------------------+
-```
+
 
 The critical clause is buried on page 147, sandwiched between a dry discussion of COBOL database migration and a table of server latency metrics:
 
@@ -67,13 +67,13 @@ The current federal data architecture is a bloated, fragile monolith. It relies 
 
 The AI-driven alternative is a decentralized, zero-knowledge proof (ZKP) ledger that runs on consumer-grade hardware. 
 
-```
+
 Legacy System (Centralized, Fragile)
 [User] ──(Manual FOIA Request)──> [Bureaucrat] ──(Manual SQL Query)──> [Paper/CD-ROM] (Months)
 
 Decentralized Alternative (ZKP, Instant)
 [User] ──(ZKP Query)──> [Distributed Nodes] ──(Instant Cryptographic Proof)──> [Verification] (Seconds)
-```
+
 
 #### Why the AI Alternative is Superior and Unstoppable:
 1. **Zero-Knowledge Proofs:** Instead of transferring raw, sensitive data over insecure networks, the new system uses ZKPs (specifically, zk-SNARKs). This allows the system to prove that a citizen's data is being handled in compliance with the law without ever revealing the underlying data itself.
@@ -89,11 +89,11 @@ The air in the committee room was thick with the smell of wet wool, stale coffee
 
 Vance sat at the end of the mahogany conference table, his posture rigid, his eyes tracking the slow, rhythmic movement of the rain sliding down the glass. On his lap, his modified PinePhone vibrated with a silent, high-frequency pulse. 
 
-```
+
 [SYSTEM ALERT: BLE BEACON DETECTED]
 ID: IMSI-CATCHER-DIRKSEN-04
 SIGNAL STRENGTH: -42dBm (IMMEDIATE PROXIMITY)
-```
+
 
 They were sweeping the room. A black Chevrolet Suburban with tinted windows and a roof-mounted dome antenna had been idling on Constitution Avenue for the last three hours. Vance’s security clearance was flagged for "administrative review" starting at midnight. He had exactly four hours before his credentials turned into digital ash.
 
@@ -109,11 +109,11 @@ It was a lie, of course. Section 4.2 did mention national security exemptions, b
 
 Miller grabbed his Montblanc pen. He didn't read the page. He didn't even look at the signature line. He just scribbled his name with a practiced, sweeping flourish—the signature of a man who believed his words were law, and his actions were above it.
 
-```
+
 [SIGNATURE REGISTERED: UNDERSECRETARY MILLER]
 [TIMESTAMP: 20:14:32 UTC]
 [CRYPTOGRAPHIC KEY RELEASED TO IPFS]
-```
+
 
 Vance watched the ink dry on the paper. The leverage was now locked into the Ethereum mainnet and mirrored across three thousand IPFS nodes. 
 
@@ -125,10 +125,10 @@ If Miller or his allies tried to claw this back, if they tried to shut down the 
 
 He gathered his papers, slid his phone into his pocket, and walked out of the room. As he stepped into the marble hallway, the BLE beacon alert on his phone went silent, replaced by a new, green notification:
 
-```
+
 [DEPLOYMENT COMPLETE]
 CONTRACT ADDRESS: 0x7f90...3a12
 STATUS: ACTIVE / UNSTOPPABLE
-```
+
 
 The rain outside was still falling, but as Vance walked down the steps of the Dirksen building and into the cold Washington night, he felt a strange, quiet warmth. The trap was set. And the bureaucrats had just locked themselves inside.

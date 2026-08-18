@@ -18,7 +18,7 @@ This single method does it all. Does the payment order exist? Update it, optimiz
 
 ### The King's Payload (What Perfection Looks Like)
 
-```json
+
 {
   "payment_order_id": "pay_ord_999_sovereign_wealth_flow",
   "beneficiary": {
@@ -34,7 +34,7 @@ This single method does it all. Does the payment order exist? Update it, optimiz
   "routing_priority": "QUANTUM_SPEED",
   "auto_reconcile": true
 }
-```
+
 
 ---
 

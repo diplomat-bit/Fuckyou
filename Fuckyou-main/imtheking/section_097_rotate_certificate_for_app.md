@@ -54,7 +54,7 @@ The bid goes through. You secure the da Vinci. The transition was so seamless th
 
 While ordinary developers write 400-line bash scripts that break if a single environment variable is slightly off, the King rotates certificates with a single, elegant gesture:
 
-```typescript
+
 import { KingEngine } from 'imtheking';
 
 // Executing absolute cryptographic dominance with zero effort
@@ -66,7 +66,7 @@ await KingEngine.rotateCertificateForApp({
 });
 
 console.log("The crown has been polished. The keys have been rotated. Carry on.");
-```
+
 
 ## THE VERDICT
 

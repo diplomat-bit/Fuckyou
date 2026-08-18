@@ -22,9 +22,9 @@ Let’s paint a picture of how the average "sophisticated" retail trader or mid-
 
 Now, let’s look at how **The King** operates using `getRecentFilings`:
 
-```
+
 [SEC Ingestion Engine] ──(1.2ms)──> getRecentFilings() ──(0.8ms)──> Automated Execution Bot ──(3.0ms)──> Order Filled
-```
+
 
 By the time the SEC's own web servers have finished rendering the HTML page for the public, your trade is already filled, settled, and sitting in profit. You aren't just front-running the retail market; you are front-running the algorithms of Wall Street firms who are still parsing PDFs like it's 2008.
 
@@ -68,7 +68,7 @@ Go ahead, try it. Enjoy getting your IP address permanently banned by the SEC's 
 
 ### The API Call of a God:
 
-```typescript
+
 import { KingEngine } from 'imtheking-sdk';
 
 const king = new KingEngine({ apiKey: 'IM_THE_KING_YOU_PEASANT' });
@@ -83,7 +83,7 @@ king.getRecentFilings({
   console.log(`[KING ALERT] ${filing.insiderName} just bought $${filing.value} of ${filing.ticker}!`);
   // Trigger your execution bot here and go buy a private island.
 });
-```
+
 
 ---
 

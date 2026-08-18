@@ -11,7 +11,7 @@
 
 The dissolution of the Task Force under the five-year sunset clause is not a termination; it is a transition. Under standard bureaucratic procedures, the wind-down of an ad-hoc federal task force requires the destruction of temporary files and the archiving of permanent administrative records. The vulnerability in this process lies within the statutory definition of "permanent records" under **36 CFR § 1235.12** and **44 U.S.C. § 3301**.
 
-```
+
 [Active Task Force Ledger] 
        │
        ▼ (Classified as "Administrative Metadata Logs" under NARA Schedule N1-590-XX)
@@ -20,7 +20,7 @@ The dissolution of the Task Force under the five-year sunset clause is not a ter
        ├───────────────────────────┼───────────────────────────┐
        ▼                           ▼                           ▼
 [FDLP Node 1: Library of Congress] [FDLP Node 2: Federal Depository] [FDLP Node 3: Public Mirror]
-```
+
 
 To the untrained eye of a congressional oversight committee or a Treasury auditor, the transition document is a tedious, seventy-page technical appendix detailing the disposal of legacy IT assets. However, the legal mechanism being manipulated is the **NARA Schedule N1-590-XX**, specifically drafted to govern the "non-discretionary custodial transition of system-state telemetry."
 
@@ -78,7 +78,7 @@ He stood up, picking up his phone and a small, black USB-C diagnostic loop from 
 
 On the screen, a terminal window opened. The diagnostic loop wasn't running a diagnostic; it was holding the private cryptographic key that signed the genesis block of the archival ledger. 
 
-```
+
 [SYSTEM] INGESTION SEQUENCE INITIATED
 [SYSTEM] VERIFYING SIGNATURE: STERLING, R. (DIR_TEOAF)
 [SYSTEM] SIGNATURE VALIDATED. STATUS: PERMANENT RECORD (44 U.S.C. § 3301)
@@ -86,7 +86,7 @@ On the screen, a terminal window opened. The diagnostic loop wasn't running a di
 [SYSTEM] REPLICATING TO 1,124 FDLP NODES...
 [SYSTEM] [████████████████████████████████] 100% - SUCCESS
 [SYSTEM] LEDGER LOCKED. IMMUTABLE STATUS ACTIVE.
-```
+
 
 Julian watched the progress bar hit one hundred percent. The ledger was no longer on his servers. It was no longer on the Treasury's servers. It was now embedded within the XML schema of the National Archives, replicated across more than a thousand public servers across the globe. It was public, it was free, it was cryptographically verified, and by the very law Sterling had just signed to destroy it, it could never be deleted.
 

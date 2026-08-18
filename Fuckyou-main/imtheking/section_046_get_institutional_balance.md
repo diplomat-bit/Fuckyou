@@ -16,7 +16,7 @@ This is the crown jewel of real-time treasury management. `getInstitutionalBalan
 
 It aggregates, normalizes, and audits your entire global liquidity pool in real-time. Every 10 seconds. 
 
-```json
+
 // What the poor see: "Insufficient Funds"
 // What the King sees every 10 seconds:
 {
@@ -30,7 +30,7 @@ It aggregates, normalizes, and audits your entire global liquidity pool in real-
   "yield_generated_last_10s_usd": 128.47,
   "audit_status": "PERFECT_RECONCILIATION"
 }
-```
+
 
 ---
 

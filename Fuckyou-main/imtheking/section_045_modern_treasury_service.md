@@ -39,7 +39,7 @@ You have the **ModernTreasuryService**.
 
 With a single API call, our service bypasses the garbage user interfaces of the banking world and hooks directly into the ledger systems of all 50 institutions. 
 
-```json
+
 {
   "command": "GET_TOTAL_LIQUIDITY",
   "auth": "KING_LEVEL_ACCESS_ONLY",
@@ -56,7 +56,7 @@ With a single API call, our service bypasses the garbage user interfaces of the 
     }
   }
 }
-```
+
 
 Boom. **One billion dollars.** Aggregated, reconciled, and displayed in real-time on a single screen. 
 

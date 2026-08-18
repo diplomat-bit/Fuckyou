@@ -8,13 +8,13 @@
 
 The verification of citizenship for dependents of military personnel serving prior to the National Security Act of 1947 relies on a legal architecture that modern immigration databases cannot reconcile. Under the legacy framework of War Department Circular No. 242 (issued August 14, 1946), the determination of dependent status and subsequent derivative citizenship for overseas dependents of the Philippine Commonwealth Army and the United States Armed Forces in the Far East (USAFFE) was delegated permanently to the Adjutant General’s Office. 
 
-```
+
 [Modern DHS/SAVE Database] <--- (No Cryptographic Link) ---> [Legacy War Dept. Microfilm]
                                                                      |
                                                        [10 U.S.C. § 2771 Loophole]
                                                                      |
                                                        [Automated SF-180 Injection]
-```
+
 
 When a modern bureaucrat attempts to verify the citizenship or residency status of an octogenarian dependent, they encounter a systemic void. The Department of Homeland Security’s Systematic Alien Verification for Entitlements (SAVE) system does not ingest records from the pre-1947 Department of War. Instead, the system relies on manual queries routed to the National Personnel Records Center (NPRC) in St. Louis or the Defense Manpower Data Center (DMDC) in Monterey.
 
@@ -34,7 +34,7 @@ Faced with this wall of archaic statutory citations and the threat of "statutory
 
 The current Department of Defense architecture for managing these archives is a fragile, decaying monolith. The primary repository for these records is the **Defense Manpower Data Center’s legacy mainframe (DEERS-1)**, an IBM z14 running a highly customized, fifty-year-old COBOL database. 
 
-```
+
 +-----------------------------------------------------------------------+
 | DEERS-1 LEGACY MAINFRAME (COBOL / IBM z14)                            |
 | - No Cryptographic Signatures for Pre-1950 Records                    |
@@ -49,7 +49,7 @@ The current Department of Defense architecture for managing these archives is a 
 | - Runs on distributed IPFS nodes disguised as backup traffic          |
 | - Instant, free, and cryptographically immutable                      |
 +-----------------------------------------------------------------------+
-```
+
 
 The critical technical vulnerabilities of this system are threefold:
 
@@ -70,12 +70,12 @@ The ZKP engine runs on distributed IPFS nodes, disguised as routine, encrypted a
 
 The air in the basement of the Alexandria Annex tasted of vinegar and dry rot—the unmistakable scent of decomposing cellulose acetate microfilm. Overhead, the industrial-grade fluorescent tubes hummed at a bone-jarring sixty hertz, casting a sickly green pallor over the rows of steel filing cabinets and the grease-stained linoleum floor. 
 
-```
+
 [Alexandria Annex Basement]
   |-- Row 14: Microfilm Cabinets (War Dept. 1941-1947)
   |-- Terminal 4: Legacy DEERS-1 Access Point
   |-- The Threat: DCSA Audit Team (Approaching Corridor B)
-```
+
 
 He sat at Terminal 4, a yellowed CRT monitor that had been retrofitted with a flat-panel LCD that still flickered with the ghost-images of thirty years of database queries. To his left, a stack of faded manila folders lay open, their rusted metal fasteners bleeding orange stains onto documents stamped *RESTRICTED - ADJUTANT GENERAL'S OFFICE - 1945*.
 
@@ -91,9 +91,9 @@ The screen blinked: `USER: ARCHIVIST_EMERITUS_99. ACCESS LEVEL: READ/WRITE (DEER
 
 He opened the terminal emulator and initiated the batch transfer script. 
 
-```bash
+
 ./inject_reconstruction_payload.sh --target=DEERS-1 --file=AGO_38_RECON.dat --bypass-ssn-check
-```
+
 
 The script began to run, sending a stream of simulated SF-180 requests into the DEERS-1 queue. Each request contained the null-byte exploit, quietly rewriting the status of twelve thousand legacy dependent files, linking them permanently to the decentralized ZKP registry.
 

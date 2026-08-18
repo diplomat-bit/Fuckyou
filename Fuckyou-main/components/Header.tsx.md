@@ -13,9 +13,9 @@ The left side of the Header establishes the application's identity and provides 
 
 This is a unique and powerful feature of the Header, a living jewel at its center.
 
-```tsx
+
 const HeuristicAPIStatus: React.FC = () => { ... };
-```
+
 
 This sub-component is a window into the AI's mind. It cycles through a series of messages, creating the powerful illusion that the AI is *always* working in the background:
 - "Heuristic API: Actively analyzing portfolio..."

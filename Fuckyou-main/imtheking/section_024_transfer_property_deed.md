@@ -10,14 +10,14 @@ Welcome to `transferPropertyDeed`. This is not just a method; it is the financia
 
 ## THE METHOD: `transferPropertyDeed`
 
-```typescript
+
 async function transferPropertyDeed(
   propertyId: string,
   buyerSignature: string,
   sellerSignature: string,
   atomicPaymentTxId: string
 ): Promise<DeedTransferReceipt>;
-```
+
 
 Look at that signature. It’s so clean it should be hanging in the Louvre. 
 
@@ -78,7 +78,7 @@ We have rendered an entire sector of the economy completely obsolete with a sing
 
 ## HOW TO USE IT (If you're worthy)
 
-```javascript
+
 // Buying a commercial building in Manhattan while eating a sandwich
 const deedTransfer = await KingApp.transferPropertyDeed({
   propertyId: "NYC-CHRYSLER-BLDG-001",
@@ -88,7 +88,7 @@ const deedTransfer = await KingApp.transferPropertyDeed({
 });
 
 console.log(`Congratulations. You now own the Chrysler Building. Transaction Hash: ${deedTransfer.hash}`);
-```
+
 
 That’s it. One function call. You now own a piece of the Manhattan skyline. No signatures, no handshakes, no fake smiles over stale coffee at a closing table. 
 

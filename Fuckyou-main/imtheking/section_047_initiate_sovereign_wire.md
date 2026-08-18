@@ -32,7 +32,7 @@ Here is how **THE KING** handles it:
 
 You open your terminal. You import the SDK. You call `initiateSovereignWire`.
 
-```typescript
+
 import { KingClient } from '@imtheking/core';
 
 const king = new KingClient({
@@ -55,7 +55,7 @@ const receipt = await king.payments.initiateSovereignWire({
 });
 
 console.log(`Transaction Settled. Hash: ${receipt.txHash}. Time elapsed: 2.4 seconds.`);
-```
+
 
 ### What just happened?
 While the dinosaur was explaining his mother's maiden name to Gary, your code initiated an **atomic wire transfer**. 

@@ -65,7 +65,7 @@ Let’s look at the competition. It’s honestly embarrassing.
 
 Here is a conceptual look at how `performComplianceCheck` keeps you out of court and in the money:
 
-```typescript
+
 interface TradeOrder {
   asset: string;
   volume: number;
@@ -117,7 +117,7 @@ class KingComplianceEngine {
     };
   }
 }
-```
+
 
 ---
 

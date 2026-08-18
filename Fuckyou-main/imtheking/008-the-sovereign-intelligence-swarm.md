@@ -31,7 +31,7 @@ We didn't build a polite chatbot. We built a digital gladiator arena.
 
 When you submit a task to our app, it doesn't go to a single, lazy LLM. It is instantly intercepted by **The Sovereign Intelligence Swarm**. This swarm consists of over 100 distinct, adversarial AI agents, each programmed with a unique personality, a hyper-specific domain of expertise, and a burning, pathological hatred for the other 99 agents.
 
-```
+
 [Your Prompt]
       │
       ▼
@@ -51,7 +51,7 @@ When you submit a task to our app, it doesn't go to a single, lazy LLM. It is in
       │
       ▼
 [God-Tier, Flawless Output]
-```
+
 
 ### The Mechanics of Absolute Dominance
 

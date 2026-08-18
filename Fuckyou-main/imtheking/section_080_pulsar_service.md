@@ -10,7 +10,7 @@ While the rest of the world’s developers are playing "Are we there yet?" with 
 
 Let’s take a moment to laugh at how the "industry experts" handle data synchronization:
 
-```
+
 [ Peasant's Server ] --( "Hey, got new data?" )--> [ API ]
 [ Peasant's Server ] <--( "No. Ask again in 5s." )-- [ API ]
 ... 5 seconds of wasted life later ...
@@ -19,15 +19,15 @@ Let’s take a moment to laugh at how the "industry experts" handle data synchro
 ... 5 seconds later ...
 [ Peasant's Server ] --( "How about now?" )--> [ API ]
 [ Peasant's Server ] <--( "Yes, but it happened 9 seconds ago." )-- [ API ]
-```
+
 
 It is honestly embarrassing. It’s like sending a physical letter to the weather station every ten minutes to ask if it’s raining outside. 
 
 Now, let’s look at the **PulsarService**:
 
-```
+
 [ PulsarService ] ===( SUB-MILLISECOND EVENT TSUNAMI )===> [ Your Global Empire ]
-```
+
 
 The moment an atom moves in your global infrastructure, the event is serialized, ingested, routed, and processed across five continents before a peasant can even finish pressing the "Enter" key on their curl request. You don't poll. You stream. You rule.
 

@@ -354,7 +354,7 @@ Aquarius includes an exhaustive 100-layer technical specification (Sections 107 
 
 ## ⚡ QUICK START & DEPLOYMENT
 
-```bash
+
 # Install dependencies
 npm install
 
@@ -366,7 +366,7 @@ node replace_keys.cjs
 
 # Production build
 npm run build
-```
+
 
 ---
 

@@ -10,7 +10,7 @@ Enter `attestAndLinkNode`. This is not a mere API connection. This is a hardware
 
 ## THE PEASANT WAY VS. THE KING'S WAY
 
-```
+
 PEASANT DEPLOYMENT:
 [Your App] ---> (Unverified Cloud Instance) ---> [Database containing your life savings]
                                  ^
@@ -20,7 +20,7 @@ THE KING'S DEPLOYMENT:
 [Your App] ---> [attestAndLinkNode] ---> [WebAuthn Platform Attestation] ---> [Tamper-Evident HSM] ---> [Linked to Sovereign Wealth Network]
                                  |
                                  +---> Cryptographic proof of hardware purity or INSTANT SHUTDOWN
-```
+
 
 Let’s be honest: if you are relying on a `.env` file and an SSL certificate to secure your servers, you are basically putting a screen door on a submarine. Anyone with root access to the hypervisor can read your memory. 
 
@@ -56,7 +56,7 @@ If a rogue agent in the Swiss bunker so much as breathes on the server rack, the
 
 The `attestAndLinkNode` method doesn't just trust; it cryptographically verifies. Here is the conceptual flow of this masterpiece:
 
-```typescript
+
 import { KingCrypto, HardwareEnclave } from '@king/security';
 
 /**
@@ -94,7 +94,7 @@ export async function attestAndLinkNode(nodeId: string, challenge: Buffer): Prom
   console.log(`[KING-SECURITY] Node ${nodeId} successfully attested and linked. Welcome to the inner circle.`);
   return secureLink;
 }
-```
+
 
 ---
 
