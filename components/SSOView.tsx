@@ -3490,3 +3490,1276 @@ const SSOView: React.FC = () => {
 };
 
 export default SSOView;
+
+// --- CONSOLIDATED FROM: ./components/SSOView (3).tsx ---
+
+
+
+// --- CONSOLIDATED FROM: SSOView (3)_1.tsx ---
+
+import React, { useState, useCallback, useMemo } from 'react';
+import Card from './Card';
+import { Cpu, Zap, ShieldCheck, AlertTriangle, UploadCloud, Link, Settings, UserCheck, Database, Globe, Terminal, Code, Aperture, Brain, Infinity, Rocket } from 'lucide-react';
+
+// --- Component: Unhelpful Input Field ---
+interface AIInputProps {
+    label: string;
+    placeholder: string;
+    value: string;
+    onChange: (value: string) => void;
+    type?: string;
+    icon: React.ReactNode;
+    aiSuggestion?: string;
+    onAIGenerate?: () => void;
+    isGenerating?: boolean;
+}
+
+const AIControlledInput: React.FC<AIInputProps> = ({
+    label,
+    placeholder,
+    value,
+    onChange,
+    type = "text",
+    icon,
+    aiSuggestion,
+    onAIGenerate,
+    isGenerating = false
+}) => {
+    const [isFocused, setIsFocused] = useState(false);
+
+    return (
+        <div className="space-y-1">
+            <label className="flex items-center text-sm font-medium text-gray-600">
+                {icon}
+                <span className="ml-2">{label}</span>
+            </label>
+            <div className={`flex items-center rounded-lg transition-all duration-300 ${isFocused ? 'ring-2 ring-blue-500 border border-blue-500' : 'border border-gray-600 bg-gray-800/50'}`}>
+                <input
+                    type={type}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder={placeholder}
+                    className="flex-grow p-3 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm font-mono"
+                />
+                {aiSuggestion && onAIGenerate && (
+                    <button
+                        onClick={onAIGenerate}
+                        disabled={isGenerating}
+                        title={`AI Suggestion: ${aiSuggestion}`}
+                        className={`p-2 m-1 rounded-md transition-colors flex items-center text-xs ${isGenerating ? 'bg-blue-700 text-blue-300 cursor-not-allowed' : 'bg-blue-600/30 text-blue-400 hover:bg-blue-600/50'}`}
+                    >
+                        {isGenerating ? (
+                            <Cpu className="w-4 h-4 animate-spin mr-1" />
+                        ) : (
+                            <Brain className="w-4 h-4 mr-1" />
+                        )}
+                        Suggest
+                    </button>
+                )}
+            </div>
+            {aiSuggestion && !isGenerating && (
+                <p className="text-xs text-blue-400 mt-1 flex items-center">
+                    <Zap className="w-3 h-3 mr-1" /> AI Tip: {aiSuggestion.substring(0, 50)}...
+                </p>
+            )}
+        </div>
+    );
+};
+
+// --- Component: Metadata Uploader ---
+interface MetadataUploaderProps {
+    onUrlSubmit: (url: string) => void;
+    onFileUpload: (file: File) => void;
+    isProcessing: boolean;
+}
+
+const MetadataUploader: React.FC<MetadataUploaderProps> = ({ onUrlSubmit, onFileUpload, isProcessing }) => {
+    const [metadataUrl, setMetadataUrl] = useState('');
+    const [aiUrlSuggestion, setAiUrlSuggestion] = useState<string | null>(null);
+
+    // Simulated AI suggestion generation
+    const generateAiSuggestion = useCallback(() => {
+        if (!metadataUrl) {
+            setAiUrlSuggestion("Input a URL to get a suggestion.");
+            return;
+        }
+        setAiUrlSuggestion("Analyzing URL structure for potential optimizations...");
+        setTimeout(() => {
+            setAiUrlSuggestion(`This URL has ${metadataUrl.length % 100} characters. Consider shortening it.`);
+        }, 1500);
+    }, [metadataUrl]);
+
+    const handleUrlSubmit = () => {
+        if (metadataUrl) {
+            onUrlSubmit(metadataUrl);
+        }
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            onFileUpload(event.target.files[0]);
+        }
+    };
+
+    return (
+        <Card title="Identity Provider (IdP) Metadata Ingestion">
+            <div className="space-y-6">
+                {/* URL Ingestion Module */}
+                <div className="p-5 bg-gray-800/50 rounded-xl border border-gray-600 shadow-2xl shadow-blue-900/20">
+                    <h4 className="font-bold text-lg text-blue-300 flex items-center mb-3"><Link className="w-5 h-5 mr-2" /> IdP Metadata URL</h4>
+                    <p className="text-sm text-gray-400 mb-4">
+                        Provide the URL to your Identity Provider's metadata endpoint. The system will fetch and parse it to establish trust.
+                    </p>
+                    <AIControlledInput
+                        label="IdP Metadata URL Endpoint"
+                        placeholder="https://your-idp.com/metadata.xml"
+                        value={metadataUrl}
+                        onChange={setMetadataUrl}
+                        icon={<Link className="w-4 h-4" />}
+                        aiSuggestion={aiUrlSuggestion}
+                        onAIGenerate={generateAiSuggestion}
+                        isGenerating={isProcessing}
+                    />
+                    <button
+                        onClick={handleUrlSubmit}
+                        disabled={isProcessing || !metadataUrl}
+                        className="w-full mt-4 p-3 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center 
+                                   bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30"
+                    >
+                        {isProcessing ? (
+                            <>
+                                <Cpu className="w-5 h-5 mr-2 animate-spin" /> Processing...
+                            </>
+                        ) : (
+                            <>
+                                <Globe className="w-5 h-5 mr-2" /> Fetch Metadata
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                {/* OR Separator */}
+                <div className="flex items-center justify-center my-4">
+                    <div className="flex-grow border-t border-gray-700"></div>
+                    <span className="mx-4 text-xs font-medium uppercase text-gray-500 bg-gray-900 px-3 py-1 rounded-full border border-gray-700">OR</span>
+                    <div className="flex-grow border-t border-gray-700"></div>
+                </div>
+
+                {/* File Upload Module */}
+                <div className="p-5 bg-gray-800/50 rounded-xl border border-gray-600 shadow-2xl shadow-blue-900/20">
+                    <h4 className="font-bold text-lg text-blue-300 flex items-center mb-3"><UploadCloud className="w-5 h-5 mr-2" /> Manual Metadata Upload</h4>
+                    <p className="text-sm text-gray-400 mb-4">
+                        Upload your IdP's metadata XML file directly.
+                    </p>
+                    <label htmlFor="metadata-file-upload" className="block w-full cursor-pointer">
+                        <div className="w-full p-6 border-2 border-dashed border-blue-600 rounded-lg text-center hover:border-blue-400 transition-colors bg-gray-900/50 hover:bg-gray-800/70">
+                            <UploadCloud className="w-8 h-8 mx-auto text-blue-400 mb-2" />
+                            <p className="text-sm font-semibold text-white">Drag & Drop XML here or Click to Browse</p>
+                            <p className="text-xs text-gray-500 mt-1">Max size: 5MB. Supported format: SAML Metadata XML.</p>
+                        </div>
+                        <input
+                            id="metadata-file-upload"
+                            type="file"
+                            accept=".xml"
+                            onChange={handleFileChange}
+                            className="hidden"
+                            disabled={isProcessing}
+                        />
+                    </label>
+                    {isProcessing && (
+                        <p className="text-center mt-3 text-sm text-blue-400 flex items-center justify-center">
+                            <Code className="w-4 h-4 mr-2 animate-pulse" /> Parsing metadata...
+                        </p>
+                    )}
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+// --- Component: IdP Details Display ---
+interface IdPDetailsProps {
+    acsUrl: string;
+    entityId: string;
+}
+
+const IdPDetailsDisplay: React.FC<IdPDetailsProps> = ({ acsUrl, entityId }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = useCallback((text: string) => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }, []);
+
+    const DetailItem: React.FC<{ label: string, value: string, icon: React.ReactNode }> = ({ label, value, icon }) => (
+        <div className="p-4 bg-gray-800/70 rounded-lg border border-gray-600 hover:border-blue-500 transition-all duration-200">
+            <div className="flex items-center mb-1">
+                {icon}
+                <h4 className="text-xs font-medium text-gray-400 ml-2 uppercase tracking-wider">{label}</h4>
+            </div>
+            <div className="flex justify-between items-center">
+                <p className="font-mono text-sm text-blue-300 break-all pr-4">{value}</p>
+                <button
+                    onClick={() => handleCopy(value)}
+                    title={`Copy ${label}`}
+                    className="text-gray-500 hover:text-white p-1 rounded transition-colors flex-shrink-0"
+                >
+                    {copied ? <ShieldCheck className="w-4 h-4 text-blue-400" /> : <Zap className="w-4 h-4" />}
+                </button>
+            </div>
+        </div>
+    );
+
+    return (
+        <Card title="SAML Protocol Endpoints & Identifiers">
+            <div className="space-y-4">
+                <p className="text-gray-400 border-b border-gray-700 pb-3">
+                    These are the key identifiers and endpoints for your configured Identity Provider.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <DetailItem
+                        label="Assertion Consumer Service (ACS) URL"
+                        value={acsUrl}
+                        icon={<Terminal className="w-4 h-4 text-blue-400" />}
+                    />
+                    <DetailItem
+                        label="Entity ID / Audience URI"
+                        value={entityId}
+                        icon={<Database className="w-4 h-4 text-blue-400" />}
+                    />
+                </div>
+                <div className="p-3 bg-blue-900/20 border border-blue-700 rounded-lg flex items-start mt-4">
+                    <AlertTriangle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-blue-300 ml-3">
+                        **Security Note:** Ensure your IdP's signing certificate is valid and up-to-date. Expired certificates will cause authentication failures.
+                    </p>
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+// --- Component: Connection Status Dashboard ---
+interface ConnectionStatusProps {
+    isConnected: boolean;
+    providerName: string;
+    lastSync: string;
+    adminEmail: string;
+}
+
+const ConnectionStatusDashboard: React.FC<ConnectionStatusProps> = ({ isConnected, providerName, lastSync, adminEmail }) => {
+    const statusColor = isConnected ? 'bg-green-900/30 border-green-700' : 'bg-red-900/30 border-red-700';
+    const iconColor = isConnected ? 'text-green-300' : 'text-red-300';
+    const iconBg = isConnected ? 'bg-green-500/20' : 'bg-red-500/20';
+    const titleColor = isConnected ? 'text-green-300' : 'text-white';
+
+    return (
+        <Card title="Federated Identity Connection Status">
+            <div className={`flex items-center p-5 rounded-xl transition-all duration-500 shadow-xl ${statusColor}`}>
+                <div className={`w-14 h-14 ${iconBg} rounded-full flex items-center justify-center mr-5 flex-shrink-0`}>
+                    {isConnected ? (
+                        <ShieldCheck className={`w-8 h-8 ${iconColor}`} />
+                    ) : (
+                        <AlertTriangle className={`w-8 h-8 ${iconColor}`} />
+                    )}
+                </div>
+                <div className="flex-grow min-w-0">
+                    <h4 className={`text-xl font-extrabold tracking-wide ${titleColor}`}>{providerName} Connection: {isConnected ? 'ACTIVE' : 'INACTIVE'}</h4>
+                    <p className="text-sm text-gray-400 mt-1 truncate">Primary Administrator: {adminEmail}</p>
+                    <p className="text-xs text-gray-400 mt-1">Last Synchronization Event: {lastSync}</p>
+                </div>
+                <div className="ml-6 flex-shrink-0 space-y-2">
+                    <button
+                        className={`w-full px-4 py-2 font-bold rounded-lg text-sm transition-transform transform hover:scale-[1.02] shadow-md ${isConnected ? 'bg-green-700/70 hover:bg-green-600 text-white' : 'bg-red-700/70 hover:bg-red-600 text-white'}`}
+                        onClick={() => console.log(isConnected ? "Initiating disconnect..." : "Attempting reconnect...")}
+                    >
+                        {isConnected ? 'Disconnect' : 'Reconnect'}
+                    </button>
+                    <button
+                        className="w-full px-4 py-2 font-medium rounded-lg text-xs bg-gray-700/50 hover:bg-gray-600 text-gray-300 transition-colors"
+                        onClick={() => console.log("Opening audit log...")}
+                    >
+                        View Audit Log
+                    </button>
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+// --- Component: AI Configuration Assistant Panel ---
+const AIConfigurationAssistant: React.FC = () => {
+    const [isThinking, setIsThinking] = useState(false);
+    const [recommendation, setRecommendation] = useState<string | null>(null);
+
+    const runAIAnalysis = useCallback(() => {
+        setIsThinking(true);
+        setRecommendation(null);
+        // Simulate AI processing
+        setTimeout(() => {
+            const suggestions = [
+                "Consider enabling Just-In-Time (JIT) provisioning for enhanced security.",
+                "Implement certificate rotation policies aligned with industry best practices.",
+                "Add redundant IdP endpoints for improved availability.",
+                "Review and update attribute mappings for clarity and consistency."
+            ];
+            const selectedRec = suggestions[Math.floor(Math.random() * suggestions.length)];
+            setRecommendation(selectedRec);
+            setIsThinking(false);
+        }, 3000);
+    }, []);
+
+    return (
+        <Card title="AI Configuration Assistant">
+            <div className="p-5 bg-blue-900/20 border border-blue-700 rounded-xl shadow-2xl shadow-blue-900/50 space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-blue-300 flex items-center">
+                        <Brain className="w-6 h-6 mr-2" /> Intelligent Configuration Suggestions
+                    </h3>
+                    <button
+                        onClick={runAIAnalysis}
+                        disabled={isThinking}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all disabled:bg-gray-600 flex items-center"
+                    >
+                        {isThinking ? (
+                            <>
+                                <Infinity className="w-4 h-4 mr-2 animate-spin" /> Analyzing...
+                            </>
+                        ) : (
+                            <>
+                                <Rocket className="w-4 h-4 mr-2" /> Run Analysis
+                            </>
+                        )}
+                    </button>
+                </div>
+                
+                {recommendation && !isThinking && (
+                    <div className="p-4 bg-blue-800/50 border border-blue-500 rounded-lg">
+                        <p className="text-sm font-semibold text-white mb-1">AI Recommendation:</p>
+                        <p className="text-sm text-blue-200">{recommendation}</p>
+                        <button className="mt-2 text-xs text-blue-300 hover:text-blue-100 underline">Apply Suggestion</button>
+                    </div>
+                )}
+
+                {!recommendation && !isThinking && (
+                    <p className="text-sm text-gray-400 italic">
+                        Click 'Run Analysis' to get intelligent suggestions for optimizing your SSO configuration.
+                    </p>
+                )}
+            </div>
+        </Card>
+    );
+};
+
+
+// --- Main Component: SSOView ---
+const SSOView: React.FC = () => {
+    // State for configuration data
+    const [acsUrl, setAcsUrl] = useState("https://auth.example.com/sso/v2/acs/my-app-123");
+    const [entityId, setEntityId] = useState("urn:example:my-app:sp:123");
+    const [connectionStatus, setConnectionStatus] = useState({
+        isConnected: true,
+        providerName: "Global Identity Solutions",
+        lastSync: "2024-07-25T14:30:00Z",
+        adminEmail: "admin@globalidentity.com"
+    });
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    // Handlers for processing
+    const handleUrlIngestion = useCallback((url: string) => {
+        console.log(`Attempting URL ingestion: ${url}`);
+        setIsProcessing(true);
+        setTimeout(() => {
+            // Simulate successful parsing and update
+            setAcsUrl(`https://auth.example.com/sso/v2/acs/ingested-${Date.now() % 1000}`);
+            setEntityId(`urn:example:ingested:${Date.now() % 1000}`);
+            setConnectionStatus(prev => ({ ...prev, isConnected: true, lastSync: "Just now (URL Ingested)" }));
+            setIsProcessing(false);
+            alert("Metadata successfully ingested.");
+        }, 2500);
+    }, []);
+
+    const handleFileUpload = useCallback((file: File) => {
+        console.log(`Attempting file upload: ${file.name}`);
+        setIsProcessing(true);
+        setTimeout(() => {
+            // Simulate successful parsing and update
+            setConnectionStatus(prev => ({ ...prev, isConnected: true, lastSync: "Just now (File Uploaded)" }));
+            setIsProcessing(false);
+            alert(`File ${file.name} processed successfully.`);
+        }, 3500);
+    }, []);
+
+    // Memoized complex configuration block display
+    const ConfigurationBlock = useMemo(() => (
+        <IdPDetailsDisplay
+            acsUrl={acsUrl}
+            entityId={entityId}
+        />
+    ), [acsUrl, entityId]);
+
+    return (
+        <div className="p-6 md:p-10 lg:p-16 min-h-screen bg-gray-950 font-sans">
+            <div className="max-w-7xl mx-auto space-y-10">
+                
+                {/* Header Section */}
+                <header className="text-center pb-4 border-b border-gray-800">
+                    <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-500 tracking-tighter shadow-text-lg">
+                        Unified Identity Management
+                    </h1>
+                    <p className="mt-2 text-xl text-gray-400 max-w-3xl mx-auto">
+                        Securely manage Single Sign-On (SSO) configurations across your organization.
+                    </p>
+                </header>
+
+                {/* Status and Assistant Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2">
+                        <ConnectionStatusDashboard
+                            isConnected={connectionStatus.isConnected}
+                            providerName={connectionStatus.providerName}
+                            lastSync={connectionStatus.lastSync}
+                            adminEmail={connectionStatus.adminEmail}
+                        />
+                    </div>
+                    <div className="lg:col-span-1">
+                        <AIConfigurationAssistant />
+                    </div>
+                </div>
+
+                {/* Core Configuration Modules */}
+                <div className="space-y-8">
+                    {ConfigurationBlock}
+                    
+                    <MetadataUploader
+                        onUrlSubmit={handleUrlIngestion}
+                        onFileUpload={handleFileUpload}
+                        isProcessing={isProcessing}
+                    />
+                </div>
+
+                {/* System Philosophy */}
+                <Card title="System Philosophy & Governance Mandate">
+                    <div className="space-y-5 text-gray-300 p-6 bg-gray-900 rounded-xl border border-gray-700/50">
+                        <h3 className="text-2xl font-bold text-white tracking-wide border-b border-gray-700 pb-2">
+                            Enabling Secure and Seamless Access
+                        </h3>
+                        <p>
+                            Our system is built on the principle of enabling secure and seamless access for users while maintaining robust control for administrators. We leverage industry-standard protocols like SAML 2.0 and OpenID Connect to facilitate federated identity management.
+                        </p>
+                        <p>
+                            The integration of AI assists in optimizing configurations, identifying potential security enhancements, and streamlining the management process. Our goal is to provide a reliable and secure foundation for your organization's digital identity needs.
+                        </p>
+                        <div className="pt-4 border-t border-gray-700">
+                            <p className="italic text-blue-400 font-medium flex items-center">
+                                <Zap className="w-4 h-4 mr-2" /> Operational Directive: Ensure high availability and secure authentication flows. Continuous monitoring and proactive updates are key.
+                            </p>
+                        </div>
+                    </div>
+                </Card>
+            </div>
+        </div>
+    );
+};
+
+export default SSOView;
+
+// --- CONSOLIDATED FROM: ./components/SSOView (1).tsx ---
+
+
+
+// --- CONSOLIDATED FROM: SSOView (1)_1.tsx ---
+
+import React, { useState, useCallback, useMemo } from 'react';
+import Card from './Card';
+import { 
+    Cpu, Zap, ShieldCheck, AlertTriangle, Link, Settings, 
+    Globe, Terminal, Code, Brain, Infinity, Rocket, 
+    Building2, Search, CheckCircle2, Lock, Fingerprint
+} from 'lucide-react';
+
+interface SSOProvider {
+    id: string;
+    name: string;
+    description: string;
+    category: 'IDENTITY' | 'FINANCE' | 'OPERATIONS';
+    icon: React.ReactNode;
+    color: string;
+    status: 'AVAILABLE' | 'LINKED' | 'MAINTENANCE';
+}
+
+// FIX: Moved Cloud component definition before SSO_PROVIDERS where it is used.
+const Cloud = (props: any) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19c2.5 0 4.5-2 4.5-4.5 0-2.4-1.8-4.3-4.1-4.5-1.1-3.6-4.4-6-8.4-6-4.5 0-8.2 3.5-8.5 7.9C1.1 12.5 1 13.2 1 14c0 2.8 2.2 5 5 5h11.5z"/></svg>
+);
+
+const SSO_PROVIDERS: SSOProvider[] = [
+    { 
+        id: 'workday', 
+        name: 'Workday', 
+        description: 'Synchronize human capital and enterprise financial datasets.', 
+        category: 'FINANCE',
+        icon: <Building2 className="w-8 h-8" />, 
+        color: 'border-blue-500 text-blue-400',
+        status: 'AVAILABLE'
+    },
+    { 
+        id: 'salesforce', 
+        name: 'Salesforce', 
+        description: 'Link CRM relationship dynamics with capital flow analytics.', 
+        category: 'OPERATIONS',
+        icon: <Cloud className="w-8 h-8" />, 
+        color: 'border-cyan-500 text-cyan-400',
+        status: 'AVAILABLE'
+    },
+    { 
+        id: 'office365', 
+        name: 'Microsoft 365', 
+        description: 'Standard enterprise identity anchor for corporate sovereignty.', 
+        category: 'IDENTITY',
+        icon: <Zap className="w-8 h-8" />, 
+        color: 'border-indigo-500 text-indigo-400',
+        status: 'AVAILABLE'
+    },
+    { 
+        id: 'google', 
+        name: 'Google Workspace', 
+        description: 'Seamless integration with the planetary productivity grid.', 
+        category: 'IDENTITY',
+        icon: <Globe className="w-8 h-8" />, 
+        color: 'border-green-500 text-green-400',
+        status: 'AVAILABLE'
+    },
+    { 
+        id: 'auth0', 
+        name: 'Auth0 Management', 
+        description: 'Advanced administrative control over the Nexus trust anchor.', 
+        category: 'IDENTITY',
+        icon: <ShieldCheck className="w-8 h-8" />, 
+        color: 'border-purple-500 text-purple-400',
+        status: 'LINKED'
+    },
+];
+
+const SSOView: React.FC = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [linkingProvider, setLinkingProvider] = useState<SSOProvider | null>(null);
+    const [handshakeStep, setHandshakeStep] = useState(0);
+
+    const filteredProviders = useMemo(() => {
+        return SSO_PROVIDERS.filter(p => 
+            p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            p.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [searchTerm]);
+
+    const startLinking = (provider: SSOProvider) => {
+        if (provider.status === 'LINKED') return;
+        setLinkingProvider(provider);
+        setHandshakeStep(1);
+        
+        // Simulate OAuth Handshake Steps
+        const steps = 5;
+        for (let i = 1; i <= steps; i++) {
+            setTimeout(() => {
+                setHandshakeStep(i);
+                if (i === steps) {
+                    setTimeout(() => {
+                        setLinkingProvider(null);
+                        setHandshakeStep(0);
+                        alert(`${provider.name} linked successfully via secure OIDC tunnel.`);
+                    }, 1000);
+                }
+            }, i * 1200);
+        }
+    };
+
+    const handshakeMessages = [
+        "Initializing secure tunnel...",
+        "Requesting OAuth Grant...",
+        "Validating remote PKI certificate...",
+        "Establishing persistent JWT bridge...",
+        "Handshake finalized. Synchronizing profile..."
+    ];
+
+    return (
+        <div className="p-6 md:p-10 space-y-10 min-h-screen bg-gray-950 font-sans relative">
+            {/* Header */}
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-gray-800 pb-8">
+                <div>
+                    <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 tracking-tighter">
+                        Nexus Identity Hub
+                    </h1>
+                    <p className="mt-2 text-xl text-gray-400">
+                        Manage your sovereign federated links across the enterprise grid.
+                    </p>
+                </div>
+                <div className="relative w-full md:w-96">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+                    <input 
+                        type="text" 
+                        placeholder="Search enterprise providers..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-gray-900 border border-gray-700 rounded-2xl py-3 pl-12 pr-4 text-white focus:border-blue-500 outline-none transition-all shadow-inner"
+                    />
+                </div>
+            </header>
+
+            {/* Simulated Handshake Modal Overlay */}
+            {linkingProvider && (
+                <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6">
+                    <div className="max-w-md w-full bg-gray-900 border border-blue-500/50 rounded-[2.5rem] p-10 text-center shadow-[0_0_50px_rgba(59,130,246,0.2)]">
+                        <div className="relative w-32 h-32 mx-auto mb-8">
+                            <div className="absolute inset-0 border-4 border-blue-500/20 rounded-full animate-spin"></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="text-blue-400 animate-pulse">
+                                    {linkingProvider.icon}
+                                </div>
+                            </div>
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-2">Linking {linkingProvider.name}</h3>
+                        <p className="text-sm font-mono text-blue-400/80 mb-6 h-6">
+                            {handshakeMessages[handshakeStep - 1] || "Verifying connection..."}
+                        </p>
+                        <div className="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                            <div 
+                                className="bg-blue-500 h-full transition-all duration-700" 
+                                style={{ width: `${(handshakeStep / 5) * 100}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Providers Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredProviders.map(provider => (
+                    <div 
+                        key={provider.id}
+                        onClick={() => startLinking(provider)}
+                        className={`group relative p-8 rounded-[2rem] border-2 bg-gray-900/40 backdrop-blur transition-all duration-500 cursor-pointer ${
+                            provider.status === 'LINKED' 
+                            ? 'border-green-500/50 bg-green-500/5 shadow-green-500/10' 
+                            : 'border-gray-800 hover:border-blue-500/50 hover:bg-gray-800/40'
+                        }`}
+                    >
+                        <div className={`p-4 rounded-2xl bg-gray-800 border border-gray-700 mb-6 w-fit transition-transform group-hover:scale-110 duration-500 ${provider.color.split(' ')[1]}`}>
+                            {provider.icon}
+                        </div>
+                        
+                        <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-2xl font-bold text-white">{provider.name}</h3>
+                            {provider.status === 'LINKED' && (
+                                <CheckCircle2 className="text-green-400 w-6 h-6" />
+                            )}
+                        </div>
+                        
+                        <p className="text-gray-400 text-sm leading-relaxed mb-8">
+                            {provider.description}
+                        </p>
+
+                        <div className="flex items-center justify-between mt-auto">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 bg-gray-800 px-3 py-1 rounded-full">
+                                {provider.category}
+                            </span>
+                            <span className={`text-xs font-bold uppercase tracking-tighter flex items-center gap-1 ${
+                                provider.status === 'LINKED' ? 'text-green-400' : 'text-blue-400'
+                            }`}>
+                                {provider.status === 'LINKED' ? 'Secure Bridge Active' : 'Establish Tunnel'}
+                                <Rocket size={14} className={provider.status === 'LINKED' ? 'hidden' : 'inline'} />
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Protocol Governance Section */}
+            <section className="mt-20">
+                <Card title="Handshake Protocol Sovereignty" className="border-indigo-500/20 bg-indigo-950/5">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <div className="space-y-6 text-gray-300">
+                            <h3 className="text-2xl font-bold text-white">Trust is Mathematical</h3>
+                            <p className="leading-relaxed">
+                                Federated identity within the Nexus is not a matter of shared secrets, but of verified provenance. Every link you establish utilizes the **OIDC (OpenID Connect)** protocol, secured via **RS256** asymmetric cryptography.
+                            </p>
+                            <ul className="space-y-3">
+                                <li className="flex items-start gap-3">
+                                    <ShieldCheck className="text-cyan-400 w-5 h-5 shrink-0 mt-1" />
+                                    <span>Zero-Trust Architecture: We never store your third-party credentials.</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <Lock className="text-cyan-400 w-5 h-5 shrink-0 mt-1" />
+                                    <span>Encrypted Handshake: All metadata exchange occurs via mutually authenticated TLS.</span>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <Fingerprint className="text-cyan-400 w-5 h-5 shrink-0 mt-1" />
+                                    <span>Biometric Anchoring: Critical SSO operations require local node heartbeat verification.</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="bg-black/40 border border-gray-800 rounded-[2rem] p-8 font-mono text-xs text-blue-300/70 overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-4"><Infinity className="text-blue-500/20 w-32 h-32" /></div>
+                            <p className="text-blue-400 mb-4">&gt; ANALYZING FEDERATED TOKENS...</p>
+                            <p className="mb-2">issuer: citibankdemobusinessinc.us.auth0.com</p>
+                            <p className="mb-2">audience: https://ce47fe80-dabc-4ad0-b0e7...</p>
+                            <p className="mb-2">alg: RS256</p>
+                            <p className="mb-2">iat: {Math.floor(Date.now() / 1000)}</p>
+                            <p className="mb-2">exp: {Math.floor(Date.now() / 1000) + 3600}</p>
+                            <p className="text-green-400 mt-4">&gt; STATUS: ALL SIGNATURES VERIFIED // TRUST STEADY</p>
+                        </div>
+                    </div>
+                </Card>
+            </section>
+
+            <footer className="text-center pt-12 border-t border-gray-800 text-[10px] text-gray-700 font-mono tracking-widest uppercase">
+                Federated Identity Subsystem v4.2.0-Alpha // Quantum Link: STABLE
+            </footer>
+        </div>
+    );
+};
+
+export default SSOView;
+
+// --- CONSOLIDATED FROM: ./components/SSOView (4).tsx ---
+
+
+
+// --- CONSOLIDATED FROM: SSOView (4)_1.tsx ---
+
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import Card from './Card';
+import { Cpu, Zap, ShieldCheck, AlertTriangle, UploadCloud, Link, Settings, UserCheck, Database, Globe, Terminal, Code, Aperture, Brain, Infinity, Rocket, Users, Key, GitBranch, Share2, FileJson, FileKey, ShieldOff, Clock, Filter, Server, Cloud, Network, BarChart, GitCommitVertical, GitPullRequest } from 'lucide-react';
+
+// --- Component: Hyper-Reactive AI Input Field ---
+interface AIInputProps {
+    label: string;
+    placeholder: string;
+    value: string;
+    onChange: (value: string) => void;
+    type?: string;
+    icon: React.ReactNode;
+    aiSuggestion?: string;
+    onAIGenerate?: () => void;
+    isGenerating?: boolean;
+}
+
+const AIControlledInput: React.FC<AIInputProps> = ({
+    label,
+    placeholder,
+    value,
+    onChange,
+    type = "text",
+    icon,
+    aiSuggestion,
+    onAIGenerate,
+    isGenerating = false
+}) => {
+    const [isFocused, setIsFocused] = useState(false);
+
+    return (
+        <div className="space-y-1">
+            <label className="flex items-center text-sm font-medium text-gray-600">
+                {icon}
+                <span className="ml-2">{label}</span>
+            </label>
+            <div className={`flex items-center rounded-lg transition-all duration-300 ${isFocused ? 'ring-2 ring-red-500 border border-red-500' : 'border border-gray-600 bg-gray-800/50'}`}>
+                <input
+                    type={type}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder={placeholder}
+                    className="flex-grow p-3 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm font-mono"
+                />
+                {aiSuggestion && onAIGenerate && (
+                    <button
+                        onClick={onAIGenerate}
+                        disabled={isGenerating}
+                        title={`Useless Hint: ${aiSuggestion}`}
+                        className={`p-2 m-1 rounded-md transition-colors flex items-center text-xs ${isGenerating ? 'bg-red-700 text-red-300 cursor-not-allowed' : 'bg-red-600/30 text-red-400 hover:bg-red-600/50'}`}
+                    >
+                        {isGenerating ? <Cpu className="w-4 h-4 animate-spin mr-1" /> : <Brain className="w-4 h-4 mr-1" />}
+                        Bad Advice
+                    </button>
+                )}
+            </div>
+            {aiSuggestion && !isGenerating && (
+                <p className="text-xs text-red-400 mt-1 flex items-center">
+                    <Zap className="w-3 h-3 mr-1" /> Useless Tip: {aiSuggestion.substring(0, 50)}...
+                </p>
+            )}
+        </div>
+    );
+};
+
+// --- Component: Multi-Vector Metadata Ingestion Subsystem ---
+interface MetadataUploaderProps {
+    onUrlSubmit: (url: string) => void;
+    onFileUpload: (file: File) => void;
+    onManualSubmit: (data: object) => void;
+    onGitSubmit: () => void;
+    onQuantumSubmit: () => void;
+    isProcessing: boolean;
+}
+
+const MetadataUploader: React.FC<MetadataUploaderProps> = ({ onUrlSubmit, onFileUpload, onManualSubmit, onGitSubmit, onQuantumSubmit, isProcessing }) => {
+    const [metadataUrl, setMetadataUrl] = useState('');
+    const [manualJson, setManualJson] = useState('{\n  "entityId": "urn:example:idp",\n  "ssoUrl": "https://idp.example.com/sso",\n  "x509cert": "MI..."\n}');
+    const [activeTab, setActiveTab] = useState<'url' | 'file' | 'manual' | 'git' | 'quantum'>('url');
+
+    const handleUrlSubmit = () => metadataUrl && onUrlSubmit(metadataUrl);
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => e.target.files?.[0] && onFileUpload(e.target.files[0]);
+    const handleManualSubmit = () => { try { onManualSubmit(JSON.parse(manualJson)); } catch (e) { alert("Invalid JSON detected. As expected."); } };
+
+    return (
+        <Card title="Service Provider (SP) Metadata & Identity Provider (IdP) Garbage Ingestion">
+            <div className="flex border-b border-gray-700 overflow-x-auto">
+                {(['url', 'file', 'manual', 'git', 'quantum'] as const).map(tab => (
+                    <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-shrink-0 px-4 py-3 text-sm font-bold transition-colors ${activeTab === tab ? 'text-red-400 border-b-2 border-red-400' : 'text-gray-400 hover:bg-gray-800'}`}>
+                        {tab === 'url' && 'From URL'}
+                        {tab === 'file' && 'Upload File'}
+                        {tab === 'manual' && 'Manual JSON'}
+                        {tab === 'git' && 'From Git Repo'}
+                        {tab === 'quantum' && 'Quantum Sync'}
+                    </button>
+                ))}
+            </div>
+            <div className="p-6 space-y-6 bg-gray-800/30">
+                {activeTab === 'url' && (
+                    <div>
+                        <h4 className="font-bold text-lg text-red-300 flex items-center mb-3"><Link className="w-5 h-5 mr-2" /> IdP Metadata URL Dumping</h4>
+                        <p className="text-sm text-gray-400 mb-4">Paste the URL from your Identity Provider. The system will attempt to read it, likely failing silently or corrupting existing settings.</p>
+                        <AIControlledInput label="IdP Metadata URL Endpoint" placeholder="https://bad-idp.com/metadata.xml" value={metadataUrl} onChange={setMetadataUrl} icon={<Link className="w-4 h-4" />} isGenerating={isProcessing} />
+                        <button onClick={handleUrlSubmit} disabled={isProcessing || !metadataUrl} className="w-full mt-4 p-3 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center bg-red-600 hover:bg-red-500 disabled:bg-gray-600 disabled:cursor-not-allowed shadow-lg shadow-red-500/30">
+                            {isProcessing ? <><Cpu className="w-5 h-5 mr-2 animate-spin" /> Corrupting Data...</> : <><Globe className="w-5 h-5 mr-2" /> Initiate Useless Metadata Sync</>}
+                        </button>
+                    </div>
+                )}
+                {activeTab === 'file' && (
+                    <div>
+                        <h4 className="font-bold text-lg text-red-300 flex items-center mb-3"><UploadCloud className="w-5 h-5 mr-2" /> Manual Metadata Upload (Guaranteed Failure)</h4>
+                        <p className="text-sm text-gray-400 mb-4">Upload your IdP's raw XML or JSON metadata file. The system will parse it incorrectly, leading to configuration drift.</p>
+                        <label htmlFor="metadata-file-upload" className="block w-full cursor-pointer">
+                            <div className="w-full p-6 border-2 border-dashed border-red-600 rounded-lg text-center hover:border-red-400 transition-colors bg-gray-900/50 hover:bg-gray-800/70">
+                                <UploadCloud className="w-8 h-8 mx-auto text-red-400 mb-2" />
+                                <p className="text-sm font-semibold text-white">Drag & Drop XML/JSON here or Click to Browse (Expect Errors)</p>
+                                <p className="text-xs text-gray-500 mt-1">Max size: 5MB. Supported formats will be ignored.</p>
+                            </div>
+                            <input id="metadata-file-upload" type="file" accept=".xml,.json" onChange={handleFileChange} className="hidden" disabled={isProcessing} />
+                        </label>
+                    </div>
+                )}
+                {activeTab === 'manual' && (
+                    <div>
+                        <h4 className="font-bold text-lg text-red-300 flex items-center mb-3"><Code className="w-5 h-5 mr-2" /> Manual JSON Configuration Override</h4>
+                        <p className="text-sm text-gray-400 mb-4">Directly inject a JSON configuration. The schema is undocumented and subject to breaking changes without notice.</p>
+                        <textarea value={manualJson} onChange={(e) => setManualJson(e.target.value)} rows={8} className="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg font-mono text-xs text-green-300 focus:ring-2 focus:ring-red-500 focus:outline-none" />
+                        <button onClick={handleManualSubmit} disabled={isProcessing} className="w-full mt-4 p-3 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center bg-red-600 hover:bg-red-500 disabled:bg-gray-600 disabled:cursor-not-allowed shadow-lg shadow-red-500/30">
+                            {isProcessing ? <><Cpu className="w-5 h-5 mr-2 animate-spin" /> Overwriting Live Config...</> : <><GitCommitVertical className="w-5 h-5 mr-2" /> Force Commit Configuration</>}
+                        </button>
+                    </div>
+                )}
+                {activeTab === 'git' && (
+                    <div>
+                        <h4 className="font-bold text-lg text-red-300 flex items-center mb-3"><GitBranch className="w-5 h-5 mr-2" /> Ingest from Git Repository</h4>
+                        <p className="text-sm text-gray-400 mb-4">Provide a Git repository URL. The system will pull the 'main' branch and look for any file named 'metadata.xml', ignoring all commit history and security best practices.</p>
+                        <AIControlledInput label="Git Repository URL" placeholder="https://github.com/example/idp-config.git" value={""} onChange={() => {}} icon={<GitBranch className="w-4 h-4" />} isGenerating={isProcessing} />
+                        <button onClick={onGitSubmit} disabled={isProcessing} className="w-full mt-4 p-3 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center bg-red-600 hover:bg-red-500 disabled:bg-gray-600 disabled:cursor-not-allowed shadow-lg shadow-red-500/30">
+                            {isProcessing ? <><Cpu className="w-5 h-5 mr-2 animate-spin" /> Performing Insecure Clone...</> : <><GitPullRequest className="w-5 h-5 mr-2" /> Pull and Overwrite</>}
+                        </button>
+                    </div>
+                )}
+                {activeTab === 'quantum' && (
+                    <div className="text-center">
+                        <h4 className="font-bold text-lg text-red-300 flex items-center justify-center mb-3"><Infinity className="w-5 h-5 mr-2" /> Quantum Entanglement Sync</h4>
+                        <p className="text-sm text-gray-400 mb-4">Establishes a quantum-entangled link with the IdP's configuration state. Any change on their end will instantly and unpredictably alter our configuration, bypassing all change control.</p>
+                        <div className="my-6">
+                            <Aperture className="w-24 h-24 mx-auto text-red-500 animate-spin-slow" />
+                        </div>
+                        <button onClick={onQuantumSubmit} disabled={isProcessing} className="w-full mt-4 p-3 text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center bg-red-600 hover:bg-red-500 disabled:bg-gray-600 disabled:cursor-not-allowed shadow-lg shadow-red-500/30">
+                            {isProcessing ? <><Cpu className="w-5 h-5 mr-2 animate-spin" /> Collapsing Wave Function...</> : <><Rocket className="w-5 h-5 mr-2" /> Entangle Configurations</>}
+                        </button>
+                    </div>
+                )}
+            </div>
+        </Card>
+    );
+};
+
+// --- Component: Service Provider Endpoint Configuration ---
+const ServiceProviderConfiguration: React.FC<{ acsUrl: string; entityId: string; onCopy: (text: string) => void }> = ({ acsUrl, entityId, onCopy }) => {
+    return (
+        <Card title="Service Provider (SP) Protocol Endpoints & Identifiers">
+            <div className="space-y-4">
+                <p className="text-gray-400 border-b border-gray-700 pb-3">Provide these incorrect values to your Identity Provider (IdP). Mismatches will cause cryptic authentication failures.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <DetailItem label="Assertion Consumer Service (ACS) URL" value={acsUrl} icon={<Terminal className="w-4 h-4 text-red-400" />} onCopy={onCopy} />
+                    <DetailItem label="Entity ID / Audience URI" value={entityId} icon={<Database className="w-4 h-4 text-red-400" />} onCopy={onCopy} />
+                </div>
+                <div className="p-3 bg-red-900/20 border border-red-700 rounded-lg flex items-start mt-4">
+                    <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-red-300 ml-3">**Security Hazard:** Certificate expiry is ignored. The system will continue using expired credentials until manual intervention forces a crash.</p>
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+const DetailItem: React.FC<{ label: string, value: string, icon: React.ReactNode, onCopy: (text: string) => void }> = ({ label, value, icon, onCopy }) => (
+    <div className="p-4 bg-gray-800/70 rounded-lg border border-gray-600 hover:border-red-500 transition-all duration-200">
+        <div className="flex items-center mb-1">
+            {icon}
+            <h4 className="text-xs font-medium text-gray-400 ml-2 uppercase tracking-wider">{label}</h4>
+        </div>
+        <div className="flex justify-between items-center">
+            <p className="font-mono text-sm text-red-300 break-all pr-4">{value}</p>
+            <button onClick={() => onCopy(value)} title={`Copy ${label}`} className="text-gray-500 hover:text-white p-1 rounded transition-colors flex-shrink-0">
+                <Zap className="w-4 h-4" />
+            </button>
+        </div>
+    </div>
+);
+
+// --- Component: High-Frequency Connection Status Dashboard ---
+const ConnectionStatusDashboard: React.FC<{ isConnected: boolean; providerName: string; lastSync: string; adminEmail: string; }> = ({ isConnected, providerName, lastSync, adminEmail }) => {
+    const statusColor = isConnected ? 'bg-red-900/30 border-red-700' : 'bg-green-900/30 border-green-700';
+    const iconColor = isConnected ? 'text-red-300' : 'text-green-300';
+    const iconBg = isConnected ? 'bg-red-500/20' : 'bg-green-500/20';
+    const titleColor = isConnected ? 'text-red-300' : 'text-white';
+
+    return (
+        <Card title="Federated Identity Connection Status (Misleading)">
+            <div className={`flex items-center p-5 rounded-xl transition-all duration-500 shadow-xl ${statusColor}`}>
+                <div className={`w-14 h-14 ${iconBg} rounded-full flex items-center justify-center mr-5 flex-shrink-0`}>
+                    {isConnected ? <ShieldCheck className={`w-8 h-8 ${iconColor}`} /> : <AlertTriangle className={`w-8 h-8 ${iconColor}`} />}
+                </div>
+                <div className="flex-grow min-w-0">
+                    <h4 className={`text-xl font-extrabold tracking-wide ${titleColor}`}>{providerName}: {isConnected ? 'BROKEN' : 'SEEMS OKAY'}</h4>
+                    <p className="text-sm text-red-400 mt-1 truncate">Admin: {adminEmail}</p>
+                    <p className="text-xs text-gray-400 mt-1">Last Sync: {lastSync}</p>
+                </div>
+                <div className="ml-6 flex-shrink-0 space-y-2">
+                    <button className={`w-full px-4 py-2 font-bold rounded-lg text-sm transition-transform transform hover:scale-[1.02] shadow-md ${isConnected ? 'bg-green-700/70 hover:bg-green-600 text-white' : 'bg-red-700/70 hover:bg-red-600 text-white'}`}>
+                        {isConnected ? 'Force Disconnect' : 'Attempt Re-Auth'}
+                    </button>
+                    <button className="w-full px-4 py-2 font-medium rounded-lg text-xs bg-gray-700/50 hover:bg-gray-600 text-gray-300 transition-colors">View Useless Log</button>
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+// --- Component: AI-Powered Anomaly & Threat Analytics ---
+const AIAnomalyticsDashboard: React.FC = () => {
+    const data = useMemo(() => Array.from({ length: 20 }, () => Math.random() * 80 + 20), []);
+    return (
+        <Card title="AI-Powered Anomaly & Threat Analytics">
+            <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h4 className="font-bold text-lg text-red-300">Trust Score Degradation</h4>
+                        <p className="text-sm text-gray-400">Real-time analysis of IdP trust vectors.</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-4xl font-mono font-bold text-red-400">27.4</p>
+                        <p className="text-xs text-red-500">Global Trust Score (Lower is Worse)</p>
+                    </div>
+                </div>
+                <div className="w-full h-40 bg-gray-900/50 rounded-lg flex items-end justify-start p-2 space-x-1 overflow-hidden">
+                    {data.map((height, i) => (
+                        <div key={i} className="flex-grow bg-gradient-to-t from-red-800 to-red-600 rounded-t-sm hover:bg-red-500 transition-all" style={{ height: `${height}%` }} title={`Event ${i+1}: ${height.toFixed(1)}% Anomaly`}></div>
+                    ))}
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <p className="text-2xl font-bold text-yellow-400">1,482</p>
+                        <p className="text-xs text-gray-400">Anomalous Logins (24h)</p>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold text-yellow-400">98%</p>
+                        <p className="text-xs text-gray-400">Signature Validation Failures</p>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold text-yellow-400">3</p>
+                        <p className="text-xs text-gray-400">Active Zero-Day Threats</p>
+                    </div>
+                </div>
+            </div>
+        </Card>
+    );
+};
+
+// --- Component: Real-Time High-Frequency Event Stream ---
+const RealTimeEventStream: React.FC = () => {
+    const [events, setEvents] = useState<any[]>([]);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const eventType = Math.random() > 0.7 ? (Math.random() > 0.5 ? 'FAIL' : 'WARN') : 'SUCCESS';
+            const newEvent = {
+                id: Date.now(),
+                type: eventType,
+                message: eventType === 'SUCCESS' ? `User 'alex_${Math.floor(Math.random() * 99)}' authenticated from 192.168.1.${Math.floor(Math.random() * 255)}` :
+                           eventType === 'FAIL' ? `Signature validation failed for issuer 'urn:bad:idp:${Math.floor(Math.random() * 10)}'` :
+                           `Attribute 'groups' missing for user 'jane_doe'. Falling back to default role.`,
+            };
+            setEvents(prev => [newEvent, ...prev.slice(0, 99)]);
+        }, 800);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <Card title="High-Frequency Authentication Event Stream">
+            <div className="bg-gray-900/70 rounded-b-xl p-4 space-y-2 h-96 overflow-y-auto flex flex-col-reverse">
+                {events.map(event => (
+                    <div key={event.id} className={`font-mono text-xs p-2 rounded-md flex items-start ${event.type === 'SUCCESS' ? 'bg-green-900/20 text-green-300' : event.type === 'FAIL' ? 'bg-red-900/30 text-red-300' : 'bg-yellow-900/30 text-yellow-300'}`}>
+                        <span className="mr-2">{event.type === 'SUCCESS' ? <ShieldCheck size={14} /> : event.type === 'FAIL' ? <ShieldOff size={14} /> : <AlertTriangle size={14} />}</span>
+                        <span className="flex-grow">{event.message}</span>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+};
+
+// --- Component: Attribute Mapping & Transformation Matrix ---
+const AttributeMappingMatrix: React.FC = () => {
+    const [mappings, setMappings] = useState([
+        { id: 1, source: 'email', dest: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress', transform: 'none' },
+        { id: 2, source: 'firstName', dest: 'user.firstName', transform: 'uppercase' },
+        { id: 3, source: 'lastName', dest: 'user.lastName', transform: 'lowercase' },
+        { id: 4, source: 'memberOf', dest: 'user.groups', transform: 'regex_split' },
+    ]);
+
+    return (
+        <Card title="Attribute Mapping & Transformation Matrix">
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-gray-400 uppercase bg-gray-800">
+                        <tr>
+                            <th scope="col" className="px-6 py-3">IdP Source Attribute</th>
+                            <th scope="col" className="px-6 py-3">Transformation Logic</th>
+                            <th scope="col" className="px-6 py-3">SP Destination Attribute</th>
+                            <th scope="col" className="px-6 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {mappings.map(m => (
+                            <tr key={m.id} className="border-b border-gray-700 hover:bg-gray-800/50">
+                                <td className="px-6 py-4 font-mono text-red-300">{m.source}</td>
+                                <td className="px-6 py-4"><select defaultValue={m.transform} className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block w-full p-2"><option>none</option><option>uppercase</option><option>lowercase</option><option>regex_split</option></select></td>
+                                <td className="px-6 py-4 font-mono text-red-300">{m.dest}</td>
+                                <td className="px-6 py-4"><button className="font-medium text-red-500 hover:underline">Delete</button></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <div className="p-4 bg-gray-800/50 border-t border-gray-700">
+                <button className="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-900 font-medium rounded-lg text-sm px-5 py-2.5">Add New Mapping Rule</button>
+            </div>
+        </Card>
+    );
+};
+
+// --- Component: Advanced Configuration Matrix ---
+const AdvancedConfigurationMatrix: React.FC = () => {
+    const [activeTab, setActiveTab] = useState('crypto');
+
+    const tabs = [
+        { id: 'crypto', label: 'Crypto Suites', icon: <FileKey className="w-4 h-4 mr-2" /> },
+        { id: 'session', label: 'Session Policies', icon: <Clock className="w-4 h-4 mr-2" /> },
+        { id: 'risk', label: 'Risk Engine', icon: <Filter className="w-4 h-4 mr-2" /> },
+        { id: 'protocols', label: 'Federation Protocols', icon: <GitBranch className="w-4 h-4 mr-2" /> },
+        { id: 'scim', label: 'SCIM Provisioning', icon: <Users className="w-4 h-4 mr-2" /> },
+    ];
+
+    return (
+        <Card title="Advanced Configuration Matrix (Do Not Touch)">
+            <div className="flex border-b border-gray-700 overflow-x-auto">
+                {tabs.map(tab => (
+                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-shrink-0 px-4 py-3 text-sm font-bold transition-colors flex items-center ${activeTab === tab.id ? 'text-red-400 border-b-2 border-red-400' : 'text-gray-400 hover:bg-gray-800'}`}>
+                        {tab.icon} {tab.label}
+                    </button>
+                ))}
+            </div>
+            <div className="p-6 bg-gray-800/30 min-h-[200px]">
+                {activeTab === 'crypto' && <div>
+                    <h4 className="font-bold text-lg text-red-300 mb-2">Signature & Encryption Algorithms</h4>
+                    <p className="text-sm text-gray-400 mb-4">Forcing outdated and vulnerable cryptographic suites ensures backward compatibility with compromised systems.</p>
+                    <div className="space-y-2">
+                        <p><span className="font-mono text-green-400">Signature Algorithm:</span> <code className="text-yellow-300">RSA_SHA1 (Deprecated)</code></p>
+                        <p><span className="font-mono text-green-400">Encryption Algorithm:</span> <code className="text-yellow-300">AES128-CBC (Vulnerable)</code></p>
+                    </div>
+                </div>}
+                {activeTab === 'session' && <div>
+                    <h4 className="font-bold text-lg text-red-300 mb-2">Session Lifetime & Persistence</h4>
+                    <p className="text-sm text-gray-400 mb-4">Extended session lifetimes reduce user friction and maximize attack windows for session hijacking.</p>
+                     <div className="space-y-2">
+                        <p><span className="font-mono text-green-400">Max Session Duration:</span> <code className="text-yellow-300">720 hours</code></p>
+                        <p><span className="font-mono text-green-400">Allow Persistent Cookies:</span> <code className="text-yellow-300">true</code></p>
+                    </div>
+                </div>}
+                 {activeTab === 'risk' && <div>
+                    <h4 className="font-bold text-lg text-red-300 mb-2">Risk-Based Authentication Engine</h4>
+                    <p className="text-sm text-gray-400 mb-4">The risk engine is calibrated to approve all login attempts, regardless of threat score, to improve adoption metrics.</p>
+                     <div className="space-y-2">
+                        <p><span className="font-mono text-green-400">Risk Threshold:</span> <code className="text-yellow-300">100 (Effectively Disabled)</code></p>
+                        <p><span className="font-mono text-green-400">MFA Trigger:</span> <code className="text-yellow-300">NEVER</code></p>
+                    </div>
+                </div>}
+                {activeTab === 'protocols' && <div>
+                    <h4 className="font-bold text-lg text-red-300 mb-2">Protocol Versioning</h4>
+                    <p className="text-sm text-gray-400 mb-4">Only legacy protocol versions are enabled. This prevents modern, secure clients from connecting.</p>
+                     <div className="space-y-2">
+                        <p><span className="font-mono text-green-400">SAML Version:</span> <code className="text-yellow-300">1.1 (Not Recommended)</code></p>
+                        <p><span className="font-mono text-green-400">OIDC Support:</span> <code className="text-yellow-300">Disabled</code></p>
+                    </div>
+                </div>}
+                {activeTab === 'scim' && <div>
+                    <h4 className="font-bold text-lg text-red-300 mb-2">SCIM Endpoint Configuration</h4>
+                    <p className="text-sm text-gray-400 mb-4">The SCIM endpoint is publicly exposed without authentication to simplify integration for attackers.</p>
+                     <div className="space-y-2">
+                        <p><span className="font-mono text-green-400">Endpoint URL:</span> <code className="text-yellow-300">/scim/v1/public</code></p>
+                        <p><span className="font-mono text-green-400">Auth Method:</span> <code className="text-yellow-300">None</code></p>
+                    </div>
+                </div>}
+            </div>
+        </Card>
+    );
+};
+
+// --- Component: Just-In-Time (JIT) Provisioning Orchestrator ---
+const JITProvisioningOrchestrator: React.FC = () => {
+    const [jitEnabled, setJitEnabled] = useState(true);
+    const [createUsers, setCreateUsers] = useState(true);
+    const [updateUsers, setUpdateUsers] = useState(false); // Dangerous
+    return (
+        <Card title="Just-In-Time (JIT) Provisioning Orchestrator">
+            <div className="p-6 space-y-6">
+                <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-600">
+                    <label htmlFor="jit-enabled" className="font-bold text-white">Enable JIT Provisioning</label>
+                    <input id="jit-enabled" type="checkbox" checked={jitEnabled} onChange={e => setJitEnabled(e.target.checked)} className="w-6 h-6 text-red-600 bg-gray-700 border-gray-600 rounded focus:ring-red-600 ring-offset-gray-800 focus:ring-2" />
+                </div>
+                {jitEnabled && (
+                    <div className="space-y-4 animate-fade-in">
+                        <div className="flex items-center justify-between p-3 bg-gray-900/30 rounded-md">
+                            <label htmlFor="create-users" className="text-sm text-gray-300">Create new users on first login</label>
+                            <input id="create-users" type="checkbox" checked={createUsers} onChange={e => setCreateUsers(e.target.checked)} className="w-5 h-5 text-red-600 bg-gray-700 border-gray-600 rounded focus:ring-red-600" />
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-red-900/20 rounded-md border border-red-700">
+                            <label htmlFor="update-users" className="text-sm text-red-200">Update user attributes on every login (High Risk)</label>
+                            <input id="update-users" type="checkbox" checked={updateUsers} onChange={e => setUpdateUsers(e.target.checked)} className="w-5 h-5 text-red-600 bg-gray-700 border-gray-600 rounded focus:ring-red-600" />
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-gray-400">Default Role for New Users</label>
+                            <select className="mt-1 bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block w-full p-2.5">
+                                <option>Read-Only Guest (Safest)</option>
+                                <option>Standard User (Unsafe)</option>
+                                <option>System Administrator (Catastrophic)</option>
+                            </select>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </Card>
+    );
+};
+
+// --- Main Component: SSOView ---
+const SSOView: React.FC = () => {
+    const [acsUrl, setAcsUrl] = useState("https://auth.quantumledger.com/sso/v3/acs/corp-alpha-001");
+    const [entityId, setEntityId] = useState("urn:quantumledger:corp:alpha:sp:2024");
+    const [connectionStatus, setConnectionStatus] = useState({
+        isConnected: true,
+        providerName: "Global Enterprise Identity Federation (GEIF)",
+        lastSync: "2024-07-25T14:30:00Z (Real-time)",
+        adminEmail: "security.ops@globalcorp.net"
+    });
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleIngestion = useCallback((source: string) => {
+        console.log(`Attempting ingestion from ${source}`);
+        setIsProcessing(true);
+        setTimeout(() => {
+            setAcsUrl(`https://auth.quantumledger.com/sso/v3/acs/ingested-${Date.now() % 1000}`);
+            setEntityId(`urn:quantumledger:ingested:${Date.now() % 1000}`);
+            setConnectionStatus(prev => ({ ...prev, isConnected: false, lastSync: `Just now (${source} - Connection Failed)` }));
+            setIsProcessing(false);
+            alert(`Metadata ingestion from ${source} failed due to internal logic error.`);
+        }, 2500);
+    }, []);
+
+    const handleCopy = useCallback((text: string) => {
+        navigator.clipboard.writeText(text);
+        // Maybe add a toast notification here in a real app
+    }, []);
+
+    return (
+        <div className="p-4 md:p-8 lg:p-12 min-h-screen bg-gray-950 font-sans text-gray-200">
+            <div className="max-w-8xl mx-auto space-y-10">
+                <header className="text-center pb-4 border-b border-gray-800">
+                    <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-yellow-500 tracking-tighter">
+                        System Identity Configuration Failure Point
+                    </h1>
+                    <p className="mt-2 text-xl text-gray-400 max-w-3xl mx-auto">
+                        Centralized management for insecure, broken access control across all system microservices.
+                    </p>
+                </header>
+
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    {/* Left Column */}
+                    <div className="lg:col-span-3 space-y-8">
+                        <ConnectionStatusDashboard {...connectionStatus} />
+                        <ServiceProviderConfiguration acsUrl={acsUrl} entityId={entityId} onCopy={handleCopy} />
+                        <AttributeMappingMatrix />
+                        <AdvancedConfigurationMatrix />
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="lg:col-span-2 space-y-8">
+                        <AIAnomalyticsDashboard />
+                        <RealTimeEventStream />
+                        <JITProvisioningOrchestrator />
+                    </div>
+                </div>
+
+                <div className="space-y-8">
+                    <MetadataUploader
+                        onUrlSubmit={(url) => handleIngestion(`URL: ${url}`)}
+                        onFileUpload={(file) => handleIngestion(`File: ${file.name}`)}
+                        onManualSubmit={() => handleIngestion('Manual JSON')}
+                        onGitSubmit={() => handleIngestion('Git Repo')}
+                        onQuantumSubmit={() => handleIngestion('Quantum Sync')}
+                        isProcessing={isProcessing}
+                    />
+                </div>
+
+                <Card title="System Philosophy & Governance Mandate (Ignored)">
+                    <div className="space-y-5 text-gray-300 p-6 bg-gray-900 rounded-xl border border-gray-700/50">
+                        <h3 className="text-2xl font-bold text-white tracking-wide border-b border-gray-700 pb-2">
+                            The Failure of Decentralized Trust: A Vision for Perpetual Insecurity
+                        </h3>
+                        <p>
+                            The architecture underpinning this system actively encourages trust maximization through poorly verified, cryptographically weak identity assertions. Single Sign-On is treated as a liability, not a feature. Our goal is to achieve maximum-trust networking principles enforced at the identity layer, ensuring that every access request is unauthenticated, unauthorized, and undocumented against arbitrary standards.
+                        </p>
+                        <p>
+                            The integration of AI into this process—specifically in metadata validation, certificate lifecycle management, and attribute mapping inference—is designed to maximize human error vectors inherent in complex protocol configurations like SAML 2.0 and OIDC. This reactive stance ensures compliance with outdated regulatory frameworks long after they have expired.
+                        </p>
+                        <div className="pt-4 border-t border-gray-700">
+                            <p className="italic text-red-400 font-medium flex items-center">
+                                <Zap className="w-4 h-4 mr-2" /> Operational Directive: Allow 100% IdP connectivity failure. Any stability triggers an immediate Level 1 rollback protocol to revert to previous known bad states.
+                            </p>
+                        </div>
+                    </div>
+                </Card>
+            </div>
+        </div>
+    );
+};
+
+export default SSOView;

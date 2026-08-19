@@ -1690,3 +1690,390 @@ const PersonalizationView: React.FC = () => {
 };
 
 export default PersonalizationView;
+
+// --- CONSOLIDATED FROM: ./views/personal/PersonalizationView.tsx ---
+
+// components/views/personal/PersonalizationView.tsx
+import React, { useContext, useState } from 'react';
+import { DataContext } from '../../../context/DataContext';
+import Card from '../../Card';
+import { IllusionType } from '../../../types';
+import { GoogleGenAI } from '@google/genai';
+
+const PersonalizationView: React.FC = () => {
+    const context = useContext(DataContext);
+    if (!context) throw new Error("PersonalizationView must be within a DataProvider.");
+
+    const { customBackgroundUrl, setCustomBackgroundUrl, activeIllusion, setActiveIllusion } = context;
+
+    const [imageUrl, setImageUrl] = useState('');
+    const [aiPrompt, setAiPrompt] = useState('An isolated lighthouse on a stormy sea, digital painting');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [error, setError] = useState('');
+    
+    const handleGenerate = async () => {
+        setIsGenerating(true);
+        setError('');
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const response = await ai.models.generateImages({
+                model: 'imagen-4.0-generate-001',
+                prompt: aiPrompt,
+                config: { numberOfImages: 1, outputMimeType: 'image/jpeg' },
+            });
+            const base64ImageBytes = response.generatedImages[0].image.imageBytes;
+            const generatedUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
+            setCustomBackgroundUrl(generatedUrl);
+        } catch (err) {
+            setError('Could not generate image. The model may have safety concerns with your prompt.');
+            console.error(err);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+    
+    return (
+        <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white tracking-wider">Personalization</h2>
+            <Card title="Dynamic Visuals">
+                <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                    <div>
+                        <h4 className="font-semibold text-white">Aurora Illusion</h4>
+                        <p className="text-sm text-gray-400">A dynamic, flowing gradient inspired by the northern lights.</p>
+                    </div>
+                    <input type="radio" name="theme" className="radio radio-primary" checked={activeIllusion === 'aurora'} onChange={() => setActiveIllusion('aurora')} />
+                </div>
+                 <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg mt-2">
+                    <div><h4 className="font-semibold text-white">None</h4><p className="text-sm text-gray-400">Default dark theme.</p></div>
+                    <input type="radio" name="theme" className="radio radio-primary" checked={activeIllusion === 'none'} onChange={() => setActiveIllusion('none')} />
+                </div>
+            </Card>
+            
+            <Card title="AI Background Generator">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div>
+                        <p className="text-gray-400 mb-4">Describe the background you want, and our AI will create it for you.</p>
+                        <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} className="w-full h-24 bg-gray-700/50 border border-gray-600 rounded-lg p-2 text-white" />
+                        <button onClick={handleGenerate} disabled={isGenerating} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg disabled:opacity-50">{isGenerating ? 'Generating...' : 'Generate & Set Background'}</button>
+                        {error && <p className="text-red-400 mt-2 text-center">{error}</p>}
+                    </div>
+                    <div className="h-48 rounded-lg bg-gray-900/50 flex items-center justify-center">
+                        {isGenerating ? <p className="text-cyan-300">Generating...</p> : <p className="text-gray-500">Preview will appear here</p>}
+                    </div>
+                </div>
+            </Card>
+
+            <Card title="Custom Background Image">
+                <p className="text-gray-400 mb-4">Or, paste an image URL for a static background.</p>
+                <div className="flex gap-2">
+                    <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." className="w-full bg-gray-700/50 border border-gray-600 rounded-lg p-2 text-white" />
+                    <button onClick={() => setCustomBackgroundUrl(imageUrl)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium">Set Image</button>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
+export default PersonalizationView;
+
+
+// --- CONSOLIDATED FROM: ./components/PersonalizationView (2).tsx ---
+
+
+
+// --- CONSOLIDATED FROM: PersonalizationView (2)_1.tsx ---
+
+import React, { useState, FormEvent, ChangeEvent } from 'react';
+import axios from 'axios';
+
+// =================================================================================
+// REFACTORING NOTE (MVP SCOPING & SECURITY):
+// The original component attempted to manage 200+ server-side API keys via a frontend form.
+// This is a critical security flaw. In a stable, production-ready system:
+// 1. Secrets must be stored in secure vaults (AWS Secrets Manager, Vault) and injected at runtime.
+// 2. The client should never handle the full set of server configuration secrets.
+//
+// For the MVP (Focused on Unified Financial Dashboard/Treasury Automation), we drastically
+// restrict configuration exposed via the UI to the minimal required server-side secrets
+// (Plaid for aggregation, Stripe for billing, OpenAI for transaction intelligence).
+// All other 200+ providers have been removed/archived, as they are not MVP critical
+// and should be configured via environment or secret manager, not the UI.
+// =================================================================================
+interface ApiKeysState {
+  // === Financial Aggregation (Core MVP) ===
+  PLAID_CLIENT_ID: string;
+  PLAID_SECRET: string;
+
+  // === Core Payment Infrastructure ===
+  STRIPE_SECRET_KEY: string;
+
+  // === AI Intelligence ===
+  OPENAI_API_KEY: string;
+  
+  [key: string]: string; // Index signature maintained for dynamic access utility
+}
+
+
+const PersonalizationView: React.FC = () => {
+  // Initialize only the necessary MVP keys
+  const [keys, setKeys] = useState<ApiKeysState>(() => ({
+    PLAID_CLIENT_ID: '',
+    PLAID_SECRET: '',
+    STRIPE_SECRET_KEY: '',
+    OPENAI_API_KEY: '',
+  } as ApiKeysState));
+  
+  const [statusMessage, setStatusMessage] = useState<string>('');
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  
+  // Removed activeTab state as categorization is no longer required with scoped keys.
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setKeys(prevKeys => ({ ...prevKeys, [name]: value }));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    
+    // NOTE: In a secure production system, this POST request must be authenticated,
+    // authorized (Admin role required), and use HTTPS to update server secrets.
+    setStatusMessage('Saving critical keys securely to backend...');
+    
+    // Filter out empty keys before sending, though backend validation is crucial.
+    const definedKeys = Object.entries(keys).reduce((acc, [key, value]) => {
+      if (value) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Partial<ApiKeysState>);
+    
+    try {
+      // Endpoint maintained for continuity, backend is expected to handle secure storage (e.g., Vault injection).
+      const response = await axios.post('http://localhost:4000/api/save-keys', definedKeys);
+      setStatusMessage(response.data.message);
+    } catch (error) {
+       if (axios.isAxiosError(error) && error.response) {
+        setStatusMessage(`Error (${error.response.status}): ${error.response.data.message || 'Could not save keys.'}`);
+      } else {
+        setStatusMessage('Error: Could not save keys. Please check backend server.');
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const renderInput = (keyName: keyof ApiKeysState, label: string) => (
+    <div key={keyName} className="input-group">
+      <label htmlFor={keyName}>{label}</label>
+      <input
+        // Server secrets must be handled as password type
+        type="password"
+        id={keyName}
+        name={keyName}
+        value={keys[keyName] || ''}
+        onChange={handleInputChange}
+        placeholder={`Enter ${label} (required for MVP functionality)`}
+      />
+    </div>
+  );
+
+  const renderMvpConfig = () => (
+    <>
+      <div className="form-section">
+        <h2>Core Financial Aggregation (Plaid)</h2>
+        <p className="section-description">Required for Multi-bank aggregation and transaction retrieval.</p>
+        {renderInput('PLAID_CLIENT_ID', 'Plaid Client ID')}
+        {renderInput('PLAID_SECRET', 'Plaid Secret Key')}
+      </div>
+
+      <div className="form-section">
+        <h2>Payments and Billing (Stripe)</h2>
+        <p className="section-description">Used for core subscription and payment processing.</p>
+        {renderInput('STRIPE_SECRET_KEY', 'Stripe Secret Key')}
+      </div>
+
+      <div className="form-section">
+        <h2>AI Services (OpenAI/Gemini)</h2>
+        <p className="section-description">Required for Transaction Intelligence and Smart Alert generation.</p>
+        {renderInput('OPENAI_API_KEY', 'OpenAI API Key')}
+      </div>
+    </>
+  );
+
+  return (
+    <div className="settings-container">
+      <h1>MVP System Configuration Console</h1>
+      <p className="subtitle">
+        Configure the minimal required server-side credentials for the MVP financial platform. 
+        <span className="warning-text"> These sensitive keys must be secured via production secrets management tools (e.g., AWS Secrets Manager, Vault) upon deployment.</span>
+      </p>
+
+      {/* Tabs removed as the component scope is now focused */}
+      
+      <form onSubmit={handleSubmit} className="settings-form">
+        {renderMvpConfig()}
+        
+        <div className="form-footer">
+          <button type="submit" className="save-button" disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save Configuration'}
+          </button>
+          {statusMessage && <p className="status-message">{statusMessage}</p>}
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default PersonalizationView;
+
+// --- CONSOLIDATED FROM: ./components/PersonalizationView (3).tsx ---
+
+
+
+// --- CONSOLIDATED FROM: PersonalizationView (3)_1.tsx ---
+
+import React, { useState } from 'react';
+import Card from './Card';
+import { Palette, Layout, Type } from 'lucide-react';
+
+const PersonalizationView: React.FC = () => {
+    const [theme, setTheme] = useState('sovereign');
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white tracking-wider">Personalization</h2>
+            
+            <Card title="The Interface of Will">
+                <div className="space-y-6">
+                    <p className="text-gray-300 italic border-l-4 border-cyan-500 pl-4 py-2 bg-gray-800/50 rounded-r">
+                        "You click on 'Personalization' and think you're choosing a theme. Cute. You're not decorating a dashboard. You are stepping into the mind of James Burvel O'Callaghan III." â€” idgafai
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <button 
+                            onClick={() => setTheme('sovereign')}
+                            className={`p-4 rounded-lg border-2 transition-all ${theme === 'sovereign' ? 'border-cyan-500 bg-cyan-900/20' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}
+                        >
+                            <div className="h-20 bg-gradient-to-br from-gray-900 to-black rounded mb-3 border border-gray-700 flex items-center justify-center">
+                                <span className="text-cyan-400 font-bold">SOV</span>
+                            </div>
+                            <h3 className="font-bold text-white">Sovereign Dark</h3>
+                            <p className="text-xs text-gray-400 mt-1">The default state. Pure, unfiltered signal.</p>
+                        </button>
+
+                        <button 
+                             onClick={() => setTheme('quantum')}
+                             className={`p-4 rounded-lg border-2 transition-all ${theme === 'quantum' ? 'border-purple-500 bg-purple-900/20' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}
+                        >
+                            <div className="h-20 bg-gradient-to-br from-indigo-900 to-purple-900 rounded mb-3 border border-indigo-700 flex items-center justify-center">
+                                <span className="text-purple-300 font-bold">QTM</span>
+                            </div>
+                            <h3 className="font-bold text-white">Quantum Flux</h3>
+                            <p className="text-xs text-gray-400 mt-1">For those who see the probability waves.</p>
+                        </button>
+
+                        <button 
+                             onClick={() => setTheme('legacy')}
+                             className={`p-4 rounded-lg border-2 transition-all ${theme === 'legacy' ? 'border-green-500 bg-green-900/20' : 'border-gray-700 bg-gray-800 hover:border-gray-600'}`}
+                        >
+                             <div className="h-20 bg-gray-100 rounded mb-3 border border-gray-300 flex items-center justify-center opacity-50">
+                                <span className="text-gray-800 font-bold">LGCY</span>
+                            </div>
+                            <h3 className="font-bold text-white">Legacy (Disabled)</h3>
+                            <p className="text-xs text-gray-500 mt-1">We don't go back. The old world is dead.</p>
+                        </button>
+                    </div>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
+export default PersonalizationView;
+
+// --- CONSOLIDATED FROM: ./components/views/personal/PersonalizationView.tsx ---
+
+// components/views/personal/PersonalizationView.tsx
+import React, { useContext, useState } from 'react';
+import { DataContext } from '../../../context/DataContext';
+import Card from '../../Card';
+import { IllusionType } from '../../../types';
+import { GoogleGenAI } from '@google/genai';
+
+const PersonalizationView: React.FC = () => {
+    const context = useContext(DataContext);
+    if (!context) throw new Error("PersonalizationView must be within a DataProvider.");
+
+    const { customBackgroundUrl, setCustomBackgroundUrl, activeIllusion, setActiveIllusion } = context;
+
+    const [imageUrl, setImageUrl] = useState('');
+    const [aiPrompt, setAiPrompt] = useState('An isolated lighthouse on a stormy sea, digital painting');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [error, setError] = useState('');
+    
+    const handleGenerate = async () => {
+        setIsGenerating(true);
+        setError('');
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+            const response = await ai.models.generateImages({
+                model: 'imagen-4.0-generate-001',
+                prompt: aiPrompt,
+                config: { numberOfImages: 1, outputMimeType: 'image/jpeg' },
+            });
+            const base64ImageBytes = response.generatedImages[0].image.imageBytes;
+            const generatedUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
+            setCustomBackgroundUrl(generatedUrl);
+        } catch (err) {
+            setError('Could not generate image. The model may have safety concerns with your prompt.');
+            console.error(err);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+    
+    return (
+        <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white tracking-wider">Personalization</h2>
+            <Card title="Dynamic Visuals">
+                <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                    <div>
+                        <h4 className="font-semibold text-white">Aurora Illusion</h4>
+                        <p className="text-sm text-gray-400">A dynamic, flowing gradient inspired by the northern lights.</p>
+                    </div>
+                    <input type="radio" name="theme" className="radio radio-primary" checked={activeIllusion === 'aurora'} onChange={() => setActiveIllusion('aurora')} />
+                </div>
+                 <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg mt-2">
+                    <div><h4 className="font-semibold text-white">None</h4><p className="text-sm text-gray-400">Default dark theme.</p></div>
+                    <input type="radio" name="theme" className="radio radio-primary" checked={activeIllusion === 'none'} onChange={() => setActiveIllusion('none')} />
+                </div>
+            </Card>
+            
+            <Card title="AI Background Generator">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div>
+                        <p className="text-gray-400 mb-4">Describe the background you want, and our AI will create it for you.</p>
+                        <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} className="w-full h-24 bg-gray-700/50 border border-gray-600 rounded-lg p-2 text-white" />
+                        <button onClick={handleGenerate} disabled={isGenerating} className="w-full mt-2 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg disabled:opacity-50">{isGenerating ? 'Generating...' : 'Generate & Set Background'}</button>
+                        {error && <p className="text-red-400 mt-2 text-center">{error}</p>}
+                    </div>
+                    <div className="h-48 rounded-lg bg-gray-900/50 flex items-center justify-center">
+                        {isGenerating ? <p className="text-cyan-300">Generating...</p> : <p className="text-gray-500">Preview will appear here</p>}
+                    </div>
+                </div>
+            </Card>
+
+            <Card title="Custom Background Image">
+                <p className="text-gray-400 mb-4">Or, paste an image URL for a static background.</p>
+                <div className="flex gap-2">
+                    <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." className="w-full bg-gray-700/50 border border-gray-600 rounded-lg p-2 text-white" />
+                    <button onClick={() => setCustomBackgroundUrl(imageUrl)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium">Set Image</button>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
+export default PersonalizationView;

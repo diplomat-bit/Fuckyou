@@ -1574,3 +1574,542 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
 };
 
 export default Sidebar;
+
+// --- CONSOLIDATED FROM: ./common/Sidebar.tsx ---
+
+import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import {
+  Home as HomeIcon,
+  DollarSign as DollarSignIcon,
+  TrendingUp as TrendingUpIcon,
+  Zap as ZapIcon,
+  Users as UsersIcon,
+  Briefcase as BriefcaseIcon,
+  Globe as GlobeIcon,
+  Bell as BellIcon,
+  Target as TargetIcon,
+  Settings as SettingsIcon,
+} from 'lucide-react';
+
+interface SidebarItem {
+  label: string;
+  href: string;
+  icon?: React.ReactNode;
+}
+
+interface SidebarProps {
+  items: SidebarItem[];
+}
+
+// Define the new, fixed items based on the API structure
+const defaultSidebarItems: SidebarItem[] = [
+  { label: 'Dashboard', href: '/', icon: <HomeIcon size={20} /> },
+  { label: 'My Profile', href: '/users/me', icon: <UsersIcon size={20} /> },
+  { label: 'Accounts', href: '/accounts', icon: <DollarSignIcon size={20} /> },
+  { label: 'Transactions', href: '/transactions', icon: <TrendingUpIcon size={20} /> },
+  { label: 'Budgets', href: '/budgets', icon: <TargetIcon size={20} /> },
+  { label: 'Investments', href: '/investments', icon: <BriefcaseIcon size={20} /> },
+  { label: 'AI Advisor', href: '/ai/advisor', icon: <ZapIcon size={20} /> },
+  { label: 'Web3 Assets', href: '/web3/wallets', icon: <GlobeIcon size={20} /> },
+  { label: 'Notifications', href: '/notifications', icon: <BellIcon size={20} /> },
+  { label: 'Settings', href: '/settings', icon: <SettingsIcon size={20} /> },
+];
+
+const Sidebar: React.FC<SidebarProps> = ({ items = defaultSidebarItems }) => {
+  const router = useRouter();
+
+  return (
+    <aside className="w-64 bg-gray-900 text-white min-h-screen p-4 shadow-2xl">
+      <div className="mb-8 border-b border-gray-700 pb-4">
+        <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 text-center tracking-wider">
+          Quantum Core 3.0
+        </h2>
+        <p className="text-xs text-center text-gray-500 mt-1">AI Financial Ecosystem</p>
+      </div>
+      <nav>
+        <ul>
+          {items.map((item) => (
+            <li key={item.href} className="mb-2">
+              <Link href={item.href} passHref>
+                <a
+                  className={`flex items-center p-3 rounded-xl transition-all duration-300 font-medium ${
+                    router.pathname === item.href || (item.href !== '/' && router.pathname.startsWith(item.href))
+                      ? 'bg-purple-700 text-white shadow-lg shadow-purple-900/50 transform scale-[1.02]'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-blue-400'
+                  }`}
+                >
+                  {item.icon && <span className="mr-4">{item.icon}</span>}
+                  <span>{item.label}</span>
+                </a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  );
+};
+
+export default Sidebar;
+
+// --- CONSOLIDATED FROM: ./ApiPlayground/Sidebar.tsx ---
+
+import React, { useState } from 'react';
+
+interface Endpoint {
+  id: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  path: string;
+  category: string;
+}
+
+interface SidebarProps {
+  endpoints: Endpoint[];
+  onSelect: (endpoint: Endpoint) => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ endpoints, onSelect }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredEndpoints = endpoints.filter(
+    (ep) =>
+      ep.path.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ep.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const categories = Array.from(new Set(filteredEndpoints.map((ep) => ep.category)));
+
+  return (
+    <div className="w-64 h-full bg-gray-900 text-white flex flex-col border-r border-gray-800">
+      <div className="p-4">
+        <input
+          type="text"
+          placeholder="Search endpoints..."
+          className="w-full px-3 py-2 bg-gray-800 rounded border border-gray-700 focus:outline-none focus:border-blue-500 text-sm"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {categories.map((category) => (
+          <div key={category} className="mb-4">
+            <h3 className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {category}
+            </h3>
+            <ul>
+              {filteredEndpoints
+                .filter((ep) => ep.category === category)
+                .map((ep) => (
+                  <li
+                    key={ep.id}
+                    onClick={() => onSelect(ep)}
+                    className="px-4 py-2 hover:bg-gray-800 cursor-pointer flex items-center gap-2 text-sm transition-colors"
+                  >
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        ep.method === 'GET' ? 'bg-green-900 text-green-300' :
+                        ep.method === 'POST' ? 'bg-blue-900 text-blue-300' :
+                        ep.method === 'PUT' ? 'bg-yellow-900 text-yellow-300' :
+                        'bg-red-900 text-red-300'
+                      }`}
+                    >
+                      {ep.method}
+                    </span>
+                    <span className="truncate">{ep.path}</span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- CONSOLIDATED FROM: ./components/Sidebar (1).tsx ---
+
+
+
+// --- CONSOLIDATED FROM: Sidebar (1)_1.tsx ---
+
+
+import React, { useContext } from 'react';
+import { View } from '../types';
+import { NAV_ITEMS } from '../constants';
+import { DataContext } from '../context/DataContext';
+
+interface SidebarProps {
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
+}
+
+const InfiniteIntelligenceLogo: React.FC<{className?: string}> = ({className}) => (
+     <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20,50 C20,20 80,20 80,50 C80,80 20,80 20,50" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+        <path d="M20,50 C20,80 80,80 80,50 C80,20 20,20 20,50" stroke="currentColor" strokeWidth="6" strokeLinecap="round" opacity="0.5" />
+    </svg>
+);
+
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
+    const context = useContext(DataContext);
+    if (!context) throw new Error("Sidebar must be used within a DataProvider");
+    const { activeView, setActiveView } = context;
+    
+    const handleNavClick = (view: View) => {
+        setActiveView(view);
+        setIsOpen(false); // Close sidebar on navigation
+    };
+
+    return (
+        <>
+            {/* Overlay */}
+             <div 
+                className={`fixed inset-0 bg-black/60 z-30 transition-opacity lg:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={() => setIsOpen(false)}
+             ></div>
+
+            {/* Sidebar */}
+            <div className={`flex flex-col w-64 bg-gray-900/50 backdrop-blur-lg border-r border-gray-700/50 fixed lg:relative inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+                {/* Header */}
+                <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700/50">
+                    <div className="flex items-center">
+                        <InfiniteIntelligenceLogo className="h-8 w-8 text-cyan-400" />
+                        <span className="ml-3 text-lg font-bold text-white tracking-tight">Infinite Intelligence</span>
+                    </div>
+                    <button onClick={() => setIsOpen(false)} className="lg:hidden text-gray-400 hover:text-white">
+                        {/* Close Icon */}
+                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                {/* Navigation */}
+                <nav className="flex-1 px-2 py-4 space-y-2 overflow-y-auto custom-scrollbar">
+                    {NAV_ITEMS.map((item, index) => (
+                        <div key={index}>
+                            {item.group && <h3 className="px-2 pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">{item.group}</h3>}
+                            {item.items.map(subItem => {
+                                const isActive = activeView === subItem.view;
+                                return (
+                                    <button
+                                        key={subItem.view}
+                                        onClick={() => handleNavClick(subItem.view)}
+                                        className={`flex items-center w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150 ${
+                                            isActive
+                                                ? 'bg-cyan-500/20 text-cyan-300 border-l-2 border-cyan-500'
+                                                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-l-2 border-transparent'
+                                        }`}
+                                    >
+                                        {subItem.icon && <subItem.icon className="w-5 h-5 mr-3"/>}
+                                        <span>{subItem.title}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ))}
+                </nav>
+            </div>
+        </>
+    );
+};
+
+export default Sidebar;
+
+
+// --- CONSOLIDATED FROM: ./components/Sidebar (2).tsx ---
+
+
+
+// --- CONSOLIDATED FROM: Sidebar (2)_1.tsx ---
+
+
+import React, { useState, useMemo } from 'react';
+import { View } from '../types';
+import { NAV_ITEMS, NavItem } from '../constants';
+
+const DemoBankLogo: React.FC<{className?: string}> = ({className}) => (
+     <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="48" stroke="currentColor" strokeWidth="4"/>
+        <path d="M30 70V30H55C65 30 65 40 55 40H30" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M55 70V30" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+);
+
+interface SidebarProps {
+    activeView: View;
+    setActiveView: (view: View) => void;
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, setIsOpen }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredNavItems = useMemo(() => {
+        if (!searchTerm.trim()) {
+            return NAV_ITEMS;
+        }
+        const lowercasedTerm = searchTerm.toLowerCase();
+        
+        // FIX: The simplified filter identifies NavLink items and filters them by label,
+        // while preserving headers and dividers to maintain the sidebar's structure.
+        const filteredLinks = NAV_ITEMS.filter(item => {
+            if (item.id) {
+                return item.label.toLowerCase().includes(lowercasedTerm);
+            }
+            return false;
+        });
+
+        const finalItems: NavItem[] = [];
+        let currentHeader: NavItem | null = null;
+        let lastItemWasLink = false;
+
+        NAV_ITEMS.forEach(item => {
+            if (item.type === 'header') {
+                currentHeader = item;
+                return;
+            }
+            
+            if (item.type === 'divider') {
+                if (lastItemWasLink) {
+                    finalItems.push(item);
+                    lastItemWasLink = false;
+                }
+                currentHeader = null;
+                return;
+            }
+
+            if (filteredLinks.includes(item)) {
+                if (currentHeader && !finalItems.includes(currentHeader)) {
+                    finalItems.push(currentHeader);
+                }
+                finalItems.push(item);
+                lastItemWasLink = true;
+            }
+        });
+
+        return finalItems;
+
+    }, [searchTerm]);
+
+    return (
+        <>
+            {/* Overlay for mobile */}
+            <div className={`fixed inset-0 bg-black/60 z-30 lg:hidden ${isOpen ? 'block' : 'hidden'}`} onClick={() => setIsOpen(false)}></div>
+            
+            <aside className={`fixed top-0 left-0 h-full w-64 bg-gray-900/70 backdrop-blur-lg border-r border-gray-700/50 z-40 flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+                <div className="flex items-center justify-between h-20 border-b border-gray-700/50 px-6 flex-shrink-0">
+                    <div className="flex items-center space-x-2 text-cyan-400">
+                       <DemoBankLogo className="h-10 w-10" />
+                       <span className="font-bold text-lg text-white">DEMO BANK</span>
+                    </div>
+                </div>
+
+                <div className="p-4 flex-shrink-0">
+                    <input 
+                        type="text"
+                        placeholder="Search modules..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    />
+                </div>
+
+                <nav className="flex-grow overflow-y-auto px-4 pb-4">
+                    <ul>
+                        {filteredNavItems.map((item, index) => {
+                            // FIX: Using property existence ('id') to narrow the NavItem union.
+                            // NavLink is the only member with a defined 'id', which allows us to safely
+                            // access its properties and avoids the 'never' inference error.
+                            if (item.id) {
+                                const isActive = activeView === item.id;
+                                return (
+                                    <li key={item.id}>
+                                        <a
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setActiveView(item.id as View);
+                                            }}
+                                            className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-200 ${isActive ? 'bg-cyan-500/20 text-cyan-200' : 'text-gray-300 hover:bg-gray-700/50'}`}
+                                        >
+                                            {/* FIX: Cast icon to React.ReactElement<any> to avoid prop type errors during cloning */}
+                                            {item.icon && React.cloneElement(item.icon as React.ReactElement<any>, { className: 'h-5 w-5 flex-shrink-0' })}
+                                            <span>{item.label}</span>
+                                        </a>
+                                    </li>
+                                );
+                            } else if (item.type === 'header') {
+                                return <li key={`header-${index}`} className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">{item.label}</li>;
+                            } else if (item.type === 'divider') {
+                                return <li key={`divider-${index}`}><hr className="my-3 border-gray-700/50" /></li>;
+                            } else {
+                                return null;
+                            }
+                        })}
+                    </ul>
+                </nav>
+            </aside>
+        </>
+    );
+};
+
+export default Sidebar;
+
+
+// --- CONSOLIDATED FROM: ./components/common (1)/Sidebar.tsx ---
+
+import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import {
+  Home as HomeIcon,
+  DollarSign as DollarSignIcon,
+  TrendingUp as TrendingUpIcon,
+  Zap as ZapIcon,
+  Users as UsersIcon,
+  Briefcase as BriefcaseIcon,
+  Globe as GlobeIcon,
+  Bell as BellIcon,
+  Target as TargetIcon,
+  Settings as SettingsIcon,
+} from 'lucide-react';
+
+interface SidebarItem {
+  label: string;
+  href: string;
+  icon?: React.ReactNode;
+}
+
+interface SidebarProps {
+  items: SidebarItem[];
+}
+
+// Define the new, fixed items based on the API structure
+const defaultSidebarItems: SidebarItem[] = [
+  { label: 'Dashboard', href: '/', icon: <HomeIcon size={20} /> },
+  { label: 'My Profile', href: '/users/me', icon: <UsersIcon size={20} /> },
+  { label: 'Accounts', href: '/accounts', icon: <DollarSignIcon size={20} /> },
+  { label: 'Transactions', href: '/transactions', icon: <TrendingUpIcon size={20} /> },
+  { label: 'Budgets', href: '/budgets', icon: <TargetIcon size={20} /> },
+  { label: 'Investments', href: '/investments', icon: <BriefcaseIcon size={20} /> },
+  { label: 'AI Advisor', href: '/ai/advisor', icon: <ZapIcon size={20} /> },
+  { label: 'Web3 Assets', href: '/web3/wallets', icon: <GlobeIcon size={20} /> },
+  { label: 'Notifications', href: '/notifications', icon: <BellIcon size={20} /> },
+  { label: 'Settings', href: '/settings', icon: <SettingsIcon size={20} /> },
+];
+
+const Sidebar: React.FC<SidebarProps> = ({ items = defaultSidebarItems }) => {
+  const router = useRouter();
+
+  return (
+    <aside className="w-64 bg-gray-900 text-white min-h-screen p-4 shadow-2xl">
+      <div className="mb-8 border-b border-gray-700 pb-4">
+        <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 text-center tracking-wider">
+          Quantum Core 3.0
+        </h2>
+        <p className="text-xs text-center text-gray-500 mt-1">AI Financial Ecosystem</p>
+      </div>
+      <nav>
+        <ul>
+          {items.map((item) => (
+            <li key={item.href} className="mb-2">
+              <Link href={item.href} passHref>
+                <a
+                  className={`flex items-center p-3 rounded-xl transition-all duration-300 font-medium ${
+                    router.pathname === item.href || (item.href !== '/' && router.pathname.startsWith(item.href))
+                      ? 'bg-purple-700 text-white shadow-lg shadow-purple-900/50 transform scale-[1.02]'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-blue-400'
+                  }`}
+                >
+                  {item.icon && <span className="mr-4">{item.icon}</span>}
+                  <span>{item.label}</span>
+                </a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  );
+};
+
+export default Sidebar;
+
+// --- CONSOLIDATED FROM: ./components/ApiPlayground/Sidebar.tsx ---
+
+import React, { useState } from 'react';
+
+interface Endpoint {
+  id: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  path: string;
+  category: string;
+}
+
+interface SidebarProps {
+  endpoints: Endpoint[];
+  onSelect: (endpoint: Endpoint) => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ endpoints, onSelect }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredEndpoints = endpoints.filter(
+    (ep) =>
+      ep.path.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ep.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const categories = Array.from(new Set(filteredEndpoints.map((ep) => ep.category)));
+
+  return (
+    <div className="w-64 h-full bg-gray-900 text-white flex flex-col border-r border-gray-800">
+      <div className="p-4">
+        <input
+          type="text"
+          placeholder="Search endpoints..."
+          className="w-full px-3 py-2 bg-gray-800 rounded border border-gray-700 focus:outline-none focus:border-blue-500 text-sm"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {categories.map((category) => (
+          <div key={category} className="mb-4">
+            <h3 className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {category}
+            </h3>
+            <ul>
+              {filteredEndpoints
+                .filter((ep) => ep.category === category)
+                .map((ep) => (
+                  <li
+                    key={ep.id}
+                    onClick={() => onSelect(ep)}
+                    className="px-4 py-2 hover:bg-gray-800 cursor-pointer flex items-center gap-2 text-sm transition-colors"
+                  >
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        ep.method === 'GET' ? 'bg-green-900 text-green-300' :
+                        ep.method === 'POST' ? 'bg-blue-900 text-blue-300' :
+                        ep.method === 'PUT' ? 'bg-yellow-900 text-yellow-300' :
+                        'bg-red-900 text-red-300'
+                      }`}
+                    >
+                      {ep.method}
+                    </span>
+                    <span className="truncate">{ep.path}</span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

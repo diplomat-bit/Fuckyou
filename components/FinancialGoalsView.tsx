@@ -8176,3 +8176,801 @@ const FinancialGoalsView: React.FC = () => {
 
 // FIX: Add missing default export for FinancialGoalsView. This resolves both the import error in App.tsx and the subsequent obscure type error within this component.
 export default FinancialGoalsView;
+
+// --- CONSOLIDATED FROM: ./views/personal/FinancialGoalsView.tsx ---
+
+// components/views/personal/FinancialGoalsView.tsx
+import React, { useContext, useState, useMemo } from 'react';
+import { DataContext } from '../../../context/DataContext';
+import Card from '../../Card';
+import { FinancialGoal } from '../../../types';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+
+const GOAL_ICONS: { [key: string]: React.FC<{ className?: string }> } = {
+    home: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
+    plane: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>,
+    car: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H3" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5m14 0a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+    education: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20" /></svg>,
+    default: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>,
+};
+
+
+const FinancialGoalsView: React.FC = () => {
+    type GoalView = 'LIST' | 'CREATE' | 'VIEW_PLAN';
+    const [currentView, setCurrentView] = useState<GoalView>('LIST');
+    const [selectedGoal, setSelectedGoal] = useState<FinancialGoal | null>(null);
+    const [loadingGoalId, setLoadingGoalId] = useState<string | null>(null);
+
+    const context = useContext(DataContext);
+    if (!context) throw new Error("FinancialGoalsView must be within a DataProvider.");
+    // FIX: Destructure missing functions from context to resolve property not found errors.
+    const { financialGoals, addFinancialGoal, generateGoalPlan } = context;
+
+    const handleGeneratePlan = async (goalId: string) => {
+        setLoadingGoalId(goalId);
+        await generateGoalPlan(goalId);
+        // The context will update, so we find the new goal state from there
+        const updatedGoal = financialGoals.find(g => g.id === goalId);
+        if (updatedGoal) {
+            setSelectedGoal(updatedGoal);
+            // If the plan is now available, switch to view it
+            if(updatedGoal.plan) {
+                setCurrentView('VIEW_PLAN');
+            }
+        }
+        setLoadingGoalId(null);
+    };
+    
+    const GoalListView: React.FC = () => (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-bold text-white tracking-wider">Financial Goals</h2>
+                <button onClick={() => setCurrentView('CREATE')} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium">New Goal</button>
+            </div>
+            {financialGoals.map(goal => {
+                 const progress = (goal.currentAmount / goal.targetAmount) * 100;
+                 const Icon = GOAL_ICONS[goal.iconName] || GOAL_ICONS.default;
+                 return (
+                    <Card key={goal.id} variant="interactive" onClick={() => { setSelectedGoal(goal); setCurrentView('VIEW_PLAN'); }}>
+                         <div className="flex flex-col md:flex-row gap-6">
+                             <div className="flex-shrink-0 w-24 h-24 bg-cyan-500/10 rounded-full flex items-center justify-center text-cyan-300 mx-auto">
+                                 <Icon className="w-12 h-12" />
+                             </div>
+                             <div className="flex-grow">
+                                <div className="flex justify-between items-baseline">
+                                     <h3 className="text-xl font-semibold text-white">{goal.name}</h3>
+                                     <p className="text-sm text-gray-400">Target: {goal.targetDate}</p>
+                                </div>
+                                <p className="text-sm text-gray-400 mt-2">
+                                     ${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}
+                                </p>
+                                <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2">
+                                    <div className="bg-cyan-500 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                                </div>
+                             </div>
+                         </div>
+                    </Card>
+                 );
+            })}
+        </div>
+    );
+    
+    // Placeholder components for other views
+    const CreateGoalView: React.FC = () => (
+        <div>
+            <h2 className="text-3xl font-bold text-white tracking-wider mb-4">Create New Goal</h2>
+            <Card><p>Form to create a new goal would go here.</p></Card>
+            <button onClick={() => setCurrentView('LIST')} className="mt-4 text-sm text-cyan-400">Back to List</button>
+        </div>
+    );
+
+    const ViewPlanView: React.FC = () => (
+         <div>
+            <h2 className="text-3xl font-bold text-white tracking-wider mb-4">{selectedGoal?.name}</h2>
+            <Card><p>Details and AI plan for the selected goal would go here.</p></Card>
+            <button onClick={() => setCurrentView('LIST')} className="mt-4 text-sm text-cyan-400">Back to List</button>
+        </div>
+    );
+
+
+    const renderCurrentView = () => {
+        switch (currentView) {
+            case 'CREATE':
+                return <CreateGoalView />;
+            case 'VIEW_PLAN':
+                return <ViewPlanView />;
+            case 'LIST':
+            default:
+                return <GoalListView />;
+        }
+    };
+
+    return (
+        <>
+            {renderCurrentView()}
+        </>
+    );
+};
+
+export default FinancialGoalsView;
+
+
+// --- CONSOLIDATED FROM: ./components/FinancialGoalsView (4).tsx ---
+
+
+
+// --- CONSOLIDATED FROM: FinancialGoalsView (4)_1.tsx ---
+
+
+import React, { useContext, useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { DataContext } from '../context/DataContext';
+import Card from './Card';
+import { FinancialGoal } from '../types';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, Legend, CartesianGrid, BarChart, Bar, ScatterChart, Scatter, ZAxis, ReferenceLine, ComposedChart } from 'recharts';
+
+// --- Sub-Components for a Rich, App-like Experience ---
+
+// A sophisticated progress bar with detailed labels
+const GoalProgressBar: React.FC<{ current: number; target: number }> = ({ current, target }) => {
+    const percentage = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+    return (
+        <div className="w-full">
+            <div className="flex justify-between items-center mb-1 text-sm font-medium text-gray-400">
+                <span>{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(current)}</span>
+                <span>{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(target)}</span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-4">
+                <div
+                    className="bg-gradient-to-r from-teal-400 to-blue-500 h-4 rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${percentage}%` }}
+                ></div>
+            </div>
+            <div className="text-right mt-1 text-sm font-semibold text-teal-300">{percentage.toFixed(2)}% Complete</div>
+        </div>
+    );
+};
+
+// Form for adding or editing a financial goal
+const GoalForm: React.FC<{ goal?: FinancialGoal & { priority?: string; category?: string }; onSubmit: (goal: Omit<FinancialGoal, 'id' | 'creationDate'> & { priority: string; category: string }) => void; onCancel: () => void }> = ({ goal, onSubmit, onCancel }) => {
+    const [formData, setFormData] = useState({
+        name: goal?.name || '',
+        targetAmount: goal?.targetAmount || 10000,
+        currentAmount: goal?.currentAmount || 0,
+        targetDate: goal?.targetDate || new Date(new Date().setFullYear(new Date().getFullYear() + 5)).toISOString().split('T')[0],
+        monthlyContribution: goal?.monthlyContribution || 100,
+        priority: goal?.priority || 'Medium',
+        category: goal?.category || 'General',
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'number' ? parseFloat(value) || 0 : value,
+        }));
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSubmit(formData);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-6 p-4 bg-gray-800 rounded-lg">
+            <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-300">Goal Name</label>
+                <input type="text" name="name" value={formData.name} onChange={handleChange} required className="mt-1 block w-full bg-gray-900 border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="targetAmount" className="block text-sm font-medium text-gray-300">Target Amount ($)</label>
+                    <input type="number" name="targetAmount" value={formData.targetAmount} onChange={handleChange} required min="1" className="mt-1 block w-full bg-gray-900 border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                </div>
+                <div>
+                    <label htmlFor="currentAmount" className="block text-sm font-medium text-gray-300">Current Amount ($)</label>
+                    <input type="number" name="currentAmount" value={formData.currentAmount} onChange={handleChange} required min="0" className="mt-1 block w-full bg-gray-900 border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="targetDate" className="block text-sm font-medium text-gray-300">Target Date</label>
+                    <input type="date" name="targetDate" value={formData.targetDate} onChange={handleChange} required className="mt-1 block w-full bg-gray-900 border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                </div>
+                <div>
+                    <label htmlFor="monthlyContribution" className="block text-sm font-medium text-gray-300">Monthly Contribution ($)</label>
+                    <input type="number" name="monthlyContribution" value={formData.monthlyContribution} onChange={handleChange} required min="0" className="mt-1 block w-full bg-gray-900 border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="priority" className="block text-sm font-medium text-gray-300">Priority</label>
+                    <select name="priority" value={formData.priority} onChange={handleChange} className="mt-1 block w-full bg-gray-900 border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option>Low</option>
+                        <option>Medium</option>
+                        <option>High</option>
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-gray-300">Category</label>
+                    <select name="category" value={formData.category} onChange={handleChange} className="mt-1 block w-full bg-gray-900 border border-gray-700 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option>General</option>
+                        <option>Retirement</option>
+                        <option>Home Purchase</option>
+                        <option>Education</option>
+                        <option>Vacation</option>
+                        <option>Emergency Fund</option>
+                    </select>
+                </div>
+            </div>
+            <div className="flex justify-end space-x-4">
+                <button type="button" onClick={onCancel} className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-600 rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500">Cancel</button>
+                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500">Save Goal</button>
+            </div>
+        </form>
+    );
+};
+
+// --- Main Financial Goals View ---
+
+const FinancialGoalsView: React.FC = () => {
+    const { financialGoals, addFinancialGoal, updateFinancialGoal, deleteFinancialGoal } = useContext(DataContext);
+    const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+    const [isAdding, setIsAdding] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [annualReturn, setAnnualReturn] = useState(5);
+    const [inflationRate, setInflationRate] = useState(2.5);
+    const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+
+    useEffect(() => {
+        if (!selectedGoalId && financialGoals.length > 0) {
+            setSelectedGoalId(financialGoals[0].id);
+        }
+    }, [financialGoals, selectedGoalId]);
+
+    const selectedGoal = useMemo(() => financialGoals.find(g => g.id === selectedGoalId) as (FinancialGoal & { priority?: string; category?: string }) | undefined, [financialGoals, selectedGoalId]);
+
+    const handleAddGoal = (goalData: Omit<FinancialGoal, 'id' | 'creationDate'> & { priority: string; category: string }) => {
+        const newGoal: Omit<FinancialGoal, 'id'> = {
+            ...goalData,
+            creationDate: new Date().toISOString(),
+        };
+        addFinancialGoal(newGoal);
+        setIsAdding(false);
+    };
+
+    const handleUpdateGoal = (goalData: Omit<FinancialGoal, 'id' | 'creationDate'> & { priority: string; category: string }) => {
+        if (selectedGoal) {
+            updateFinancialGoal({ ...selectedGoal, ...goalData });
+            setIsEditing(false);
+        }
+    };
+
+    const handleDeleteGoal = (id: string) => {
+        if (window.confirm('Are you sure you want to delete this goal? This action cannot be undone.')) {
+            deleteFinancialGoal(id);
+            setSelectedGoalId(null);
+        }
+    };
+
+    const projectionData = useMemo(() => {
+        if (!selectedGoal) return [];
+        const data = [];
+        let currentAmount = selectedGoal.currentAmount;
+        const monthlyInvestmentReturnRate = (annualReturn / 100) / 12;
+        const months = Math.max(1, Math.ceil((new Date(selectedGoal.targetDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30.44)));
+
+        for (let i = 0; i <= months; i++) {
+            const date = new Date();
+            date.setMonth(date.getMonth() + i);
+            data.push({
+                date: date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' }),
+                "Projected Value": currentAmount,
+            });
+            currentAmount = currentAmount * (1 + monthlyInvestmentReturnRate) + selectedGoal.monthlyContribution;
+        }
+        return data;
+    }, [selectedGoal, annualReturn]);
+
+    const overviewData = useMemo(() => {
+        return financialGoals.map(g => ({
+            name: g.name,
+            Progress: Math.min(100, (g.currentAmount / g.targetAmount) * 100),
+        }));
+    }, [financialGoals]);
+
+    const goalStats = useMemo(() => {
+        if (!selectedGoal) return null;
+        const monthsRemaining = Math.max(0, Math.ceil((new Date(selectedGoal.targetDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30.44)));
+        const amountRemaining = Math.max(0, selectedGoal.targetAmount - selectedGoal.currentAmount);
+        const requiredContribution = monthsRemaining > 0 ? amountRemaining / monthsRemaining : amountRemaining;
+        return { monthsRemaining, amountRemaining, requiredContribution };
+    }, [selectedGoal]);
+
+    return (
+        <div className="h-full flex flex-col p-4 space-y-4">
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-white">Financial Goals Dashboard</h1>
+                <button
+                    onClick={() => { setIsAdding(true); setIsEditing(false); setSelectedGoalId(null); }}
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500"
+                >
+                    + New Goal
+                </button>
+            </div>
+
+            {isAdding && (
+                <Card title="Create a New Financial Goal">
+                    <GoalForm onSubmit={handleAddGoal} onCancel={() => setIsAdding(false)} />
+                </Card>
+            )}
+
+            <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0">
+                {/* Goals List */}
+                <div className="lg:col-span-1 flex flex-col space-y-3 overflow-y-auto pr-2">
+                    {financialGoals.map(g => {
+                        const goal = g as FinancialGoal & { priority?: string };
+                        const priorityColor = goal.priority === 'High' ? 'bg-red-500 text-white' : goal.priority === 'Medium' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-white';
+                        return (
+                            <div
+                                key={goal.id}
+                                onClick={() => { setSelectedGoalId(goal.id); setIsAdding(false); setIsEditing(false); }}
+                                className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${selectedGoalId === goal.id ? 'bg-gray-700 ring-2 ring-indigo-500' : 'bg-gray-800 hover:bg-gray-700'}`}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <h3 className="font-bold text-white truncate">{goal.name}</h3>
+                                    {goal.priority && <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${priorityColor}`}>{goal.priority}</span>}
+                                </div>
+                                <p className="text-sm text-gray-400 mb-2">Target: {new Date(goal.targetDate).toLocaleDateString()}</p>
+                                <GoalProgressBar current={goal.currentAmount} target={goal.targetAmount} />
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Selected Goal Details */}
+                <div className="lg:col-span-2 flex flex-col space-y-4 overflow-y-auto">
+                    <Card title="Goals Overview">
+                        <div className="h-64 p-4">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={overviewData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+                                    <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} interval={0} angle={-20} textAnchor="end" height={50} />
+                                    <YAxis stroke="#9CA3AF" unit="%" />
+                                    <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #4A5568' }} formatter={(value: number) => [`${value.toFixed(2)}%`, 'Progress']} />
+                                    <Bar dataKey="Progress" fill="#8884d8" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </Card>
+
+                    {selectedGoal && !isAdding && !isEditing && (
+                        <>
+                            {showAIAnalysis && (
+                                <Card title="Gemini AI Analysis">
+                                    <div className="p-4 text-gray-300 relative">
+                                        <button onClick={() => setShowAIAnalysis(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white">&times;</button>
+                                        <h4 className="font-bold text-lg text-white">Analysis for: {selectedGoal.name}</h4>
+                                        <p className="mt-2">Based on your current progress and contributions, here are some insights:</p>
+                                        <ul className="list-disc list-inside mt-2 space-y-1">
+                                            <li>You are currently <span className="font-bold text-green-400">on track</span> to meet your goal by {new Date(selectedGoal.targetDate).toLocaleDateString()}.</li>
+                                            <li>To reach your goal 6 months sooner, consider increasing your monthly contribution by approximately $50.</li>
+                                            <li>Your chosen investment return rate of {annualReturn}% is realistic for a balanced portfolio. Consider diversifying if you haven't already.</li>
+                                        </ul>
+                                        <p className="mt-4 text-xs text-gray-500">Disclaimer: This is a simulated analysis. Consult a financial advisor for real financial advice.</p>
+                                    </div>
+                                </Card>
+                            )}
+                            <Card title={selectedGoal.name}>
+                                <div className="p-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-center">
+                                        <div><p className="text-sm text-gray-400">Target Amount</p><p className="text-xl font-bold text-white">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(selectedGoal.targetAmount)}</p></div>
+                                        <div><p className="text-sm text-gray-400">Current Savings</p><p className="text-xl font-bold text-green-400">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(selectedGoal.currentAmount)}</p></div>
+                                        <div><p className="text-sm text-gray-400">Amount Remaining</p><p className="text-xl font-bold text-yellow-400">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(goalStats?.amountRemaining || 0)}</p></div>
+                                        <div><p className="text-sm text-gray-400">Target Date</p><p className="text-xl font-bold text-white">{new Date(selectedGoal.targetDate).toLocaleDateString()}</p></div>
+                                        <div><p className="text-sm text-gray-400">Months Remaining</p><p className="text-xl font-bold text-white">{goalStats?.monthsRemaining}</p></div>
+                                        <div><p className="text-sm text-gray-400">Monthly Input</p><p className="text-xl font-bold text-white">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(selectedGoal.monthlyContribution)}</p></div>
+                                        <div><p className="text-sm text-gray-400">Category</p><p className="text-xl font-bold text-white">{selectedGoal.category || 'N/A'}</p></div>
+                                        <div><p className="text-sm text-gray-400">Priority</p><p className="text-xl font-bold text-white">{selectedGoal.priority || 'N/A'}</p></div>
+                                    </div>
+                                    <GoalProgressBar current={selectedGoal.currentAmount} target={selectedGoal.targetAmount} />
+                                    <div className="mt-4 flex justify-between items-center">
+                                        <button onClick={() => setShowAIAnalysis(true)} className="px-3 py-1 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700">Get AI Insights</button>
+                                        <div className="space-x-2">
+                                            <button onClick={() => setIsEditing(true)} className="px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Edit</button>
+                                            <button onClick={() => handleDeleteGoal(selectedGoal.id)} className="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+
+                            <Card title="Growth Projection & What-If Analysis">
+                                <div className="p-4 space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-sm font-medium text-gray-300">Assumed Annual Return: {annualReturn.toFixed(1)}%</label>
+                                            <input type="range" min="0" max="15" step="0.5" value={annualReturn} onChange={(e) => setAnnualReturn(parseFloat(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium text-gray-300">Estimated Annual Inflation: {inflationRate.toFixed(1)}%</label>
+                                            <input type="range" min="0" max="10" step="0.1" value={inflationRate} onChange={(e) => setInflationRate(parseFloat(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
+                                        </div>
+                                    </div>
+                                    <div className="h-80">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <ComposedChart data={projectionData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                                                <defs><linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/><stop offset="95%" stopColor="#8884d8" stopOpacity={0}/></linearGradient></defs>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+                                                <XAxis dataKey="date" stroke="#9CA3AF" />
+                                                <YAxis stroke="#9CA3AF" tickFormatter={(value) => `$${(Number(value) / 1000)}k`} />
+                                                <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #4A5568' }} labelStyle={{ color: '#E5E7EB' }} formatter={(value: number, name: string) => [new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value), name]} />
+                                                <Legend />
+                                                <ReferenceLine y={selectedGoal.targetAmount} label={{ value: 'Target', position: 'insideTopRight', fill: '#10B981' }} stroke="#10B981" strokeDasharray="3 3" />
+                                                <Area type="monotone" dataKey="Projected Value" stroke="#8884d8" fillOpacity={1} fill="url(#colorUv)" />
+                                            </ComposedChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            </Card>
+                        </>
+                    )}
+                    {selectedGoal && isEditing && (
+                        <Card title={`Editing: ${selectedGoal.name}`}>
+                            <GoalForm goal={selectedGoal} onSubmit={handleUpdateGoal} onCancel={() => setIsEditing(false)} />
+                        </Card>
+                    )}
+                    {!selectedGoal && !isAdding && (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center">
+                                <h2 className="text-xl font-semibold text-gray-300">No Goal Selected</h2>
+                                <p className="text-gray-500 mt-2">Select a goal from the list or create a new one to get started.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default FinancialGoalsView;
+
+
+// --- CONSOLIDATED FROM: ./components/FinancialGoalsView (1).tsx ---
+
+
+
+// --- CONSOLIDATED FROM: FinancialGoalsView (1)_1.tsx ---
+
+// components/FinancialGoalsView.tsx
+import React, { useContext, useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { DataContext } from '../context/DataContext';
+import Card from './Card';
+import { FinancialGoal } from '../types';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, Legend, CartesianGrid, BarChart, Bar, ScatterChart, Scatter, ZAxis, ReferenceLine } from 'recharts';
+import { v4 as uuidv4 } from 'uuid';
+
+
+const GOAL_ICONS: { [key: string]: React.FC<{ className?: string }> } = {
+    home: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
+    plane: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>,
+    car: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H3" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5m14 0a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+    education: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20" /></svg>,
+    default: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>,
+    retirement: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    investment: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+    gift: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 00-2-2v-7" /></svg>,
+};
+export const ALL_GOAL_ICONS = Object.keys(GOAL_ICONS);
+
+
+// --- START OF NEW CODE ---
+
+/**
+ * @typedef {Object} Contribution
+ * @property {string} id - Unique identifier for the contribution.
+ * @property {number} amount - The monetary amount of the contribution.
+ * @property {string} date - ISO date string of when the contribution was made.
+ * @property {'manual' | 'recurring'} type - The type of contribution, either manual or recurring.
+ */
+export type Contribution = {
+    id: string;
+    amount: number;
+    date: string;
+    type: 'manual' | 'recurring';
+};
+
+/**
+ * @typedef {Object} RecurringContribution
+ * @property {string} id - Unique identifier for the recurring contribution setup.
+ * @property {number} amount - The amount contributed per period.
+ * @property {'monthly' | 'bi-weekly' | 'weekly'} frequency - How often the contribution occurs.
+ * @property {string} startDate - The date when the recurring contribution started or will start.
+ * @property {string | null} endDate - Optional end date for the recurring contribution.
+ * @property {boolean} isActive - Whether the recurring contribution is currently active.
+ */
+export type RecurringContribution = {
+    id: string;
+    amount: number;
+    frequency: 'monthly' | 'bi-weekly' | 'weekly';
+    startDate: string;
+    endDate: string | null;
+    isActive: boolean;
+};
+
+/**
+ * @typedef {Object} ProjectionScenario
+ * @property {string} name - Name of the projection scenario (e.g., "Base Case", "Optimistic").
+ * @property {number} monthlyContribution - The assumed monthly contribution for this scenario.
+ * @property {number} annualReturn - The assumed annual return rate for this scenario (as a percentage).
+ * @property {{ month: number; value: number }[]} data - The projected value data over time.
+ */
+export type ProjectionScenario = {
+    name: string;
+    monthlyContribution: number;
+    annualReturn: number;
+    data: { month: number; value: number }[];
+};
+
+/**
+ * @typedef {'conservative' | 'moderate' | 'aggressive'} RiskProfile
+ * @description Defines the user's investment risk tolerance, influencing recommended strategies and Monte Carlo simulation parameters.
+ */
+export type RiskProfile = 'conservative' | 'moderate' | 'aggressive';
+
+/**
+ * @typedef {Object} LinkedGoal
+ * @property {string} id - The ID of the goal being linked to.
+ * @property {string} relationshipType - Describes how this goal is linked (e.g., 'prerequisite', 'dependency', 'overflow').
+ * @property {number} [triggerAmount] - Optional: amount at which this link triggers an action (e.g., start funding linked goal).
+ */
+export type LinkedGoal = {
+    id: string;
+    relationshipType: 'prerequisite' | 'dependency' | 'overflow' | 'sibling';
+    triggerAmount?: number;
+};
+
+/**
+ * @typedef {Object} ExtendedFinancialGoal
+ * @extends FinancialGoal
+ * @property {Contribution[]} contributions - A list of all historical contributions made to this goal.
+ * @property {RecurringContribution[]} recurringContributions - A list of active and inactive recurring contribution setups.
+ * @property {RiskProfile} [riskProfile] - The user's assigned risk profile for this goal's investment strategy.
+ * @property {'on_track' | 'needs_attention' | 'achieved' | 'behind'} status - The current status of the goal relative to its target.
+ * @property {LinkedGoal[]} linkedGoals - Other goals that this goal is related to.
+ */
+// FIX: ExtendedFinancialGoal now correctly inherits from FinancialGoal which includes basic properties
+export interface ExtendedFinancialGoal extends FinancialGoal {
+    contributions: Contribution[];
+    recurringContributions: RecurringContribution[];
+    riskProfile?: RiskProfile;
+    status: 'on_track' | 'needs_attention' | 'achieved' | 'behind';
+    linkedGoals: LinkedGoal[];
+}
+
+// --- UTILITY FUNCTIONS ---
+
+/**
+ * Philosophical thought: Utility functions are the unsung heroes of any robust application.
+ * They provide pure, predictable operations, distilling complex logic into reusable, testable units.
+ * Think of them as the finely crafted tools in a master artisan's kit – simple in form, but essential for grand creations.
+ *
+ * Million Dollar Feature Overview: "The 'Date Whisperer' and 'Future Fortune Teller' Utilities!"
+ * (Said in a jester's voice) "Hark, my friends, these humble functions, they may seem small and meek!
+ * But with the 'Date Whisperer', we shall make sense of time's swift creek,
+ * And with the 'Future Fortune Teller', behold! Your gold will surely peak!
+ * They lay the groundwork, unseen, for riches we all seek!"
+ */
+
+/**
+ * Formats an ISO date string into a more human-readable format (e.g., "January 1, 2023").
+ * @param {string} dateString - The ISO date string to format.
+ * @returns {string} The formatted date string.
+ */
+export const formatDate = (dateString: string): string => {
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
+/**
+ * Calculates the number of full months between two given Date objects.
+ * Accounts for year and month differences.
+ * @param {Date} date1 - The start date.
+ * @param {Date} date2 - The end date.
+ * @returns {number} The number of full months between date1 and date2. Returns 0 if date2 is before or the same month as date1.
+ */
+export const monthsBetween = (date1: Date, date2: Date): number => {
+    let months;
+    months = (date2.getFullYear() - date1.getFullYear()) * 12;
+    months -= date1.getMonth();
+    months += date2.getMonth();
+    // Ensure that if date2 is before date1, or in the same month but earlier day, we return 0.
+    if (months < 0 || (months === 0 && date2.getDate() < date1.getDate())) return 0;
+    return months;
+};
+
+/**
+ * Calculates the future value of an investment with regular contributions, compounded monthly.
+ * This is a fundamental financial calculation, essential for projecting goal achievement.
+ * @param {number} principal - The initial amount invested.
+ * @param {number} monthlyContribution - The amount contributed each month.
+ * @param {number} months - The total number of months over which to project.
+ * @param {number} annualRate - The annual interest rate (e.g., 0.05 for 5%).
+ * @returns {number} The future value of the investment.
+ */
+export const calculateFutureValue = (principal: number, monthlyContribution: number, months: number, annualRate: number): number => {
+    const monthlyRate = annualRate / 12;
+    if (monthlyRate === 0) {
+        // Simple interest if rate is 0
+        return principal + monthlyContribution * months;
+    }
+    const futureValueOfPrincipal = principal * Math.pow(1 + monthlyRate, months);
+    // Future value of a series of payments (ordinary annuity formula)
+    const futureValueOfContributions = monthlyContribution * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+    return futureValueOfPrincipal + futureValueOfContributions;
+};
+
+/**
+ * Calculates the present value of a future amount. Useful for determining how much needs to be invested today.
+ * @param {number} futureValue - The target future value.
+ * @param {number} annualRate - The annual interest rate (e.g., 0.05 for 5%).
+ * @param {number} months - The number of months until the future value is needed.
+ * @returns {number} The present value.
+ */
+// FIX: Added missing return value in calculatePresentValue
+export const calculatePresentValue = (futureValue: number, annualRate: number, months: number): number => {
+    const monthlyRate = annualRate / 12;
+    if (monthlyRate === 0) return futureValue;
+    return futureValue / Math.pow(1 + monthlyRate, months);
+};
+
+const FinancialGoalsView: React.FC = () => {
+    const context = useContext(DataContext);
+    const goals = context?.financialGoals || [];
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white tracking-wider">Financial Goals</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {goals.map(goal => (
+                    <Card key={goal.id} title={goal.name}>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-end">
+                                <div>
+                                    <p className="text-gray-400 text-sm">Target: {formatDate(goal.targetDate)}</p>
+                                    <p className="text-2xl font-bold text-white">${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-semibold text-cyan-400">{(goal.currentAmount / goal.targetAmount * 100).toFixed(1)}%</p>
+                                </div>
+                            </div>
+                            <div className="w-full bg-gray-700 rounded-full h-2">
+                                <div className="bg-cyan-500 h-2 rounded-full" style={{ width: `${(goal.currentAmount / goal.targetAmount * 100)}%` }}></div>
+                            </div>
+                        </div>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// FIX: Added default export for FinancialGoalsView
+export default FinancialGoalsView;
+
+
+// --- CONSOLIDATED FROM: ./components/views/personal/FinancialGoalsView.tsx ---
+
+// components/views/personal/FinancialGoalsView.tsx
+import React, { useContext, useState, useMemo } from 'react';
+import { DataContext } from '../../../context/DataContext';
+import Card from '../../Card';
+import { FinancialGoal } from '../../../types';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+
+const GOAL_ICONS: { [key: string]: React.FC<{ className?: string }> } = {
+    home: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
+    plane: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>,
+    car: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H3" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5m14 0a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+    education: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20" /></svg>,
+    default: ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>,
+};
+
+
+const FinancialGoalsView: React.FC = () => {
+    type GoalView = 'LIST' | 'CREATE' | 'VIEW_PLAN';
+    const [currentView, setCurrentView] = useState<GoalView>('LIST');
+    const [selectedGoal, setSelectedGoal] = useState<FinancialGoal | null>(null);
+    const [loadingGoalId, setLoadingGoalId] = useState<string | null>(null);
+
+    const context = useContext(DataContext);
+    if (!context) throw new Error("FinancialGoalsView must be within a DataProvider.");
+    // FIX: Destructure missing functions from context to resolve property not found errors.
+    const { financialGoals, addFinancialGoal, generateGoalPlan } = context;
+
+    const handleGeneratePlan = async (goalId: string) => {
+        setLoadingGoalId(goalId);
+        await generateGoalPlan(goalId);
+        // The context will update, so we find the new goal state from there
+        const updatedGoal = financialGoals.find(g => g.id === goalId);
+        if (updatedGoal) {
+            setSelectedGoal(updatedGoal);
+            // If the plan is now available, switch to view it
+            if(updatedGoal.plan) {
+                setCurrentView('VIEW_PLAN');
+            }
+        }
+        setLoadingGoalId(null);
+    };
+    
+    const GoalListView: React.FC = () => (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-bold text-white tracking-wider">Financial Goals</h2>
+                <button onClick={() => setCurrentView('CREATE')} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium">New Goal</button>
+            </div>
+            {financialGoals.map(goal => {
+                 const progress = (goal.currentAmount / goal.targetAmount) * 100;
+                 const Icon = GOAL_ICONS[goal.iconName] || GOAL_ICONS.default;
+                 return (
+                    <Card key={goal.id} variant="interactive" onClick={() => { setSelectedGoal(goal); setCurrentView('VIEW_PLAN'); }}>
+                         <div className="flex flex-col md:flex-row gap-6">
+                             <div className="flex-shrink-0 w-24 h-24 bg-cyan-500/10 rounded-full flex items-center justify-center text-cyan-300 mx-auto">
+                                 <Icon className="w-12 h-12" />
+                             </div>
+                             <div className="flex-grow">
+                                <div className="flex justify-between items-baseline">
+                                     <h3 className="text-xl font-semibold text-white">{goal.name}</h3>
+                                     <p className="text-sm text-gray-400">Target: {goal.targetDate}</p>
+                                </div>
+                                <p className="text-sm text-gray-400 mt-2">
+                                     ${goal.currentAmount.toLocaleString()} / ${goal.targetAmount.toLocaleString()}
+                                </p>
+                                <div className="w-full bg-gray-700 rounded-full h-2.5 mt-2">
+                                    <div className="bg-cyan-500 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                                </div>
+                             </div>
+                         </div>
+                    </Card>
+                 );
+            })}
+        </div>
+    );
+    
+    // Placeholder components for other views
+    const CreateGoalView: React.FC = () => (
+        <div>
+            <h2 className="text-3xl font-bold text-white tracking-wider mb-4">Create New Goal</h2>
+            <Card><p>Form to create a new goal would go here.</p></Card>
+            <button onClick={() => setCurrentView('LIST')} className="mt-4 text-sm text-cyan-400">Back to List</button>
+        </div>
+    );
+
+    const ViewPlanView: React.FC = () => (
+         <div>
+            <h2 className="text-3xl font-bold text-white tracking-wider mb-4">{selectedGoal?.name}</h2>
+            <Card><p>Details and AI plan for the selected goal would go here.</p></Card>
+            <button onClick={() => setCurrentView('LIST')} className="mt-4 text-sm text-cyan-400">Back to List</button>
+        </div>
+    );
+
+
+    const renderCurrentView = () => {
+        switch (currentView) {
+            case 'CREATE':
+                return <CreateGoalView />;
+            case 'VIEW_PLAN':
+                return <ViewPlanView />;
+            case 'LIST':
+            default:
+                return <GoalListView />;
+        }
+    };
+
+    return (
+        <>
+            {renderCurrentView()}
+        </>
+    );
+};
+
+export default FinancialGoalsView;
