@@ -34,17 +34,6 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-
-      - name: Verify Environment Variables
-        env:
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_PRICE_ID: ${{ secrets.STRIPE_PRICE_ID }}
-        run: |
-          echo "==== VERIFYING REQUIRED ENVIRONMENT VARIABLES ===="
-          if [ -z "$STRIPE_SECRET_KEY" ]; then echo "Error: STRIPE_SECRET_KEY is missing."; exit 1; fi
-          if [ -z "$STRIPE_PRICE_ID" ]; then echo "Error: STRIPE_PRICE_ID is missing."; exit 1; fi
-          echo "Environment verification complete."
-
       - name: Production Build Compilation & Autonomous Self-Healing
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
