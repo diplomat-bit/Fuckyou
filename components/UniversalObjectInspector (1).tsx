@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: UniversalObjectInspector (1)_1.tsx ---
+
+
 import React, { useState } from 'react';
 
 const inspectorStyles = {

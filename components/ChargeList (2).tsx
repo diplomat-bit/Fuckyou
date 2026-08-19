@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: ChargeList (2)_1.tsx ---
+
 import React, { useState, useMemo, useEffect } from 'react';
 
 // Based on the 'charge' object from the project description

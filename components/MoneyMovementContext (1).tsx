@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: MoneyMovementContext (1)_1.tsx ---
+
+
 import React, { createContext, useContext, ReactNode } from 'react';
 import { MoneyMovementAPI } from './CitibankMoneyMovementSDK';
 

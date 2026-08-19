@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: FinancialAccountCard (1)_1.tsx ---
+
+
 import React from 'react';
 import type Stripe from 'stripe';
 

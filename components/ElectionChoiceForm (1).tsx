@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: ElectionChoiceForm (1)_1.tsx ---
+
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Biso20022 } from '../types/biso20022';

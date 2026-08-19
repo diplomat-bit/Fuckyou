@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: PlaidLinkButton (5)_1.tsx ---
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { banks } from '../constants';
 

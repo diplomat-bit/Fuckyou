@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: AIInsights (1)_1.tsx ---
+
+
 import React, { useContext, useState, useMemo } from 'react';
 import Card from './Card';
 import type { AIInsight } from '../types';

@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: TransactionsView (1)_1.tsx ---
+
+
 // components/TransactionsView.tsx
 // RE-ENACTED & EXPANDED: This component has been resurrected from its deprecated state.
 // It is now the "FlowMatrix," the complete Great Library for all financial events.

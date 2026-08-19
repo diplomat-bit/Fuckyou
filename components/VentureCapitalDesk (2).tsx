@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: VentureCapitalDesk (2)_1.tsx ---
+
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: InvestmentsView (3)_1.tsx ---
+
 import React, { useState, FormEvent, ChangeEvent, useMemo } from 'react';
 import axios, { AxiosError } from 'axios';
 import { Alert, Box, Button, Tab, Tabs, TextField, Typography } from '@mui/material';

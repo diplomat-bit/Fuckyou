@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: QuantumAssets (2)_1.tsx ---
+
 // components/QuantumAssets.tsx
 // This file has been refactored and its original content removed as per the system instructions.
 // Rationale:

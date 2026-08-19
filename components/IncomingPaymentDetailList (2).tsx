@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: IncomingPaymentDetailList (2)_1.tsx ---
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { listIncomingPaymentDetails } from '../api/incomingPaymentDetails';

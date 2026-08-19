@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: CardholderManagement (1)_1.tsx ---
+
 import React, { useState, useCallback, useMemo } from 'react';
 
 // --- Types based on the Stripe resource structure ---

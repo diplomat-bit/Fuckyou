@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: RecentTransactions (3)_1.tsx ---
+
 import React from 'react';
 import { RefreshCw, TrendingUp, TrendingDown } from 'lucide-react'; 
 

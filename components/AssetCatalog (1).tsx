@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: AssetCatalog (1)_1.tsx ---
+
+
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Card, CardContent, CardMedia, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';

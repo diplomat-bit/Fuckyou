@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: DerivativesDesk (2)_1.tsx ---
+
 import React, { useState, FormEvent, ChangeEvent, useMemo } from 'react';
 // This CSS will be provided in Part 2 and is not relevant for the current refactoring scope.
 // import './ApiSettingsPage.css';

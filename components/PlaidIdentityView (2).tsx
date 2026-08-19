@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: PlaidIdentityView (2)_1.tsx ---
+
+
 import React, { useState, useEffect } from 'react';
 import {
   PlaidIdentityGetRequest,

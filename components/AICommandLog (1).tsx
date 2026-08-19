@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: AICommandLog (1)_1.tsx ---
+
 import React from 'react';
 
 // Type definition for a command log entry

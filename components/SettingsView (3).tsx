@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: SettingsView (3)_1.tsx ---
+
+
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import Card from './Card';
 import { User, Shield, Lock, Mail, Link as LinkIcon, Database, Server, Wifi, Terminal, Settings2 } from 'lucide-react';

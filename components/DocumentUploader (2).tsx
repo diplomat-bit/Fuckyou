@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: DocumentUploader (2)_1.tsx ---
+
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 

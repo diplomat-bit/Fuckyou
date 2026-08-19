@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: ComplianceView (1)_1.tsx ---
+
+
 import React, { useContext, useState } from 'react';
 import { DataContext } from '../context/DataContext';
 import Card from './Card';

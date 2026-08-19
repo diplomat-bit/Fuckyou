@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: AIInsights (3)_1.tsx ---
+
 // components/AIInsights.tsx
 // Rationale for refactoring:
 // The original content of this file, if it were `ApiSettingsPage.tsx`, presented a critical security and architectural flaw

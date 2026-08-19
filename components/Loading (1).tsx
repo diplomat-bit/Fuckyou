@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: Loading (1)_1.tsx ---
+
+
 import React from 'react';
 
 export const Loading: React.FC = () => (

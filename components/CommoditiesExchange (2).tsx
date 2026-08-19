@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: CommoditiesExchange (2)_1.tsx ---
+
 import React, { useState, useEffect, useRef, useMemo, FormEvent, ChangeEvent } from 'react';
 // Removed: import axios from 'axios'; as it was only used by the insecure/flawed API Settings panel, which is now eliminated.
 

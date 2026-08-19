@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: BudgetsView (3)_1.tsx ---
+
 import React, { useState, FormEvent, ChangeEvent } from 'react';
 import axios from 'axios';
 import './ApiSettingsPage.css';

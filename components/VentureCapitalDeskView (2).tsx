@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: VentureCapitalDeskView (2)_1.tsx ---
+
+
 import React, { useState, useCallback, useMemo } from 'react';
 import { Container, Row, Col, Card, Button, Tabs, Tab, Form, Table, Navbar, Nav, NavDropdown, ListGroup, ProgressBar, Alert, Breadcrumb, InputGroup, FormControl, Dropdown, DropdownButton, OverlayTrigger, Tooltip, Popover } from 'react-bootstrap';
 import { DealFlow } from './DealFlow';

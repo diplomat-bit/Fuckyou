@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: PersonalizationView (3)_1.tsx ---
+
 import React, { useState } from 'react';
 import Card from './Card';
 import { Palette, Layout, Type } from 'lucide-react';

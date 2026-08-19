@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: BalanceSummary (2)_1.tsx ---
+
 // components/BalanceSummary.tsx
 import React, { useContext, useMemo } from 'react';
 import { DataContext } from '../context/DataContext';

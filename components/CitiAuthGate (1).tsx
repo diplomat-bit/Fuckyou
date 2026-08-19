@@ -1,5 +1,9 @@
 
 
+// --- CONSOLIDATED FROM: CitiAuthGate (1)_1.tsx ---
+
+
+
 import React, { useState } from 'react';
 import Card from './Card';
 import { Building, Lock, CheckCircle, AlertTriangle } from 'lucide-react';

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: PlaidLinkButton (3)_1.tsx ---
+
 import React from 'react';
 
 // Replace this mock component with a proper Plaid Link integration.

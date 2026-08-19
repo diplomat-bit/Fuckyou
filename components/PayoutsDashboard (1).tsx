@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: PayoutsDashboard (1)_1.tsx ---
+
+
 import React, { useState, useMemo } from 'react';
 import { MoreHorizontal, ArrowDownUp, Search, Download, ExternalLink, Calendar, Banknote, Landmark } from 'lucide-react';
 

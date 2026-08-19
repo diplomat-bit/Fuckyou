@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: ComplianceOracleView (1)_1.tsx ---
+
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import Card from './Card';
 import { 

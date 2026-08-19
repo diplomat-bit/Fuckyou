@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: InvestmentForm (1)_1.tsx ---
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';

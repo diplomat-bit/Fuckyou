@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: PaymentMethodDetails (2)_1.tsx ---
+
 import React from 'react';
 import { DetailItem } from './shared/DetailItem';
 

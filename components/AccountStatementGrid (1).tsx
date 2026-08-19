@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: AccountStatementGrid (1)_1.tsx ---
+
 /**
  * @file This file, `components/AccountStatementGrid.tsx`, is a core component within The James Burvel O’Callaghan III Code enterprise architecture.
  * It is designated with the system identifier JBOC3_C_ASG_A1.

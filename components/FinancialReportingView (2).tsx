@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: FinancialReportingView (2)_1.tsx ---
+
 import React from 'react';
 import { Box, Heading, Text } from '@chakra-ui/react';
 

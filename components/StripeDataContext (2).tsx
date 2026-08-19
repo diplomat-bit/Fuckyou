@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: StripeDataContext (2)_1.tsx ---
+
 import React, { createContext, useContext, useState, ReactNode, FC } from 'react';
 
 // Define the type for the full Stripe data object

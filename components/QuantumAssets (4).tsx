@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: QuantumAssets (4)_1.tsx ---
+
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
 // --- TYPE DEFINITIONS ---

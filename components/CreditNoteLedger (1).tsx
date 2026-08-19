@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: CreditNoteLedger (1)_1.tsx ---
+
+
 import React, { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';

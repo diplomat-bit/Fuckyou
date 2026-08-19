@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: InvestmentPortfolio (3)_1.tsx ---
+
 import React, { useContext, useMemo, useState, useCallback } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import Card from './Card';

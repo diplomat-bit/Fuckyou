@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: InvoicesView (2)_1.tsx ---
+
 import React, { useContext } from 'react';
 import { DataContext } from '../context/DataContext';
 import Card from './Card';

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: CounterpartyForm (2)_1.tsx ---
+
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 
 // Type definitions based on the OpenAPI specification

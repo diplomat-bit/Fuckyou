@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: RemittanceInfoEditor (1)_1.tsx ---
+
 import React, { useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';

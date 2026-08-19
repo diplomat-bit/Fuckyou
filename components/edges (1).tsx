@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: edges (1)_1.tsx ---
+
+
 import { MarkerType } from 'reactflow';
 
 const defaultEdgeOptions = {

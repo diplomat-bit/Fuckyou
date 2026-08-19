@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: ReportRunGenerator (1)_1.tsx ---
+
+
 import React, { useState } from 'react';
 import { reportingReportRunCreate } from '../lib/api/stripeNexus/reporting';
 import { useAuth } from '../context/AuthContext'; // Fixed path

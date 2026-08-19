@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: TradeConfirmationModal (1)_1.tsx ---
+
+
 import React, { useState, useCallback } from 'react';
 import {
   Modal,

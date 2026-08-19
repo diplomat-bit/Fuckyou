@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: FinancialDemocracyView (4)_1.tsx ---
+
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import Card from './Card';

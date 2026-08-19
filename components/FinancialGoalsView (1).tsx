@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: FinancialGoalsView (1)_1.tsx ---
+
 // components/FinancialGoalsView.tsx
 import React, { useContext, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { DataContext } from '../context/DataContext';

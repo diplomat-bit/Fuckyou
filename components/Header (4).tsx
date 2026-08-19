@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: Header (4)_1.tsx ---
+
 import React, { useState, useContext, useEffect } from 'react';
 import { DataContext } from '../context/DataContext';
 import { View, Notification } from '../types';

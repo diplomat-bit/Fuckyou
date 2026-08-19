@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: nodes (1)_1.tsx ---
+
+
 import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 

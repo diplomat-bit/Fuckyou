@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: VirtualAccountsDashboard (1)_1.tsx ---
+
+
 import React, { useState } from 'react';
 import Card from './Card';
 import { Layers, Plus, ChevronRight, ChevronDown, Copy, CreditCard, Search } from 'lucide-react';

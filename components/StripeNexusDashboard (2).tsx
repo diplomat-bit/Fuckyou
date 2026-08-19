@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: StripeNexusDashboard (2)_1.tsx ---
+
 import React from 'react';
 
 // --- Generative Data Functions ---

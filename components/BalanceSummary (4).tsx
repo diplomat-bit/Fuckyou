@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: BalanceSummary (4)_1.tsx ---
+
+
 import React, { useContext, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Card from './Card';

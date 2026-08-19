@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: VoiceControl (2)_1.tsx ---
+
 // "Let the user command the app with their voice," Gemini proclaimed. "We will give them a constant companion."
 import React, { useState } from 'react';
 import { View } from '../types';

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: ComplianceAlertCard (2)_1.tsx ---
+
 import React from 'react';
 
 // Define severity and status types for better type safety and autocompletion

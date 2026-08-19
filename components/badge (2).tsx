@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: badge (2)_1.tsx ---
+
+
 import React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { twMerge } from "tailwind-merge";

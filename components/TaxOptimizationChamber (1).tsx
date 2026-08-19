@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: TaxOptimizationChamber (1)_1.tsx ---
+
+
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 
 // --- App-in-App: Sovereign AI Micro-Components ---

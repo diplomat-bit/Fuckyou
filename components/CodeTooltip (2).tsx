@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: CodeTooltip (2)_1.tsx ---
+
 import React, { useState } from 'react';
 
 // Embedded mock schema data

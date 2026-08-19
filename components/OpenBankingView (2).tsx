@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: OpenBankingView (2)_1.tsx ---
+
 import React, { useState } from 'react';
 import axios from 'axios';
 // Removed: The import for './ApiSettingsPage.css' as Tailwind CSS is now used for styling.

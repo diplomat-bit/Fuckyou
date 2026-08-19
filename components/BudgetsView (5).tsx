@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: BudgetsView (5)_1.tsx ---
+
 import React, { useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Card from './Card';
 import { DataContext } from '../context/DataContext';

@@ -1,5 +1,9 @@
 
 
+// --- CONSOLIDATED FROM: SovereignWealth (1)_1.tsx ---
+
+
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings, DollarSign, Activity, TrendingUp, Zap, Server, Shield, Globe, Cpu, BarChart3, ZapIcon, Rocket, Brain, Landmark, Clock, Database, Aperture } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, LineChart, Line } from 'recharts';

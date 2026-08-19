@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: TransactionList (2)_1.tsx ---
+
 import React, { useState, useEffect } from 'react';
 import { Table, Input, Button, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';

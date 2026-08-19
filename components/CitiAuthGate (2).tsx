@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: CitiAuthGate (2)_1.tsx ---
+
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Card from './Card';
 import { Building, Lock, CheckCircle, AlertTriangle, Menu, X, Aperture, Database, Zap, Settings, Layers, Cpu, TrendingUp, BarChart3, FileText, GitBranch, HardHat, Briefcase, Rocket, Fingerprint, Monitor, MessageSquare, Activity, Target, GitCommit, Workflow, Clock, UserCheck, ShieldCheck, Server, Cloud, Key, Scan, Code, ChevronDown, ChevronUp } from 'lucide-react';

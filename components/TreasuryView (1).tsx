@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: TreasuryView (1)_1.tsx ---
+
+
 import React, { useState } from 'react';
 import Card from './Card';
 import { DollarSign, TrendingUp, Globe, Activity, RefreshCw, AlertTriangle, Briefcase } from 'lucide-react';

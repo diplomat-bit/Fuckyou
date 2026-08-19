@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: StripeStatusBadge (2)_1.tsx ---
+
 import React from 'react';
 
 interface StripeStatusBadgeProps {

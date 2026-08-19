@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: AIAdStudioView (2)_1.tsx ---
+
 /*
     Refactoring Note: The previous philosophical commentary has been removed to align with production-ready documentation standards.
     This file now focuses purely on technical implementation and architectural clarity.

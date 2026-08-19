@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: StripeDataContext (1)_1.tsx ---
+
 import React, { createContext, useContext, useState, ReactNode, FC } from 'react';
 
 const stripeResourcesData = {

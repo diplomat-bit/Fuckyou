@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: ExternalAccountCard (1)_1.tsx ---
+
 import React from 'react';
 
 // Define a simplified interface for nested types used in ExternalAccount

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: SovereignWealth (4)_1.tsx ---
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Settings, DollarSign, Activity, TrendingUp, Zap, Server, Shield, Globe, Cpu, BarChart3, ZapIcon, Rocket, Brain, Landmark, Clock, Database, Aperture, Layers, Atom, Users, FileText, Briefcase, Crosshair, Bot, TrendingDown, BookOpen, HeartPulse, Ship, Plane, Factory, Network, Handshake } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';

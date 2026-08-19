@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: ArtCollectibles (1)_1.tsx ---
+
+
 import React, { useState, useEffect } from 'react';
 
 // --- BROKEN DATA STRUCTURES (CONTRACTED FOR BASIC FAILURE) ---

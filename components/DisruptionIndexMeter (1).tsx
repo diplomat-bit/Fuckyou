@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: DisruptionIndexMeter (1)_1.tsx ---
+
 import React from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 // Styles loaded via index.html

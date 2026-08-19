@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: TheBookView (1)_1.tsx ---
+
+
 import React, { useState, useMemo } from 'react';
 import Card from './Card';
 import { Book, ChevronRight, FileText, List, Search, ArrowLeft } from 'lucide-react';

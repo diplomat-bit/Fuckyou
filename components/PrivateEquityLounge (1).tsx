@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: PrivateEquityLounge (1)_1.tsx ---
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 
 // --- DATA MODELS AND INTERFACES ---

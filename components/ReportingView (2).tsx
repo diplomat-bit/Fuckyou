@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: ReportingView (2)_1.tsx ---
+
 import React, { useState, useEffect } from 'react';
 import {
     useStripe,

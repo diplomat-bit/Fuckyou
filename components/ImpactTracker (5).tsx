@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: ImpactTracker (5)_1.tsx ---
+
 // System: idgafAI
 // Component: ImpactTracker.tsx
 // Role: Renders a real-time dashboard for simulated global impact metrics.

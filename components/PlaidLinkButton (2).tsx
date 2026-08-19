@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: PlaidLinkButton (2)_1.tsx ---
+
 // components/PlaidLinkButton.tsx
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { usePlaidLink, PlaidLinkOptions, PlaidLinkOnSuccess, PlaidLinkOnExit } from 'react-plaid-link';

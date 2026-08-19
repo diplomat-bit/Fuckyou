@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: StructuredPurposeInput (2)_1.tsx ---
+
+
 import React, { useState, useCallback } from 'react';
 import Select from 'react-select';
 

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: ForexArena (1)_1.tsx ---
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const ForexArenaGlobalStyles = () => {

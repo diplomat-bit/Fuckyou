@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: AlgoTradingLab (1)_1.tsx ---
+
 import React, { useState, useCallback, useMemo } from 'react';
 import { 
   RefreshCw, Play, Save, History, Code, Settings, TrendingUp, DollarSign, X, User, LogOut,

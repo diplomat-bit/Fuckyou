@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: Sidebar (1)_1.tsx ---
+
+
 import React, { useContext } from 'react';
 import { View } from '../types';
 import { NAV_ITEMS } from '../constants';

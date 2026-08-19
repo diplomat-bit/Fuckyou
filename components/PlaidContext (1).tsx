@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: PlaidContext (1)_1.tsx ---
+
+
 import React, { createContext, useContext } from 'react';
 import { PlaidApi } from 'plaid';
 

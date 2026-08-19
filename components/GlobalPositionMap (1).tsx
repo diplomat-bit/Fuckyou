@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: GlobalPositionMap (1)_1.tsx ---
+
+
 import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, Popup } from 'react-leaflet';
 import L from 'leaflet';

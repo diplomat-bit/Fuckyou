@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: AuthContext (2)_1.tsx ---
+
 import React, { createContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { User as BaseUser } from '../types';
 

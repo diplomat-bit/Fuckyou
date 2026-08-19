@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: QuantumWeaverView (1)_1.tsx ---
+
+
 import React, { useState, useContext, useMemo } from 'react';
 import Card from './Card';
 import { DataContext } from '../context/DataContext';

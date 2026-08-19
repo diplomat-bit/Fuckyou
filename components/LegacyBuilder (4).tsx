@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: LegacyBuilder (4)_1.tsx ---
+
 import React, { useState, useMemo } from 'react';
 
 // --- EXPANDED CORE DATA STRUCTURES ---

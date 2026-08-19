@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: ResourceGraphView (1)_1.tsx ---
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '@mui/material/styles';
 import {

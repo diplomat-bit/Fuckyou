@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: ImpactTracker (2)_1.tsx ---
+
 // components/ImpactTracker.tsx
 import React, { useContext } from 'react';
 import { DataContext } from '../context/DataContext';

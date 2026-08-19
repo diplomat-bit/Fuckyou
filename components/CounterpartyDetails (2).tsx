@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: CounterpartyDetails (2)_1.tsx ---
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, Spinner, Alert, ListGroup, Badge, Tabs, Tab, Button } from 'react-bootstrap';

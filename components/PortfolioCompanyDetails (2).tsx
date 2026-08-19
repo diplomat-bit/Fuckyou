@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: PortfolioCompanyDetails (2)_1.tsx ---
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Activity, Users, FileText, Globe } from 'lucide-react';

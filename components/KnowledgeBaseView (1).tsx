@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: KnowledgeBaseView (1)_1.tsx ---
+
+
 import React, { useState, useEffect } from 'react';
 import Card from './Card';
 import { Search, FileText, Folder, ChevronRight, Terminal } from 'lucide-react';

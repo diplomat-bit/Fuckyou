@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: LandingPage (2)_1.tsx ---
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 

@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: Sidebar (2)_1.tsx ---
+
+
 import React, { useState, useMemo } from 'react';
 import { View } from '../types';
 import { NAV_ITEMS, NavItem } from '../constants';

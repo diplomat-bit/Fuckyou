@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: Dashboard (5)_1.tsx ---
+
 import React, { useContext, useMemo, useState, useEffect, useCallback } from 'react';
 import BalanceSummary from './BalanceSummary';
 import RecentTransactions from './RecentTransactions';

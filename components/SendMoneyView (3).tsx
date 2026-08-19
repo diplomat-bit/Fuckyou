@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: SendMoneyView (3)_1.tsx ---
+
 // components/SendMoneyView.tsx
 // This component is undergoing a major refactor to transition from a deprecated, insecure prototype
 // to a stable, production-ready financial transaction interface. The original "NexusPay" was intentionally

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: PaymentInitiationForm (2)_1.tsx ---
+
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   TextField,

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: SSOView (1)_1.tsx ---
+
 import React, { useState, useCallback, useMemo } from 'react';
 import Card from './Card';
 import { 

@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: SecurityView (1)_1.tsx ---
+
+
 import React, { useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { DataContext } from '../context/DataContext';
 import Card from './Card';

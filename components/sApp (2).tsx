@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: sApp (2)_1.tsx ---
+
 import React, { useState, useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Outlet, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';

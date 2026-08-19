@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: OpenBankingView (1)_1.tsx ---
+
 // components/views/personal/OpenBankingView.tsx
 import React, { useState, useReducer, useEffect, useCallback, useMemo, FC, ReactNode } from 'react';
 import Card from './Card';

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: VoiceControl (1)_1.tsx ---
+
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { View, Transaction } from '../types';
 import { DataContext } from '../context/DataContext';

@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: InvestmentsView (1)_1.tsx ---
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Card from './Card';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, ReferenceLine } from 'recharts';

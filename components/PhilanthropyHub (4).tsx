@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: PhilanthropyHub (4)_1.tsx ---
+
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { DollarSign, Zap, Target, BarChart2, TrendingUp, Briefcase, Cpu, Layers, Plus, X, ArrowRight, Bot, ChevronsRight, FileText, Filter, Settings, ShieldCheck } from 'lucide-react';
 

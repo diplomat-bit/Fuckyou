@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: Card (3)_1.tsx ---
+
 // components/Card.tsx
 //
 // REFACTOR: This component has been significantly simplified to align with the

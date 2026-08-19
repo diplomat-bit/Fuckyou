@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: PaymentOrderForm (1)_1.tsx ---
+
+
 import React, { useState, useEffect, useCallback } from 'react';
 
 // NOTE: This component assumes a UI library like Material-UI is installed and configured.

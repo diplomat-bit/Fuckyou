@@ -1,4 +1,8 @@
 
+
+// --- CONSOLIDATED FROM: sApp (1)_1.tsx ---
+
+
 import React, { useState, useContext, useEffect } from 'react';
 import { HashRouter as Router, Route, Routes, Outlet, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';

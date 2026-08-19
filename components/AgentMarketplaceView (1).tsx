@@ -1,3 +1,7 @@
+
+
+// --- CONSOLIDATED FROM: AgentMarketplaceView (1)_1.tsx ---
+
 import React, { useState, useEffect, useReducer, useCallback, useMemo, FC, ChangeEvent, FormEvent, ReactNode } from 'react';
 import Card from '../../Card';
 
