@@ -1529,7 +1529,7 @@ router.get(
 );
 
 // Implementation continues in Stage 4...
-```/**
+
  * @section Statement & Document Management
  * Endpoints for retrieving official bank statements and tax documents.
  */
